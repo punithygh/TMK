@@ -56,7 +56,8 @@ function ListingsContent() {
       const queryParams = new URLSearchParams({
         page: pageNum.toString(),
         ...(q && { q }),
-        ...(category && { category }),
+        // 🚨 CRITICAL FIX: Django DRF filterset_fields expects 'category__slug', not 'category'
+        ...(category && { category__slug: category }),
         ...(currentFilters.sort_by && { sort_by: currentFilters.sort_by }),
         ...(currentFilters.star_rating && { star_rating: currentFilters.star_rating }),
         ...(currentFilters.budget && { budget: currentFilters.budget }),

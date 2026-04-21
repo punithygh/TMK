@@ -64,18 +64,15 @@ export const getAllCourses = async (): Promise<BusinessListing[]> => {
 // 🚀 2. ಸಿಂಗಲ್ ಬ್ಯುಸಿನೆಸ್ ಫೆಚ್ ಮಾಡುವುದು (Business Detail Page ಗಾಗಿ) 🚨 ಹೊಸದು 🚨
 export const getOneCourse = async (slug: string): Promise<BusinessListing | null> => {
   try {
-    // Django DRF endpoint uses business_area_slug as the lookup field (not slug)
-    // Fetch with query parameter to filter by business_area_slug
-    const response = await api.get(`/businesses/?business_area_slug=${encodeURIComponent(slug)}`);
+    // 🚨 CRITICAL FIX: Use the exact dynamic path variable expected by Django BusinessDetailAPIView
+    // Do NOT use ?business_area_slug= query parameters
+    const response = await api.get(`/businesses/${encodeURIComponent(slug)}/`);
     
-    // Handle paginated or direct array response
-    const data = response.data?.results || response.data || [];
-    
-    // Return the first matching business
-    const business = Array.isArray(data) ? data[0] : data;
+    // Django's DetailView returns a single object, not an array of results
+    const business = response.data;
     
     if (!business) {
-      console.warn(`⚠️ Business not found for business_area_slug: ${slug}`);
+      console.warn(`⚠️ Business not found for slug: ${slug}`);
       return null;
     }
     

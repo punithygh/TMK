@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect, useRef, useMemo, use } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   Phone, MessageCircle, MapPin, Share2, Edit3, Heart, 
@@ -26,10 +26,16 @@ const iconMap: Record<string, React.ReactNode> = {
   "default": <CheckCircle size={24} className="text-emerald-500" />
 };
 
-export default function BusinessDetailPage() {
-  const params = useParams();
+// 🚨 CRITICAL FIX: Next.js 15 requires params to be a Promise
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export default function BusinessDetailPage({ params }: Props) {
   const router = useRouter();
-  const slug = params.slug as string;
+  
+  // 🚨 Unwrap the params using React.use()
+  const { slug } = use(params);
   const { lang, t } = useLanguage();
 
   const [business, setBusiness] = useState<BusinessListing | null>(null);
