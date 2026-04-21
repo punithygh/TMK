@@ -40,12 +40,12 @@ export default async function Home() {
       <main className="flex flex-col gap-12 w-full max-w-[1200px] mx-auto px-4 sm:px-6">
         
         {/* 2. EXPLORE SERVICES */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+        <section className="mb-8">
           <CategoryGrid />
         </section>
 
         {/* 3. TRENDING SEARCHES (API Integrated) */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+        <section className="mb-12">
           <SectionHeader title="ಟ್ರೆಂಡಿಂಗ್ ಸರ್ಚ್ಸ್" icon={Flame} colorClass="text-red-500" />
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-2">
             {trendingBusinesses?.length > 0 ? (
@@ -63,7 +63,7 @@ export default async function Home() {
         </section>
 
         {/* 4. MOVIE REVIEWS (API Integrated) */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+        <section className="mb-12">
           <SectionHeader title="ಚಲನಚಿತ್ರ ವಿಮರ್ಶೆಗಳು" icon={Film} colorClass="text-amber-500" />
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-2">
             {movieReviews?.length > 0 ? movieReviews.map((article: any) => {
@@ -94,7 +94,7 @@ export default async function Home() {
         </section>
 
         {/* 5. TRENDING NEWS (API Integrated) */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+        <section className="mb-12">
           <SectionHeader title="ಟ್ರೆಂಡಿಂಗ್ ನ್ಯೂಸ್" icon={Newspaper} colorClass="text-blue-400" />
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-2">
             {newsArticles?.length > 0 ? newsArticles.map((article: any) => {
@@ -125,7 +125,7 @@ export default async function Home() {
         </section>
 
         {/* 6. TRENDING MEDIA (API Integrated) */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+        <section className="mb-12">
           <SectionHeader title="ಟ್ರೆಂಡಿಂಗ್ ಮೀಡಿಯಾ" icon={Hash} colorClass="text-blue-500" />
           <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-2">
             {socialPosts?.length > 0 ? socialPosts.map((post: any) => {

@@ -3,14 +3,16 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Mic, Megaphone, UserCircle, Hexagon } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext"; // 🚨 1. ಹೊಸ ಗ್ಲೋಬಲ್ ಸ್ಟೇಟ್ ಹುಕ್
+import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const router = useRouter();
   
-  // 🚨 2. ಸ್ವಂತ useState ಬದಲು ಗ್ಲೋಬಲ್ context ಬಳಸುತ್ತಿದ್ದೇವೆ
   const { lang, setLang, t } = useLanguage(); 
+  const { user, isAuthenticated, logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [placeholder, setPlaceholder] = useState("");
@@ -163,14 +165,42 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-4 shrink-0">
           <Link href="/free-listing" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-white border border-slate-700 hover:bg-slate-800 hover:border-sky-400 hover:text-sky-400">
             <Megaphone className="w-4 h-4" />
-            {/* 🚨 t() helper ಫಂಕ್ಷನ್ ಬಳಕೆ (ಆಯ್ಕೆ) ಅಥವಾ ನೇರ ಟೆನರಿ ಆಪರೇಟರ್ */}
             <span>{t("ಉಚಿತ ಲಿಸ್ಟಿಂಗ್", "Free Listing")}</span>
           </Link>
           
-          <Link href="/login" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-sky-500 text-white border-none hover:bg-sky-400 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5">
-            <UserCircle className="w-4 h-4" />
-            <span>{t("ಲಾಗಿನ್", "Login")}</span>
-          </Link>
+          {isAuthenticated && user ? (
+            <div className="relative">
+              <button 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-800 border border-slate-700 hover:border-sky-400"
+              >
+                <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase">
+                  {user.first_name.charAt(0)}
+                </div>
+                <span className="max-w-[80px] truncate">{user.first_name}</span>
+              </button>
+
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-2 border-b border-slate-800 mb-1">
+                    <p className="text-xs text-slate-400">Signed in as</p>
+                    <p className="text-sm font-bold truncate">{user.mobile}</p>
+                  </div>
+                  <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-sky-400 transition-colors">
+                    <LayoutDashboard className="w-4 h-4" /> {t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}
+                  </Link>
+                  <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left">
+                    <LogOut className="w-4 h-4" /> {t("ಲಾಗ್ ಔಟ್", "Logout")}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-sky-500 text-white border-none hover:bg-sky-400 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5">
+              <UserCircle className="w-4 h-4" />
+              <span>{t("ಲಾಗಿನ್", "Login")}</span>
+            </Link>
+          )}
           
           {/* Desktop Lang Switch */}
           <div className="flex bg-slate-800 rounded-full p-1 border border-slate-700">

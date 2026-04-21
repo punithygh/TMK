@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Language = "kn" | "en";
 
@@ -14,13 +15,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Language>("kn");
+  const router = useRouter();
 
   // ಪೇಜ್ ಲೋಡ್ ಆದಾಗ ಕುಕಿಯಿಂದ ಭಾಷೆ ಓದುವುದು
   useEffect(() => {
     if (typeof document !== "undefined") {
-      const match = document.cookie.match(new RegExp('(^| )googtrans=([^;]+)'));
+      const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'));
+      const oldMatch = document.cookie.match(new RegExp('(^| )googtrans=([^;]+)'));
       if (match) {
-        const val = match[2];
+        setLangState(match[2] as Language);
+      } else if (oldMatch) {
+        const val = oldMatch[2];
         if (val.includes('/en') || val === 'en') setLangState("en");
         else setLangState("kn");
       }
@@ -29,9 +34,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
+    // Modern Next.js cookie standard
+    document.cookie = `NEXT_LOCALE=${newLang}; path=/; max-age=31536000;`;
+    // Backward compatibility for existing old code
     document.cookie = `googtrans=/en/${newLang}; path=/; max-age=31536000;`;
-    // 🚨 ಗಮನಿಸಿ: ಇಲ್ಲಿ ನಾವು window.location.reload() ತೆಗೆದಿದ್ದೇವೆ. 
-    // ರಿಯಾಕ್ಟ್ ಸ್ಟೇಟ್ ಬದಲಾದ ತಕ್ಷಣ ಇಡೀ ಆ್ಯಪ್ ಆಟೋಮ್ಯಾಟಿಕ್ ಆಗಿ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತದೆ!
+    
+    // 🚨 Next.js 15: Instantly reload Server & Client Components to fetch new lang data
+    router.refresh();
   };
 
   // 🚨 SMART HELPER: ಕನ್ನಡ ಟೆಕ್ಸ್ಟ್ ಇಲ್ಲದಿದ್ದರೆ ಆಟೋಮ್ಯಾಟಿಕ್ ಆಗಿ ಇಂಗ್ಲಿಷ್ ತೋರಿಸುವ ಫಂಕ್ಷನ್

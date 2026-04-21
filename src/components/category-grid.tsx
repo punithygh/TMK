@@ -44,6 +44,7 @@ export default function CategoryGrid() {
   const { t } = useLanguage(); 
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -62,27 +63,31 @@ export default function CategoryGrid() {
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="w-full border-4 border-red-500 min-h-[100px] z-50 relative bg-slate-900/50 rounded-xl p-2">
+      {/* 🚨 DEBUG TEXT TO VERIFY COMPONENT IS RENDERING */}
+      <div className="md:hidden text-red-500 text-xs font-bold text-center mb-2">CATEGORY GRID LOADED ({categories.length} items)</div>
       {isLoading ? (
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4 pb-4 px-1">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="flex flex-col items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 animate-pulse h-[90px] md:h-[110px]">
+            <div key={i} className="flex flex-col items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 animate-pulse h-[95px] md:h-[110px]">
               <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-xl mb-2"></div>
               <div className="w-12 h-3 bg-slate-800 rounded-full"></div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
-          {categories.slice(0, 8).map((category) => {
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4 pb-4 px-1">
+          {categories.map((category, index) => {
             const { icon, colorClass } = getCategoryIcon(category.slug.toLowerCase());
+            
+            // Hide items beyond index 6 on mobile if not expanded (index 7 will be the View More button)
+            const isHiddenOnMobile = !isExpanded && index >= 7 && categories.length > 8;
 
             return (
-              // 🚨 404 ERROR FIXED HERE: href=`/listings?category=${category.slug}`
               <Link
                 key={category.id}
                 href={`/listings?category=${category.slug}`}
-                className="group flex flex-col items-center justify-center p-3 md:p-4 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] md:h-[110px]"
+                className={`group flex-col items-center justify-center p-3 md:p-4 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] md:h-[110px] ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}
               >
                 <div className={`w-11 h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${colorClass}`}>
                   {category.icon_url ? (
@@ -98,6 +103,21 @@ export default function CategoryGrid() {
               </Link>
             );
           })}
+
+          {/* View More Button (Only on Mobile) */}
+          {!isExpanded && categories.length > 8 && (
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="flex md:hidden group flex-col items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px]"
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 text-sky-400 bg-sky-500/10">
+                <LayoutGrid className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full group-hover:text-sky-400">
+                {t("ಇನ್ನಷ್ಟು", "View More")}
+              </span>
+            </button>
+          )}
         </div>
       )}
     </div>

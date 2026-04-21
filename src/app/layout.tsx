@@ -8,6 +8,7 @@ import Footer from "@/components/footer";
 
 // 🚨 ಅತಿ ಮುಖ್ಯ: LanguageProvider ಇಂಪೋರ್ಟ್ ಮಾಡುವುದು ಕಡ್ಡಾಯ 🚨
 import { LanguageProvider } from "@/context/LanguageContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -58,17 +59,19 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {/* 🚨 CRITICAL FIX: ಇಡೀ ಆ್ಯಪ್ ಅನ್ನು LanguageProvider ಒಳಗೆ ಹಾಕಲೇಬೇಕು 🚨 */}
-        <LanguageProvider>
-          
-          <Navbar />
-          
-          <main className="flex-grow w-full pt-[75px] md:pt-[85px] pb-16 md:pb-0">
-            {children}
-          </main>
-          
-          <Footer />
-          
-        </LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            
+            <Navbar />
+            
+            <main className="flex-grow w-full pt-[75px] md:pt-[85px] pb-16 md:pb-0">
+              {children}
+            </main>
+            
+            <Footer />
+            
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

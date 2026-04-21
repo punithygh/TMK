@@ -13,8 +13,36 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// 🚨 CRITICAL FIX: Interceptor to enforce trailing slashes for Django DRF
+// 🚨 CRITICAL FIX: Interceptor to enforce trailing slashes and Language Sync
 api.interceptors.request.use((config) => {
+  // 1. Language Cookie Sync
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'));
+    const oldMatch = document.cookie.match(new RegExp('(^| )googtrans=([^;]+)'));
+    let lang = 'kn'; // default
+    if (match) {
+      lang = match[2];
+    } else if (oldMatch) {
+      lang = oldMatch[2].includes('en') ? 'en' : 'kn';
+    }
+    
+    // Attach standard Accept-Language header
+    config.headers['Accept-Language'] = lang;
+    
+    // Attach language to query parameters for strict Django DRF parsing
+    config.params = config.params || {};
+    if (!config.params.lang) {
+      config.params.lang = lang;
+    }
+
+    // 🚨 1.5. Authorization Token Sync
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  // 2. Trailing Slash Enforcer for Django DRF
   if (config.url) {
     // Check if URL has query parameters
     const [path, queryString] = config.url.split('?');
