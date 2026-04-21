@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Get base URL from environment variable, fallback to default
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.135.87.202:8000/api/v1';
 
 // Create a centralized Axios instance
 const api = axios.create({

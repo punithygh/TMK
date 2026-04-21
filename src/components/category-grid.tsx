@@ -63,9 +63,7 @@ export default function CategoryGrid() {
   }, []);
 
   return (
-    <div className="w-full border-4 border-red-500 min-h-[100px] z-50 relative bg-slate-900/50 rounded-xl p-2">
-      {/* 🚨 DEBUG TEXT TO VERIFY COMPONENT IS RENDERING */}
-      <div className="md:hidden text-red-500 text-xs font-bold text-center mb-2">CATEGORY GRID LOADED ({categories.length} items)</div>
+    <div className="w-full relative z-10">
       {isLoading ? (
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4 pb-4 px-1">
           {[...Array(8)].map((_, i) => (
@@ -80,40 +78,60 @@ export default function CategoryGrid() {
           {categories.map((category, index) => {
             const { icon, colorClass } = getCategoryIcon(category.slug.toLowerCase());
             
-            // Hide items beyond index 6 on mobile if not expanded (index 7 will be the View More button)
-            const isHiddenOnMobile = !isExpanded && index >= 7 && categories.length > 8;
+            // Bulletproof logic: Should this item be rendered in the Mobile DOM?
+            const showOnMobile = isExpanded || index < 7 || categories.length <= 8;
 
             return (
-              <Link
-                key={category.id}
-                href={`/listings?category=${category.slug}`}
-                className={`group flex-col items-center justify-center p-3 md:p-4 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] md:h-[110px] ${isHiddenOnMobile ? "hidden md:flex" : "flex"}`}
-              >
-                <div className={`w-11 h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${colorClass}`}>
-                  {category.icon_url ? (
-                    <img src={category.icon_url} alt={category.name} className="w-6 h-6 md:w-8 md:h-8 object-contain" />
-                  ) : (
-                    icon
-                  )}
-                </div>
+              <React.Fragment key={category.id}>
+                {/* 📱 MOBILE VERSION: Physically removed from DOM if not expanded. Guaranteed to show with 'flex md:hidden' */}
+                {showOnMobile && (
+                  <Link
+                    href={`/listings?category=${category.slug}`}
+                    className="flex md:hidden group flex-col items-center justify-center p-3 bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] w-full max-w-[90px] mx-auto"
+                  >
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner ${colorClass}`}>
+                      {category.icon_url ? (
+                        <img src={category.icon_url} alt={category.name} className="w-6 h-6 object-contain drop-shadow-md" />
+                      ) : (
+                        icon
+                      )}
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
+                      {t(category.name_kn, category.name)}
+                    </span>
+                  </Link>
+                )}
 
-                <span className="text-[10px] md:text-xs font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full group-hover:text-sky-400">
-                  {t(category.name_kn, category.name)}
-                </span>
-              </Link>
+                {/* 💻 DESKTOP VERSION: Always rendered, but strictly hidden on mobile with 'hidden md:flex' */}
+                <Link
+                  href={`/listings?category=${category.slug}`}
+                  className="hidden md:flex group flex-col items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 hover:scale-[1.03] transition-all duration-300 no-underline h-[110px] w-full"
+                >
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shadow-inner ${colorClass}`}>
+                    {category.icon_url ? (
+                      <img src={category.icon_url} alt={category.name} className="w-8 h-8 object-contain drop-shadow-md" />
+                    ) : (
+                      icon
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
+                    {t(category.name_kn, category.name)}
+                  </span>
+                </Link>
+              </React.Fragment>
             );
           })}
 
-          {/* View More Button (Only on Mobile) */}
+          {/* 📱 MOBILE 'VIEW MORE' BUTTON: Guaranteed to show with 'flex md:hidden' */}
           {!isExpanded && categories.length > 8 && (
             <button
               onClick={() => setIsExpanded(true)}
-              className="flex md:hidden group flex-col items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px]"
+              className="flex md:hidden group flex-col items-center justify-center p-3 bg-white/5 backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-white/10 hover:shadow-[0_8px_30px_rgba(14,165,233,0.2)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px] w-full max-w-[90px] mx-auto"
             >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 text-sky-400 bg-sky-500/10">
-                <LayoutGrid className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner text-sky-400 bg-sky-500/10">
+                <LayoutGrid className="w-6 h-6 drop-shadow-md" />
               </div>
-              <span className="text-[10px] font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full group-hover:text-sky-400">
+              <span className="text-[10px] font-bold text-slate-200 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
                 {t("ಇನ್ನಷ್ಟು", "View More")}
               </span>
             </button>
