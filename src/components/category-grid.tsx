@@ -1,61 +1,105 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
+import api from "@/services/api";
 import { 
-  Hotel, 
-  Hospital, 
-  Bed, 
+  Building2, 
+  Stethoscope, 
+  BedSingle, 
   Utensils, 
   ShoppingBag, 
-  Home, 
+  Map, 
   Briefcase, 
   GraduationCap,
-  Layers
+  LayoutGrid
 } from "lucide-react";
 
-// 🚨 Category Data Structure (Mapped from Django Models)
-const categories = [
-  { id: 1, name: "Hotels", name_kn: "ಹೋಟೆಲ್", slug: "hotels", icon: Hotel, color: "text-orange-500" },
-  { id: 2, name: "Hospitals", name_kn: "ಆಸ್ಪತ್ರೆ", slug: "hospitals", icon: Hospital, color: "text-red-500" },
-  { id: 3, name: "PGs", name_kn: "ಪಿಜಿ", slug: "pgs", icon: Bed, color: "text-blue-500" },
-  { id: 4, name: "Food", name_kn: "ಊಟ", slug: "restaurants", icon: Utensils, color: "text-green-500" },
-  { id: 5, name: "Shops", name_kn: "ಅಂಗಡಿ", slug: "shops", icon: ShoppingBag, color: "text-pink-500" },
-  { id: 6, name: "Real Estate", name_kn: "ನಿವೇಶನ", slug: "real-estate", icon: Home, color: "text-purple-500" },
-  { id: 7, name: "Jobs", name_kn: "ಕೆಲಸ", slug: "jobs", icon: Briefcase, color: "text-amber-600" },
-  { id: 8, name: "Education", name_kn: "ಶಿಕ್ಷಣ", slug: "education", icon: GraduationCap, color: "text-indigo-500" },
-];
+interface Category {
+  id: number;
+  name: string;        
+  name_kn: string;     
+  slug: string;
+  icon_url?: string;   
+}
 
-const CategoryGrid = () => {
-  return (
-    <section className="mobile-container py-10">
-      {/* Section Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <Layers className="text-blue-600" size={24} />
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900">
-          ಸೇವೆಗಳಿಗಾಗಿ ಹುಡುಕಿ <span className="text-slate-400 font-medium ml-2">/ Explore Services</span>
-        </h2>
-      </div>
+const getCategoryIcon = (slug: string) => {
+  const iconProps = { className: "w-6 h-6 md:w-7 md:h-7" };
+  const iconMap: Record<string, { icon: React.ReactNode, colorClass: string }> = {
+    'hotel': { icon: <Building2 {...iconProps} />, colorClass: "text-orange-500 bg-orange-500/10" },
+    'hospital': { icon: <Stethoscope {...iconProps} />, colorClass: "text-red-500 bg-red-500/10" },
+    'pg': { icon: <BedSingle {...iconProps} />, colorClass: "text-blue-500 bg-blue-500/10" },
+    'restaurant': { icon: <Utensils {...iconProps} />, colorClass: "text-green-500 bg-green-500/10" },
+    'shop': { icon: <ShoppingBag {...iconProps} />, colorClass: "text-pink-500 bg-pink-500/10" },
+    'real-estate': { icon: <Map {...iconProps} />, colorClass: "text-purple-500 bg-purple-500/10" },
+    'jobs': { icon: <Briefcase {...iconProps} />, colorClass: "text-amber-500 bg-amber-500/10" },
+    'education': { icon: <GraduationCap {...iconProps} />, colorClass: "text-indigo-500 bg-indigo-500/10" },
+  };
 
-      {/* 🚀 Premium Grid System (4 columns on mobile, 8 on desktop) */}
-      <div className="grid grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
-        {categories.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/category/${cat.slug}`}
-            className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-slate-100 shadow-sm hover:border-blue-500 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300"
-          >
-            <div className={`p-3 rounded-xl bg-slate-50 group-hover:bg-blue-50 transition-colors mb-3`}>
-              <cat.icon className={`${cat.color} group-hover:scale-110 transition-transform duration-300`} size={24} />
-            </div>
-            <span className="text-[10px] md:text-xs font-bold text-slate-700 text-center line-clamp-1">
-              {cat.name_kn}
-            </span>
-            <span className="hidden md:block text-[9px] text-slate-400 font-medium">
-              {cat.name}
-            </span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
+  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} />, colorClass: "text-slate-400 bg-slate-800" };
 };
 
-export default CategoryGrid;
+export default function CategoryGrid() {
+  const { t } = useLanguage(); 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/categories/');
+        const data = response.data?.results || response.data || [];
+        setCategories(data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  return (
+    <div className="w-full">
+      {isLoading ? (
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center justify-center p-3 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 animate-pulse h-[90px] md:h-[110px]">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 rounded-xl mb-2"></div>
+              <div className="w-12 h-3 bg-slate-800 rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
+          {categories.slice(0, 8).map((category) => {
+            const { icon, colorClass } = getCategoryIcon(category.slug.toLowerCase());
+
+            return (
+              // 🚨 404 ERROR FIXED HERE: href=`/listings?category=${category.slug}`
+              <Link
+                key={category.id}
+                href={`/listings?category=${category.slug}`}
+                className="group flex flex-col items-center justify-center p-3 md:p-4 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 hover:shadow-md hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] md:h-[110px]"
+              >
+                <div className={`w-11 h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center mb-2 transition-transform group-hover:scale-110 ${colorClass}`}>
+                  {category.icon_url ? (
+                    <img src={category.icon_url} alt={category.name} className="w-6 h-6 md:w-8 md:h-8 object-contain" />
+                  ) : (
+                    icon
+                  )}
+                </div>
+
+                <span className="text-[10px] md:text-xs font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full group-hover:text-sky-400">
+                  {t(category.name_kn, category.name)}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

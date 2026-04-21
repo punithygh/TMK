@@ -14,7 +14,7 @@ export async function generateStaticParams(): Promise<StaticParams[]> {
 
   return courses.map((course) => {
     return {
-      slug: `${course.slug}`,
+      slug: `${course.business_area_slug}`,
     }
   })
 }

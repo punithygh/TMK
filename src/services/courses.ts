@@ -1,6 +1,6 @@
 import api from './api';
 
-// 🚨 100% ACCURATE DJANGO MAPPING (Based on your models.py)
+// 🚨 100% ACCURATE DJANGO MAPPING
 export interface BusinessListing {
   id: number;
   name: string;
@@ -16,6 +16,15 @@ export interface BusinessListing {
   image_url?: string | null; // Google images ಗಾಗಿ
   rating: number;
   is_verified: boolean;
+  pure_veg?: boolean;
+  emergency_24x7?: boolean;
+  // ಡೀಟೇಲ್ ಪೇಜ್‌ಗೆ ಬೇಕಾಗುವ ಹೆಚ್ಚುವರಿ ಫೀಲ್ಡ್‌ಗಳು (ಭವಿಷ್ಯಕ್ಕಾಗಿ)
+  description?: string;
+  description_kn?: string;
+  phone?: string;
+  whatsapp?: string;
+  address?: string;
+  pincode?: string;
 }
 
 export interface ArticleListing {
@@ -40,7 +49,7 @@ export interface SocialPost {
   time_ago: string;
 }
 
-// 🚀 1. ಬ್ಯುಸಿನೆಸ್ ಲಿಸ್ಟ್ ಫೆಚ್ ಮಾಡುವುದು
+// 🚀 1. ಎಲ್ಲಾ ಬ್ಯುಸಿನೆಸ್ ಲಿಸ್ಟ್ ಫೆಚ್ ಮಾಡುವುದು (ಹೋಮ್ / ಲಿಸ್ಟಿಂಗ್ ಪೇಜ್)
 export const getAllCourses = async (): Promise<BusinessListing[]> => {
   try {
     const response = await api.get('/businesses/');
@@ -52,10 +61,39 @@ export const getAllCourses = async (): Promise<BusinessListing[]> => {
   }
 };
 
-// 🚀 2. ಆರ್ಟಿಕಲ್ಸ್ ಫೆಚ್ ಮಾಡುವುದು (News/Reviews)
+// 🚀 2. ಸಿಂಗಲ್ ಬ್ಯುಸಿನೆಸ್ ಫೆಚ್ ಮಾಡುವುದು (Business Detail Page ಗಾಗಿ) 🚨 ಹೊಸದು 🚨
+export const getOneCourse = async (slug: string): Promise<BusinessListing | null> => {
+  try {
+    // Django DRF endpoint uses business_area_slug as the lookup field (not slug)
+    // Fetch with query parameter to filter by business_area_slug
+    const response = await api.get(`/businesses/?business_area_slug=${encodeURIComponent(slug)}`);
+    
+    // Handle paginated or direct array response
+    const data = response.data?.results || response.data || [];
+    
+    // Return the first matching business
+    const business = Array.isArray(data) ? data[0] : data;
+    
+    if (!business) {
+      console.warn(`⚠️ Business not found for business_area_slug: ${slug}`);
+      return null;
+    }
+    
+    return business as BusinessListing;
+  } catch (error: any) {
+    // 404 ಬಂದರೆ null ರಿಟರ್ನ್ ಮಾಡುತ್ತದೆ (Next.js notFound() ಟ್ರಿಗರ್ ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ)
+    if (error.response && error.response.status === 404) {
+      console.warn(`⚠️ Business not found for business_area_slug: ${slug}`);
+      return null;
+    }
+    console.error(`🚨 API Error (getOneCourse - ${slug}):`, error);
+    return null;
+  }
+};
+
+// 🚀 3. ಆರ್ಟಿಕಲ್ಸ್ ಫೆಚ್ ಮಾಡುವುದು (News/Reviews)
 export const getArticles = async (type?: string): Promise<ArticleListing[]> => {
   try {
-    // ಒಂದು ವೇಳೆ type ಕೊಟ್ಟರೆ ಫಿಲ್ಟರ್ ಮಾಡುತ್ತದೆ (ಉದಾ: ?type=MOVIE)
     const url = type ? `/articles/?type=${type}` : '/articles/';
     const response = await api.get(url);
     const data = response.data?.results || response.data || [];
@@ -66,10 +104,10 @@ export const getArticles = async (type?: string): Promise<ArticleListing[]> => {
   }
 };
 
-// 🚀 3. ಸೋಷಿಯಲ್ ಮೀಡಿಯಾ ಪೋಸ್ಟ್ ಫೆಚ್ ಮಾಡುವುದು
+// 🚀 4. ಸೋಷಿಯಲ್ ಮೀಡಿಯಾ ಪೋಸ್ಟ್ ಫೆಚ್ ಮಾಡುವುದು
 export const getSocialPosts = async (): Promise<SocialPost[]> => {
   try {
-    const response = await api.get('/social-posts/'); // ನಿಮ್ಮ URLs ಚೆಕ್ ಮಾಡಿ
+    const response = await api.get('/social-posts/'); 
     const data = response.data?.results || response.data || [];
     return data as SocialPost[];
   } catch (error) {
