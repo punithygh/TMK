@@ -43,7 +43,7 @@ const getCategoryIcon = (slug: string) => {
     'education': { icon: <GraduationCap {...iconProps} />, colorClass: "text-indigo-500 bg-indigo-500/10" },
   };
 
-  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} />, colorClass: "text-slate-400 bg-slate-800" };
+  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} />, colorClass: "text-slate-500 bg-slate-200 dark:text-slate-400 dark:bg-slate-800" };
 };
 
 export default function CategoryGrid({ initialCategories = [] }: CategoryGridProps) {
@@ -68,7 +68,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 {showOnMobile && (
                   <Link
                     href={`/listings?category=${category.slug}`}
-                    className="flex md:hidden group flex-col items-center justify-center p-3 bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] w-full max-w-[90px] mx-auto"
+                    className="flex md:hidden group flex-col items-center justify-center p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] w-full max-w-[90px] mx-auto"
                   >
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner ${colorClass}`}>
                       {category.icon_url ? (
@@ -77,7 +77,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                         icon
                       )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
                       {t(category.name_kn, category.name)}
                     </span>
                   </Link>
@@ -86,7 +86,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 {/* 💻 DESKTOP VERSION: Always rendered, but strictly hidden on mobile with 'hidden md:flex' */}
                 <Link
                   href={`/listings?category=${category.slug}`}
-                  className="hidden md:flex group flex-col items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 hover:scale-[1.03] transition-all duration-300 no-underline h-[110px] w-full"
+                  className="hidden md:flex group flex-col items-center justify-center p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 hover:scale-[1.03] transition-all duration-300 no-underline h-[110px] w-full"
                 >
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shadow-inner ${colorClass}`}>
                     {category.icon_url ? (
@@ -95,7 +95,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                       icon
                     )}
                   </div>
-                  <span className="text-xs font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
                     {t(category.name_kn, category.name)}
                   </span>
                 </Link>
@@ -107,12 +107,12 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
           {!isExpanded && categories.length > 7 && (
             <button
               onClick={() => setIsExpanded(true)}
-              className="flex md:hidden group flex-col items-center justify-center p-3 bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px] w-full max-w-[90px] mx-auto"
+              className="flex md:hidden group flex-col items-center justify-center p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px] w-full max-w-[90px] mx-auto"
             >
               <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner text-sky-400 bg-sky-500/10">
                 <LayoutGrid className="w-6 h-6 drop-shadow-md" />
               </div>
-              <span className="text-[10px] font-bold text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-400">
+              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
                 {t("ಇನ್ನಷ್ಟು", "View More")}
               </span>
             </button>

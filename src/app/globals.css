@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* 🚨 Enable Class-based Dark Mode for next-themes 🚨 */
+@custom-variant dark (&:is(.dark *));
 /* 🚨 1. ORIGINAL THEME COLORS (From your base.html) 🚨 */
 @theme {
   --color-bg-dark: #050b14;
@@ -22,8 +24,8 @@
   }
   
   body {
-    /* 🚨 ORIGINAL DARK THEME APPLIED GLOBALLY */
-    @apply bg-bg-dark text-white antialiased selection:bg-accent selection:text-white;
+    /* Theme support is applied dynamically via layout.tsx classes (bg-slate-50 dark:bg-[#050b14]) */
+    @apply antialiased selection:bg-accent selection:text-white;
   }
 
   /* Safe Area variables for Mobile Notches (iPhone/Android) */
