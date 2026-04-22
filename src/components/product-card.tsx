@@ -55,7 +55,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
   if (finalImgSrc) {
     finalImgSrc = finalImgSrc.trim(); 
     if (!finalImgSrc.startsWith('http')) {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      let backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      if (typeof window !== 'undefined') {
+        const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+        backendUrl = `http://${host}:8000`;
+      }
       finalImgSrc = `${backendUrl}${finalImgSrc.startsWith('/') ? '' : '/'}${finalImgSrc}`;
     }
   }

@@ -134,10 +134,20 @@ export default function BusinessDetailClient({ business }: { business: BusinessL
       url: window.location.href
     };
     if (navigator.share) {
-      await navigator.share(shareData);
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Share failed:", err);
+      }
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        alert(t("ಲಿಂಕ್ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ!", "Link copied to clipboard!"));
+      } catch (err) {
+        console.error("Clipboard write failed:", err);
+      }
     } else {
-      navigator.clipboard.writeText(shareData.url);
-      alert(t("ಲಿಂಕ್ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ!", "Link copied to clipboard!"));
+      alert("Copy to clipboard is not supported in this browser.");
     }
   };
 
@@ -179,7 +189,11 @@ export default function BusinessDetailClient({ business }: { business: BusinessL
   const title = t(business.name_kn, business.name);
   const location = t(business.area_kn, business.area);
   const category = t(business.category_name_kn, business.category_name);
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  let backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+    backendUrl = `http://${host}:8000`;
+  }
   let mainImage = business.main_image_upload || business.image_url;
   
   if (mainImage && !mainImage.startsWith('http')) {

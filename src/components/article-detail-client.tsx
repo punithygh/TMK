@@ -15,6 +15,12 @@ interface ArticleDetailClientProps {
 const getValidImageUrl = (url?: string | null) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
+  
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+    return `http://${host}:8000${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+  
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
   return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 };
