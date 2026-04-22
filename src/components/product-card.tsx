@@ -1,12 +1,11 @@
-"use client"; // 🚨 ಕ್ಲೈಂಟ್ ಸೈಡ್ ಇಮೇಜ್ ಎರರ್ ಹ್ಯಾಂಡ್ಲಿಂಗ್‌ಗಾಗಿ
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, MapPin, ArrowRight, Store, BadgeCheck } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext"; // 🚨 ಗ್ಲೋಬಲ್ ಭಾಷೆ ಹುಕ್
+import { Star, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
-// 🚨 100% ACCURATE DJANGO DRF MAPPING
 export interface BusinessListDTO {
   id: number;
   name: string;
@@ -20,10 +19,19 @@ export interface BusinessListDTO {
   area_kn?: string | null;
   main_image_upload?: string | null; 
   rating: number;
+  review_count?: number;
   is_verified: boolean;
   pure_veg?: boolean;
   emergency_24x7?: boolean;
   image_url?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  address?: string | null;
+  // Backend dynamic features
+  top_search?: boolean;
+  hot_deal?: boolean;
+  is_open?: boolean;
+  dynamic_badges?: string[];
 }
 
 interface ProductCardProps {
@@ -32,124 +40,174 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [imgError, setImgError] = useState(false);
-  const { lang, t } = useLanguage(); // 🚨 ಭಾಷೆ ಮತ್ತು ಅನುವಾದ ಹೆಲ್ಪರ್
+  const { lang, t } = useLanguage();
 
   if (!product) return null;
 
-  // 🚀 Premium Feature: Exact Data Mapping + Global Language Sync
-  // t(ಕನ್ನಡ ಟೆಕ್ಸ್ಟ್, ಇಂಗ್ಲಿಷ್ ಟೆಕ್ಸ್ಟ್) 
   const title = t(product.name_kn, product.name) || t("ಹೆಸರು ಲಭ್ಯವಿಲ್ಲ", "Name Not Available");
   const location = t(product.area_kn, product.area) || t("ತುಮಕೂರು", "Tumkur");
   const category = t(product.category_name_kn, product.category_name) || t("ಸಾಮಾನ್ಯ", "General");
+  const address = product.address || `${location}, Tumkur`;
   
-  // ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಸ್ಲಗ್ ಕಳುಹಿಸುವುದು (ಕನ್ನಡ ಸೆಲೆಕ್ಟ್ ಆಗಿದ್ದರೆ slug_kn, ಇಲ್ಲದಿದ್ದರೆ slug)
   const productSlug = lang === 'kn' && product.slug_kn ? product.slug_kn : product.slug;
   const finalRouteSlug = product.business_area_slug || productSlug || `${product.id}`;
   
-  const rating = product.rating || 0.0;
+  // "starting 5star erli and rating cutomers kottange adu upgarade agta ogbeku"
+  const parsedRating = Number(product.rating);
+  const displayRating = (!isNaN(parsedRating) && parsedRating > 0) ? parsedRating : 5.0; 
+  const reviewCount = product.review_count || 0; 
+  
   const isVerified = product.is_verified || false;
+  // Backend driven "open" status. Defaulting to true visually if undefined.
+  const isOpen = product.is_open !== false; 
 
-  // 🚨 Perfect Image URL Normalizer
   let finalImgSrc = product.main_image_upload || product.image_url;
   
   if (finalImgSrc) {
     finalImgSrc = finalImgSrc.trim(); 
     if (!finalImgSrc.startsWith('http')) {
       let backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      if (typeof window !== 'undefined') {
-        const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-        backendUrl = `http://${host}:8000`;
-      }
       finalImgSrc = `${backendUrl}${finalImgSrc.startsWith('/') ? '' : '/'}${finalImgSrc}`;
     }
   }
 
-  // ಚಿತ್ರ ಇದೆಯೇ ಎಂದು ಚೆಕ್ ಮಾಡುವ ಲಾಜಿಕ್
   const hasValidImage = finalImgSrc && finalImgSrc.trim() !== "" && !imgError;
+  const displayPhone = product.phone || ""; 
+
+  // Collect dynamic badges
+  const badges = [];
+  if (product.top_search) badges.push({ text: "Top Search", color: "bg-amber-500 text-white border-amber-400" });
+  if (product.hot_deal) badges.push({ text: "Hot Deal", color: "bg-rose-500 text-white border-rose-400" });
+  if (isVerified) badges.push({ text: "Verified", color: "bg-sky-500 text-white border-sky-400" });
+  if (product.dynamic_badges) {
+    product.dynamic_badges.forEach(b => badges.push({ text: b, color: "bg-purple-500 text-white border-purple-400" }));
+  }
 
   return (
-    <div className="group bg-white dark:bg-[#0a1120] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/30 hover:shadow-[0_10px_30px_rgba(14,165,233,0.15)] hover:-translate-y-2 transition-all duration-400 flex flex-col h-full relative">
+    <div className="group bg-white dark:bg-[#0a1120] rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/50 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col sm:flex-row relative mb-4 sm:mb-6">
       
-      {/* 1. Image Section with Next.js Error Handling */}
-      <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-900 flex flex-col items-center justify-center border-b border-slate-200 dark:border-slate-800/80 shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] via-transparent to-transparent opacity-80 z-10" />
+      {/* 1. Image Section - Mobile: Top, Desktop: Left */}
+      <div className="relative h-56 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-800/80">
         {hasValidImage ? (
           <Image
             src={finalImgSrc as string}
             alt={title as string}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={() => setImgError(true)} // 🚨 ಇಮೇಜ್ ಲೋಡ್ ಆಗದಿದ್ದರೆ ಫಾಲ್‌ಬ್ಯಾಕ್ ಟ್ರಿಗರ್ ಮಾಡುತ್ತದೆ
-            unoptimized={finalImgSrc?.includes('googleusercontent.com') ? true : false} // ಗೂಗಲ್ ಇಮೇಜ್‌ಗಳಿಗಾಗಿ ಫಿಕ್ಸ್
+            sizes="(max-width: 640px) 100vw, 320px"
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={() => setImgError(true)}
+            unoptimized={finalImgSrc?.includes('googleusercontent.com')}
           />
         ) : (
-          <>
-            <Store size={48} className="text-slate-300 dark:text-slate-700 mb-2 drop-shadow-sm" strokeWidth={1.5} />
-            <span className="text-[10px] font-semibold tracking-widest text-slate-400 dark:text-slate-500 uppercase">
-              {t("ಚಿತ್ರವಿಲ್ಲ", "No Image")}
-            </span>
-          </>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/50">
+            <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-2">
+              <span className="text-2xl font-bold text-slate-400 dark:text-slate-600">{title?.toString().charAt(0)}</span>
+            </div>
+          </div>
         )}
         
-        {/* Category Tag */}
-        <div className="absolute top-3 left-3 z-20">
-          <span className="bg-white/90 dark:bg-black/60 backdrop-blur-md text-sky-600 dark:text-sky-400 text-[10px] font-bold px-3 py-1 rounded-md shadow-sm uppercase tracking-wider border border-sky-200 dark:border-sky-500/20">
-            {category}
+        {/* Gradient Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none"></div>
+
+        {/* Top Badges (Top Search, Hot Deal, etc.) */}
+        <div className="absolute top-3 left-3 flex flex-wrap gap-2 z-20 pr-12">
+          {badges.map((badge, idx) => (
+            <span key={idx} className={`${badge.color} text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide border shadow-sm backdrop-blur-md`}>
+              {badge.text}
+            </span>
+          ))}
+        </div>
+
+        {/* Favorite Button (Heart) */}
+        <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-rose-500 hover:border-rose-500 transition-colors shadow-lg">
+          <Heart size={16} />
+        </button>
+
+        {/* Bottom Left Status (Open/Closed) over Image */}
+        <div className="absolute bottom-3 left-3 z-20">
+          <span className={`text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg border backdrop-blur-md ${
+            isOpen 
+            ? 'bg-emerald-500/90 text-white border-emerald-400/50' 
+            : 'bg-red-500/90 text-white border-red-400/50'
+          }`}>
+            {isOpen ? t("ಈಗ ತೆರೆದಿದೆ", "Open Now") : t("ಮುಚ್ಚಲಾಗಿದೆ", "Closed")}
           </span>
         </div>
       </div>
 
       {/* 2. Content Section */}
-      <div className="p-5 flex flex-col flex-grow relative z-20">
-        <div className="flex items-center justify-between mb-3 border-b border-slate-200 dark:border-slate-800/80 pb-3">
-          <div className="flex items-center text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-500/20">
-            <Star size={14} fill="currentColor" />
-            <span className="ml-1.5 text-xs font-bold">{rating}</span>
-          </div>
-          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-md uppercase border border-slate-200 dark:border-slate-700">
-            ID: {product.id}
-          </span>
-        </div>
-
-        {/* Title */}
-        <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors line-clamp-1 flex items-center gap-1.5 drop-shadow-sm dark:drop-shadow-md" title={title as string}>
-          {title}
-          {isVerified && <BadgeCheck size={18} className="text-sky-500 dark:text-sky-400 shrink-0 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />}
-        </h3>
-
-        {/* Special Badges - Pure Veg & Emergency 24x7 */}
-        {(product.pure_veg || product.emergency_24x7) && (
-          <div className="flex flex-wrap gap-1.5 mb-2.5">
-            {product.pure_veg && (
-              <span className="inline-flex items-center gap-1 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-green-200 dark:border-green-500/20">
-                🌱 {t("ಸಾಕಾಹಾರ", "Veg")}
+      <div className="p-4 sm:p-5 flex flex-col relative z-20 bg-white dark:bg-[#0a1120]">
+        
+        <div>
+          {/* Business Name */}
+          <Link href={`/business/${finalRouteSlug}`} className="block group/title mb-2">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-sky-500 transition-colors line-clamp-2">
+              {title}
+            </h3>
+          </Link>
+          
+          {/* Yelp-style Star Rating */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star 
+                  key={star} 
+                  size={16} 
+                  className={star <= Math.round(displayRating) 
+                    ? "fill-amber-500 text-amber-500" 
+                    : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
+                  } 
+                />
+              ))}
+            </div>
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              {displayRating.toFixed(1)}
+            </span>
+            {reviewCount > 0 && (
+              <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+                ({reviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})
               </span>
             )}
-            {product.emergency_24x7 && (
-              <span className="inline-flex items-center gap-1 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-red-200 dark:border-red-500/20">
-                🚨 {t("24/7", "24/7")}
-              </span>
-            )}
           </div>
-        )}
 
-        {/* Location */}
-        <div className="flex items-start space-x-2 text-slate-500 dark:text-slate-400 text-sm mb-6 line-clamp-2 min-h-[40px]">
-          <MapPin size={16} className="shrink-0 mt-0.5 text-sky-500 dark:text-sky-400" />
-          <span>{location}</span>
+          {/* Landmark / Address Info */}
+          <div className="flex items-start gap-1.5 text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+            <MapPin size={16} className="text-slate-400 shrink-0 mt-0.5" />
+            <span>{address}</span>
+          </div>
         </div>
 
-        {/* 3. Action Button */}
-        <div className="mt-auto">
-          {/* ಭವಿಷ್ಯದಲ್ಲಿ ಬ್ಯುಸಿನೆಸ್ ಡೀಟೇಲ್ಸ್ ಪೇಜ್‌ಗೆ ಲಿಂಕ್ ಹೋಗುತ್ತದೆ */}
+        {/* 3. Action Buttons - 3 in one line */}
+        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 sm:gap-3 w-full">
+          
+          <a 
+            href={displayPhone ? `tel:${displayPhone}` : '#'}
+            onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ಫೋನ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "Phone number not available")); } }}
+            className={`flex-1 inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 rounded-xl transition-all shadow-md border bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-600 gap-1 sm:gap-2 group/btn`}
+          >
+            <Phone size={16} className={displayPhone ? "group-hover/btn:animate-pulse" : ""} /> 
+            <span className="text-[11px] sm:text-sm font-bold">{t("ಕರೆ", "Call")}</span>
+          </a>
+
+          <a 
+            href={displayPhone ? `https://wa.me/91${displayPhone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.` : '#'}
+            target={displayPhone ? "_blank" : "_self"}
+            rel="noopener noreferrer"
+            onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "WhatsApp number not available")); } }}
+            className={`flex-1 inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 rounded-xl transition-all shadow-md border bg-[#25D366] text-white hover:bg-[#1DA851] border-[#1DA851] gap-1 sm:gap-2 group/btn`}
+          >
+            <MessageCircle size={16} className={displayPhone ? "group-hover/btn:scale-110 transition-transform" : ""} /> 
+            <span className="text-[11px] sm:text-sm font-bold">WhatsApp</span>
+          </a>
+
           <Link 
             href={`/business/${finalRouteSlug}`}
-            className="inline-flex items-center justify-center w-full px-6 py-2.5 border border-slate-300 dark:border-slate-700 text-sm font-bold rounded-xl text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 hover:bg-sky-500 hover:text-white dark:hover:bg-sky-500 dark:hover:text-white hover:border-sky-500 dark:hover:border-sky-400 hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300 gap-2 group/btn"
+            className="flex-[1.2] inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition-all shadow-lg shadow-sky-500/25 border border-sky-400 gap-1 sm:gap-2 group/btn"
           >
-            {t("ವಿವರಗಳನ್ನು ನೋಡಿ", "View Details")}
-            <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+            <Navigation size={16} className="group-hover/btn:translate-x-1 transition-transform" /> 
+            <span className="text-[11px] sm:text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>
           </Link>
+
         </div>
       </div>
     </div>

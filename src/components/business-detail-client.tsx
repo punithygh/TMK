@@ -6,7 +6,7 @@ import {
   Phone, MessageCircle, MapPin, Share2, Edit3, Heart, 
   Star, ChevronRight, CheckCircle, Car, Wifi, 
   Snowflake, Shield, Zap, X, User, Smartphone, Loader2, Store,
-  BadgeCheck
+  BadgeCheck, Clock
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -201,110 +201,169 @@ export default function BusinessDetailClient({ business }: { business: BusinessL
   }
 
   return (
-    <div className="w-full bg-[#050b14] min-h-screen pb-24 md:pb-10 font-poppins">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-[3%] pt-6">
-        <div className="flex items-center gap-2 text-[11px] md:text-xs text-slate-400 mb-4 whitespace-nowrap overflow-x-auto scrollbar-hide">
-          <Link href="/" className="hover:text-sky-400 transition-colors">{t("ತುಮಕೂರು", "Tumkur")}</Link>
-          <ChevronRight size={12} />
-          <Link href={`/listings?category=${business.category_name}`} className="hover:text-sky-400 transition-colors">{category}</Link>
-          <ChevronRight size={12} />
-          <span className="font-semibold text-sky-400">{title}</span>
+    <div className="w-full bg-slate-50 dark:bg-[#0a1120] min-h-screen pb-24 md:pb-10 font-poppins">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-[3%] pt-6 md:pt-8">
+        
+        {/* 1. Breadcrumbs */}
+        <div className="flex items-center gap-2 text-[11px] md:text-[13px] text-slate-500 dark:text-slate-400 mb-3 md:mb-5 font-semibold whitespace-nowrap overflow-x-auto scrollbar-hide">
+          <Link href="/" className="hover:text-sky-500 transition-colors">{t("ತುಮಕೂರು", "Tumkur")}</Link>
+          <ChevronRight size={14} className="text-slate-400 dark:text-slate-600" />
+          <Link href={`/listings?category=${business.category_name}`} className="hover:text-sky-500 transition-colors">{category}</Link>
+          <ChevronRight size={14} className="text-slate-400 dark:text-slate-600" />
+          <span className="font-bold text-slate-800 dark:text-white truncate">{title}</span>
         </div>
 
-        <div 
-          ref={galleryRef}
-          onScroll={handleGalleryScroll}
-          className="flex md:grid md:grid-cols-3 gap-1 h-[250px] md:h-[350px] rounded-xl overflow-x-auto md:overflow-hidden snap-x snap-mandatory scrollbar-hide bg-slate-900 border border-slate-800 mb-3 md:mb-6"
-        >
-          <div className="min-w-full md:min-w-0 md:col-span-2 relative snap-start bg-slate-800 flex items-center justify-center group">
-            {mainImage ? (
-              <img src={mainImage} alt={title as string} className="w-full h-full object-contain md:object-cover" />
-            ) : (
-              <Store className="w-20 h-20 text-slate-700" />
-            )}
-            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm text-slate-900 px-4 py-1.5 rounded-md font-bold text-lg shadow-lg flex items-baseline gap-1">
-              <span className="text-emerald-600">₹{business.id * 100}</span> <small className="text-[11px] text-slate-500">/ {t("ದಿನಕ್ಕೆ", "day")}</small>
-            </div>
-          </div>
-          <div className="hidden md:grid grid-rows-2 gap-1 h-full">
-            <div className="relative bg-slate-800 flex items-center justify-center">
-              <Store className="w-10 h-10 text-slate-700" />
-            </div>
-            <div className="relative bg-slate-800 flex items-center justify-center cursor-pointer group">
-              <Store className="w-10 h-10 text-slate-700" />
-              <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-3xl mb-1">+</span>
-                <span className="text-sm font-semibold">{t("ಫೋಟೋ ಸೇರಿಸಿ", "Add Photos")}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
-          <div className="w-full md:w-auto">
-            <div className="flex gap-2 mb-2">
-              <span className="bg-transparent border border-slate-700 text-slate-400 px-2.5 py-0.5 rounded text-[11px] font-medium">{category}</span>
-              <span className="bg-transparent border border-slate-700 text-slate-400 px-2.5 py-0.5 rounded text-[11px] font-medium">{location}</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black text-white flex items-center gap-3 flex-wrap">
-              {title}
+        {/* 2. Title, Rating & Actions - Flex container */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-5 mb-6 md:mb-8">
+          
+          {/* Left side: Title, Badges, Rating */}
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                {title}
+              </h1>
               {business.is_verified && (
-                <span className="text-sky-400 flex items-center gap-1 text-sm font-bold bg-sky-400/10 px-2 py-0.5 rounded border border-sky-400/20">
-                  <BadgeCheck size={16} /> Verified
+                <span className="inline-flex items-center gap-1 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2.5 py-1 rounded-md text-xs font-bold border border-sky-200 dark:border-sky-500/20 shadow-sm mt-1">
+                  <BadgeCheck size={16} /> VERIFIED
                 </span>
               )}
-            </h1>
+            </div>
+            
+            {/* Rating Stars Yelp Style */}
             <div className="flex items-center gap-3 mt-3">
-              <span className="bg-emerald-500 text-white font-bold px-2 py-0.5 rounded text-sm flex items-center gap-1">
-                {business.rating || 4.5} <Star size={12} fill="currentColor" />
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star 
+                    key={star} 
+                    size={22} 
+                    className={star <= Math.round(Number(business.rating) || 5) 
+                      ? "fill-amber-500 text-amber-500 drop-shadow-sm" 
+                      : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
+                    } 
+                  />
+                ))}
+              </div>
+              <span className="text-lg font-extrabold text-slate-800 dark:text-slate-200">
+                {business.rating ? Number(business.rating).toFixed(1) : "5.0"}
+              </span>
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+                ({business.review_count || 0} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})
               </span>
             </div>
-            <div className="text-slate-400 text-[13px] md:text-sm mt-3 flex items-start gap-2 leading-relaxed">
-              <MapPin size={16} className="shrink-0 mt-0.5 text-sky-500" />
-              {business.address || `${location}, Tumkur`}
+
+            {/* Tags / Status / Address */}
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-4 text-sm">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-500/20">
+                 {t("ಈಗ ತೆರೆದಿದೆ", "Open Now")}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+              <span className="text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] md:text-xs">
+                {category}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
+              <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium">
+                <MapPin size={16} className="text-sky-500" /> {business.address || `${location}, Tumkur`}
+              </span>
             </div>
           </div>
 
-          <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
-            <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg transition-colors text-sm font-semibold ${isBookmarked ? 'bg-red-500 border-red-500 text-white' : 'border-red-500 text-red-500 hover:bg-red-500 hover:text-white'}`}>
-              <Heart size={16} fill={isBookmarked ? "currentColor" : "none"} /> <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span>
-            </button>
+          {/* Right side: Action Buttons */}
+          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+             <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-500'}`}>
+               <Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> 
+               <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span>
+             </button>
+             <button onClick={handleShare} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm group">
+               <Share2 size={18} className="text-sky-500 group-hover:scale-110 transition-transform" /> <span className="hidden md:inline">{t("ಹಂಚಿ", "Share")}</span>
+             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap md:flex-nowrap gap-3 mb-8 w-full border-y border-slate-800 py-4">
+        {/* 3. Yelp Style Premium Image Gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 h-[280px] md:h-[420px] rounded-2xl md:rounded-3xl overflow-hidden mb-10 group/gallery cursor-pointer relative shadow-lg">
+          
+          {/* Main Large Image */}
+          <div className="md:col-span-3 md:row-span-2 relative w-full h-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80">
+             {mainImage ? (
+                <img src={mainImage} alt={title as string} className="w-full h-full object-cover transition-transform duration-700 group-hover/gallery:scale-[1.02]" />
+             ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900/50">
+                   <Store className="w-20 h-20 text-slate-300 dark:text-slate-700" />
+                </div>
+             )}
+          </div>
+          
+          {/* Top Small Image (Desktop only) */}
+          <div className="hidden md:block relative w-full h-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-800/80">
+             {mainImage ? (
+                <img src={mainImage} alt="Gallery 2" className="w-full h-full object-cover transition-transform duration-700 hover:scale-110 opacity-95 hover:opacity-100" />
+             ) : (
+                <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400 dark:text-slate-600" /></div>
+             )}
+          </div>
+
+          {/* Bottom Small Image with Overlay (Desktop only) */}
+          <div className="hidden md:block relative w-full h-full bg-slate-300 dark:bg-slate-800 overflow-hidden group border border-slate-200 dark:border-slate-800/80">
+             {mainImage ? (
+                <img src={mainImage} alt="Gallery 3" className="w-full h-full object-cover blur-[2px] transition-transform duration-700 group-hover:scale-110 group-hover:blur-[1px]" />
+             ) : (
+                <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400 dark:text-slate-600" /></div>
+             )}
+             {/* "View all photos" overlay */}
+             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white transition-colors group-hover:bg-black/60 backdrop-blur-[1px]">
+                 <span className="text-2xl font-bold">+</span>
+                 <span className="text-sm font-extrabold tracking-wide uppercase mt-1">{t("ಫೋಟೋಗಳು", "View Photos")}</span>
+             </div>
+          </div>
+          
+          {/* Mobile "View Photos" floating button */}
+          <div className="md:hidden absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border border-white/20 shadow-lg">
+             <span className="text-lg leading-none">+</span> {t("ಫೋಟೋಗಳು", "Photos")}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap md:flex-nowrap gap-3 mb-10 w-full border-b border-slate-200 dark:border-slate-800 pb-8">
           {business.phone ? (
-            <>
-              <a href={`tel:${business.phone}`} className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-transform hover:-translate-y-1 shadow-lg shadow-emerald-500/20">
-                <Phone size={18} /> <span className="hidden md:inline">{business.phone}</span>
-              </a>
-            </>
+            <a 
+              href={`tel:${business.phone}`} 
+              className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 group"
+            >
+              <Phone size={18} className="group-hover:animate-pulse" /> 
+              <span>{t("ಈಗ ಕರೆ ಮಾಡಿ", "Call Now")} - {business.phone}</span>
+            </a>
           ) : (
-            <button disabled className="flex-1 md:flex-none bg-slate-700 text-slate-400 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm cursor-not-allowed">
-              <Phone size={18} /> <span className="hidden md:inline">{t("ಸಂಪರ್ಕ ಲಭ್ಯವಿಲ್ಲ", "No Contact")}</span>
+            <button disabled className="flex-1 md:flex-none bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm cursor-not-allowed border border-slate-200 dark:border-slate-700">
+              <Phone size={18} /> <span>{t("ಸಂಪರ್ಕ ಲಭ್ಯವಿಲ್ಲ", "No Contact")}</span>
             </button>
           )}
-          <button onClick={() => setIsEnquiryOpen(true)} className="w-full md:w-auto bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center gap-2 px-8 py-3 rounded-xl font-bold text-sm transition-transform hover:-translate-y-1 shadow-lg shadow-sky-500/20">
-            <MessageCircle size={18} /> {t("ಅತ್ಯುತ್ತಮ ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Best Deal")}
+          
+          {business.phone && (
+            <a 
+              href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex-1 md:flex-none bg-[#25D366] hover:bg-[#1DA851] text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-[#25D366]/20 group"
+            >
+              <MessageCircle size={18} className="group-hover:scale-110 transition-transform" /> 
+              <span>WhatsApp</span>
+            </a>
+          )}
+
+          <button onClick={() => setIsEnquiryOpen(true)} className="w-full md:w-auto md:ml-auto bg-sky-50 dark:bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white dark:text-sky-400 border border-sky-200 dark:border-sky-500/30 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-sm">
+            <Store size={18} /> {t("ಅತ್ಯುತ್ತಮ ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Best Deal")}
           </button>
-          <div className="hidden md:flex gap-3 ml-auto">
-            <button onClick={handleShare} className="border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-colors">
-              <Share2 size={18} /> Share
-            </button>
-          </div>
         </div>
 
-        <div className="sticky top-[60px] md:top-[75px] bg-[#050b14]/95 backdrop-blur-md z-40 flex gap-6 md:gap-10 border-b border-slate-800 overflow-x-auto scrollbar-hide pt-2 mb-6">
-          {["overview", "services", "photos", "reviews"].map((tab) => (
+        <div className="sticky top-[60px] md:top-[75px] bg-slate-50/95 dark:bg-[#0a1120]/95 backdrop-blur-md z-40 flex gap-6 md:gap-10 border-b border-slate-200 dark:border-slate-800 overflow-x-auto scrollbar-hide pt-2 mb-8">
+          {["overview", "location-hours", "services", "photos", "reviews"].map((tab) => (
             <button 
               key={tab}
               onClick={() => {
                 const el = document.getElementById(tab);
                 if (el) window.scrollTo({ top: el.offsetTop - 120, behavior: "smooth" });
               }}
-              className={`pb-3 text-[13px] md:text-sm font-semibold capitalize whitespace-nowrap border-b-2 transition-colors ${activeTab === tab ? 'text-sky-400 border-sky-400' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
+              className={`pb-3 text-[14px] md:text-base font-bold capitalize whitespace-nowrap border-b-[3px] transition-colors px-1 ${activeTab === tab ? 'text-sky-500 border-sky-500' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-800 dark:hover:text-slate-200'}`}
             >
-              {t(tab === "overview" ? "ಸ್ಥೂಲನೋಟ" : tab === "services" ? "ಸೇವೆಗಳು" : tab === "photos" ? "ಫೋಟೋಗಳು" : "ವಿಮರ್ಶೆಗಳು", tab)}
+              {t(tab === "overview" ? "ಸ್ಥೂಲನೋಟ" : tab === "location-hours" ? "ಸಂಪರ್ಕ & ಸಮಯ" : tab === "services" ? "ಸೇವೆಗಳು" : tab === "photos" ? "ಫೋಟೋಗಳು" : "ವಿಮರ್ಶೆಗಳು", tab === "location-hours" ? "Location & Hours" : tab)}
             </button>
           ))}
         </div>
@@ -328,10 +387,103 @@ export default function BusinessDetailClient({ business }: { business: BusinessL
                 })}
               </div>
               
-              <h3 className="text-sm font-semibold text-slate-400 mt-8 mb-3">{t("ವಿವರಣೆ", "Business summary")}</h3>
-              <p className="text-[13px] md:text-sm text-slate-300 leading-relaxed">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-400 mt-8 mb-3 uppercase tracking-wider">{t("ವಿವರಣೆ", "Business summary")}</h3>
+              <p className="text-[13px] md:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
                 {t(business.description_kn, business.description) || t("ವಿವರಗಳು ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿವೆ.", "Detailed information will be updated soon.")}
               </p>
+            </section>
+
+            {/* LOCATION & HOURS SECTION */}
+            <section id="location-hours" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+              <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ವಿಳಾಸ ಮತ್ತು ಸಮಯ", "Location & Hours")}</h2>
+              
+              <div className="flex flex-col md:flex-row gap-8 md:gap-10">
+                {/* Map & Address */}
+                <div className="flex-[1.5]">
+                  <div className="w-full h-56 bg-slate-200 dark:bg-slate-800 rounded-2xl overflow-hidden mb-5 border border-slate-200 dark:border-slate-700 shadow-md">
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      frameBorder="0" 
+                      scrolling="no" 
+                      marginHeight={0} 
+                      marginWidth={0} 
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(business.address || `${location}, Tumkur`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                  
+                  <div className="flex items-start gap-4 mb-6">
+                    <MapPin className="text-sky-500 shrink-0 mt-1" size={22} />
+                    <div>
+                      <p className="text-slate-900 dark:text-white font-extrabold text-lg mb-1">{t(business.name_kn, business.name)}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-2 font-medium">{business.address || `${location}, Tumkur, Karnataka, India`}</p>
+                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="text-sky-500 font-bold text-sm hover:underline flex items-center gap-1">
+                        {t("ದಾರಿ ಹುಡುಕಿ", "Get Directions")} <ChevronRight size={14} />
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    {business.phone && (
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                          <Phone size={18} className="text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">{t("ಫೋನ್", "Phone Number")}</p>
+                          <a href={`tel:${business.phone}`} className="text-slate-900 dark:text-white font-bold hover:text-emerald-500 transition-colors">{business.phone}</a>
+                        </div>
+                      </div>
+                    )}
+                    {business.phone && (
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center">
+                          <MessageCircle size={18} className="text-[#25D366]" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">WhatsApp</p>
+                          <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}`} target="_blank" className="text-slate-900 dark:text-white font-bold hover:text-[#25D366] transition-colors">{t("ಸಂದೇಶ ಕಳುಹಿಸಿ", "Send Message")}</a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Working Hours */}
+                <div className="flex-1 shrink-0">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">
+                    <h3 className="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Clock size={18} className="text-sky-500" /> {t("ಕೆಲಸದ ಸಮಯ", "Working Hours")}
+                    </h3>
+                    <table className="w-full text-[13px] md:text-sm font-medium">
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {[
+                          { day: t("ಸೋಮವಾರ", "Mon"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಮಂಗಳವಾರ", "Tue"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಬುಧವಾರ", "Wed"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಗುರುವಾರ", "Thu"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಶುಕ್ರವಾರ", "Fri"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಶನಿವಾರ", "Sat"), time: "9:00 AM - 9:00 PM" },
+                          { day: t("ಭಾನುವಾರ", "Sun"), time: t("ರಜೆ", "Closed"), isClosed: true },
+                        ].map((d, i) => {
+                          const isToday = i === (new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
+                          return (
+                            <tr key={i} className={`group ${isToday ? "font-extrabold text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"}`}>
+                              <td className="py-3 flex items-center gap-2">
+                                {d.day}
+                                {isToday && <span className="text-[10px] bg-sky-100 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400 px-1.5 py-0.5 rounded uppercase tracking-wider">Today</span>}
+                              </td>
+                              <td className={`py-3 text-right ${d.isClosed ? 'text-rose-500 font-bold' : ''}`}>
+                                {d.time}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <section id="services" className="mb-10 pb-8 border-b border-slate-800 scroll-mt-[150px]">
