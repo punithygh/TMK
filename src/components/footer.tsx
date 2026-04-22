@@ -15,10 +15,11 @@ import {
   User 
 } from "lucide-react";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function Footer() {
   const pathname = usePathname();
-  // ಭವಿಷ್ಯದಲ್ಲಿ Context/Cookie ಇಂದ ಭಾಷೆಯನ್ನು ಪಡೆಯಬಹುದು. ಸದ್ಯಕ್ಕೆ 'kn' ಡಿಫಾಲ್ಟ್.
-  const [lang, setLang] = useState<"kn" | "en">("kn");
+  const { lang } = useLanguage();
   const [isAuth, setIsAuth] = useState(false); // Auth ಸ್ಟೇಟ್ (ಡೆಮೊ)
 
   // 🚨 1. SEO Links Data (For clean mapping)

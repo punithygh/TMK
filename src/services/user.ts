@@ -39,3 +39,8 @@ export const submitReview = async (businessId: number, data: { rating: number, c
   const response = await api.post(`/businesses/${businessId}/review/`, data);
   return response.data;
 };
+
+export const submitContactMessage = async (data: { name: string, email: string, message: string }): Promise<{ message: string }> => {
+  const response = await api.post('/contact/', data);
+  return response.data;
+};

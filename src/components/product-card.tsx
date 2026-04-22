@@ -64,10 +64,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const hasValidImage = finalImgSrc && finalImgSrc.trim() !== "" && !imgError;
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-sky-500/50 hover:shadow-xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col h-full relative">
+    <div className="group bg-[#0a1120] rounded-2xl overflow-hidden border border-slate-800/80 hover:border-sky-500/30 hover:shadow-[0_10px_30px_rgba(14,165,233,0.15)] hover:-translate-y-2 transition-all duration-400 flex flex-col h-full relative">
       
       {/* 1. Image Section with Next.js Error Handling */}
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center border-b border-slate-100">
+      <div className="relative h-48 w-full overflow-hidden bg-slate-900 flex flex-col items-center justify-center border-b border-slate-800/80 shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1120] via-transparent to-transparent opacity-80 z-10" />
         {hasValidImage ? (
           <Image
             src={finalImgSrc as string}
@@ -88,41 +89,41 @@ const ProductCard = ({ product }: ProductCardProps) => {
         )}
         
         {/* Category Tag */}
-        <div className="absolute top-3 left-3 z-10">
-          <span className="bg-white/95 backdrop-blur-md text-sky-600 text-[10px] font-black px-3 py-1 rounded-md shadow-sm uppercase tracking-wide border border-sky-50">
+        <div className="absolute top-3 left-3 z-20">
+          <span className="bg-black/60 backdrop-blur-md text-sky-400 text-[10px] font-bold px-3 py-1 rounded-md shadow-sm uppercase tracking-wider border border-sky-500/20">
             {category}
           </span>
         </div>
       </div>
 
       {/* 2. Content Section */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center text-amber-500 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+      <div className="p-5 flex flex-col flex-grow relative z-20">
+        <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-3">
+          <div className="flex items-center text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
             <Star size={14} fill="currentColor" />
-            <span className="ml-1 text-xs font-bold text-amber-700">{rating}</span>
+            <span className="ml-1.5 text-xs font-bold">{rating}</span>
           </div>
-          <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md uppercase border border-slate-100">
+          <span className="text-[10px] font-bold text-slate-400 bg-slate-800/50 px-2 py-1 rounded-md uppercase border border-slate-700">
             ID: {product.id}
           </span>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-sky-600 transition-colors line-clamp-1 flex items-center gap-1.5" title={title as string}>
+        <h3 className="text-lg font-extrabold text-white mb-2 group-hover:text-sky-400 transition-colors line-clamp-1 flex items-center gap-1.5 drop-shadow-md" title={title as string}>
           {title}
-          {isVerified && <BadgeCheck size={18} className="text-sky-500 shrink-0" />}
+          {isVerified && <BadgeCheck size={18} className="text-sky-400 shrink-0 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" />}
         </h3>
 
         {/* Special Badges - Pure Veg & Emergency 24x7 */}
         {(product.pure_veg || product.emergency_24x7) && (
-          <div className="flex flex-wrap gap-1.5 mb-2">
+          <div className="flex flex-wrap gap-1.5 mb-2.5">
             {product.pure_veg && (
-              <span className="inline-flex items-center gap-0.5 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded border border-green-200">
+              <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-green-500/20">
                 🌱 {t("ಸಾಕಾಹಾರ", "Veg")}
               </span>
             )}
             {product.emergency_24x7 && (
-              <span className="inline-flex items-center gap-0.5 bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200">
+              <span className="inline-flex items-center gap-1 bg-red-500/10 text-red-400 text-[10px] font-bold px-2.5 py-0.5 rounded-md border border-red-500/20">
                 🚨 {t("24/7", "24/7")}
               </span>
             )}
@@ -130,7 +131,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         )}
 
         {/* Location */}
-        <div className="flex items-start space-x-2 text-slate-500 text-sm mb-6 line-clamp-2 min-h-[40px]">
+        <div className="flex items-start space-x-2 text-slate-400 text-sm mb-6 line-clamp-2 min-h-[40px]">
           <MapPin size={16} className="shrink-0 mt-0.5 text-sky-400" />
           <span>{location}</span>
         </div>
@@ -140,7 +141,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {/* ಭವಿಷ್ಯದಲ್ಲಿ ಬ್ಯುಸಿನೆಸ್ ಡೀಟೇಲ್ಸ್ ಪೇಜ್‌ಗೆ ಲಿಂಕ್ ಹೋಗುತ್ತದೆ */}
           <Link 
             href={`/business/${finalRouteSlug}`}
-            className="inline-flex items-center justify-center w-full px-6 py-2.5 border-2 border-slate-100 text-sm font-semibold rounded-xl text-slate-700 bg-white hover:bg-sky-600 hover:text-white hover:border-sky-600 transition-all gap-2 group/btn"
+            className="inline-flex items-center justify-center w-full px-6 py-2.5 border border-slate-700 text-sm font-bold rounded-xl text-slate-300 bg-slate-800/50 hover:bg-sky-500 hover:text-white hover:border-sky-400 hover:shadow-[0_0_15px_rgba(14,165,233,0.3)] transition-all duration-300 gap-2 group/btn"
           >
             {t("ವಿವರಗಳನ್ನು ನೋಡಿ", "View Details")}
             <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />

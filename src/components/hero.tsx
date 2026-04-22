@@ -81,20 +81,19 @@ const Hero = () => {
           </h1>
         </div>
 
-        {/* 3. Premium Search Container */}
+        {/* 3. Premium Search Container (Glassmorphism) */}
         <div className="max-w-[90%] md:max-w-xl mx-auto w-full group animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
-          <form onSubmit={handleSearchSubmit} className="flex items-center bg-white rounded-full p-1 shadow-2xl shadow-sky-500/20 border-[3px] border-transparent focus-within:border-sky-400 transition-all duration-300">
+          <form onSubmit={handleSearchSubmit} className="flex items-center bg-[#0f172a]/80 backdrop-blur-xl rounded-2xl p-1.5 shadow-[0_8px_30px_rgba(14,165,233,0.15)] border border-white/10 focus-within:border-sky-400 focus-within:shadow-[0_8px_30px_rgba(14,165,233,0.3)] focus-within:bg-[#0f172a]/95 transition-all duration-500">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={placeholder}
-              className="flex-grow bg-transparent pl-4 pr-2 py-2.5 md:py-3 text-slate-900 outline-none text-sm md:text-base font-medium placeholder:text-slate-500"
+              className="flex-grow bg-transparent pl-4 pr-2 py-3 md:py-3.5 text-white outline-none text-sm md:text-[15px] font-medium placeholder:text-slate-400"
             />
-            <button type="submit" className="bg-sky-500 hover:bg-sky-400 text-white rounded-full h-10 w-10 md:h-12 md:w-12 md:px-6 md:w-auto flex items-center justify-center gap-2 transition-colors shrink-0 mr-0.5">
+            <button type="submit" className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white rounded-xl h-10 w-10 md:h-12 md:w-auto md:px-6 flex items-center justify-center gap-2 transition-all shadow-lg shadow-sky-500/30 shrink-0 mr-0.5 group-hover:scale-105">
               <Search size={18} className="md:w-5 md:h-5" />
-              {/* 🚨 t() ಫಂಕ್ಷನ್ ಬಳಕೆ (ಕೋಡ್ ಚಿಕ್ಕದಾಗಿದೆ) */}
-              <span className="hidden md:inline font-bold text-sm">{t("ಹುಡುಕಿ", "Search")}</span>
+              <span className="hidden md:inline font-bold text-sm tracking-wide">{t("ಹುಡುಕಿ", "Search")}</span>
             </button>
           </form>
 
