@@ -1,6 +1,11 @@
 import api from './api';
 
 // 🚨 100% ACCURATE DJANGO MAPPING
+export interface GalleryImage {
+  id: number;
+  image: string; // full URL e.g. "http://127.0.0.1:8000/media/businesses/gallery/photo.webp"
+}
+
 export interface BusinessListing {
   id: number;
   name: string;
@@ -13,18 +18,53 @@ export interface BusinessListing {
   area: string;
   area_kn?: string | null;
   main_image_upload?: string | null;
-  image_url?: string | null; // Google images ಗಾಗಿ
+  image_url?: string | null;   // Google images
+  image_url_2?: string | null; // Extra image slot 2
+  image_url_3?: string | null; // Extra image slot 3
+  gallery_images?: GalleryImage[] | null; // Real backend: [{id, image}, ...]
   rating: number;
+  review_count?: number | null;
   is_verified: boolean;
+  is_open?: boolean | null;
   pure_veg?: boolean;
   emergency_24x7?: boolean;
-  // ಡೀಟೇಲ್ ಪೇಜ್‌ಗೆ ಬೇಕಾಗುವ ಹೆಚ್ಚುವರಿ ಫೀಲ್ಡ್‌ಗಳು (ಭವಿಷ್ಯಕ್ಕಾಗಿ)
+  working_hours?: string | null; // Backend sends plain string e.g. "9:00 AM - 9:00 PM"
+  // Detail page extra fields
   description?: string;
   description_kn?: string;
   phone?: string;
   whatsapp?: string;
   address?: string;
   pincode?: string;
+  amenities?: string | null;
+  amenities_kn?: string | null;
+  services_offered?: string | null;
+  services_offered_kn?: string | null;
+  landmark_info?: string | null;
+  landmark_info_kn?: string | null;
+  subtitle?: string | null;
+  subtitle_kn?: string | null;
+  map_link?: string | null;
+  // Flags
+  top_search?: boolean;
+  hot_deal?: boolean;
+  dynamic_badges?: string[];
+}
+
+// Legacy interface kept for backward compat — no longer used for working hours
+export interface WorkingHoursEntry {
+  open: string;
+  close: string;
+  closed: boolean;
+}
+export interface WorkingHours {
+  mon?: WorkingHoursEntry;
+  tue?: WorkingHoursEntry;
+  wed?: WorkingHoursEntry;
+  thu?: WorkingHoursEntry;
+  fri?: WorkingHoursEntry;
+  sat?: WorkingHoursEntry;
+  sun?: WorkingHoursEntry;
 }
 
 export interface ArticleListing {

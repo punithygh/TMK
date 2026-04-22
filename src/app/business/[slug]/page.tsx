@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from "next";
-import { getOneCourse } from "@/services/courses";
+import { getOneCourse, getAllCourses } from "@/services/courses";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
 
@@ -55,6 +55,51 @@ export default async function BusinessDetailPageServer({ params }: Props) {
     notFound();
   }
 
-  // Pass data to the Client UI Component
-  return <BusinessDetailClient business={business} />;
+  // 🚀 3. Fetch similar businesses (same category, different ID)
+  let similarBusinesses: Awaited<ReturnType<typeof getAllCourses>> = [];
+  try {
+    const allBiz = await getAllCourses();
+    similarBusinesses = allBiz
+      .filter(b => b.category_name === business.category_name && b.id !== business.id)
+      .slice(0, 6);
+  } catch { /* fail silently */ }
+
+  // 🚀 4. JSON-LD Structured Data for Google SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": business.name,
+    "description": business.description || `${business.category_name} in ${business.area}, Tumakuru`,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": business.address || "",
+      "addressLocality": business.area || "Tumakuru",
+      "addressRegion": "Karnataka",
+      "addressCountry": "IN",
+      "postalCode": business.pincode || ""
+    },
+    ...(business.phone && { "telephone": business.phone }),
+    ...(business.category_name && { "additionalType": business.category_name }),
+    ...((business.main_image_upload || business.image_url) && {
+      "image": business.main_image_upload || business.image_url
+    }),
+    ...(business.rating && Number(business.rating) > 0 && {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": Number(business.rating).toFixed(1),
+        "bestRating": "5",
+        "ratingCount": business.review_count || 1
+      }
+    })
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BusinessDetailClient business={business} similarBusinesses={similarBusinesses} />
+    </>
+  );
 }

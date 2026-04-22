@@ -139,6 +139,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="p-4 sm:p-5 flex flex-col relative z-20 bg-white dark:bg-[#0a1120]">
         
         <div>
+          {/* Category Badge */}
+          <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20 px-2 py-0.5 rounded-md mb-2">
+            {category}
+          </span>
+
           {/* Business Name */}
           <Link href={`/business/${finalRouteSlug}`} className="block group/title mb-2">
             <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-sky-500 transition-colors line-clamp-2">
