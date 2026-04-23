@@ -86,10 +86,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   return (
-    <div className="group bg-white dark:bg-[#0a1120] rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/50 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col sm:flex-row relative mb-4 sm:mb-6">
+    <div className="group bg-white dark:bg-[#0a1120] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/50 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col sm:flex-row relative mb-3 sm:mb-6">
       
       {/* 1. Image Section - Mobile: Top, Desktop: Left */}
-      <div className="relative h-56 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-800/80">
+      <div className="relative h-44 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-800/80">
         {hasValidImage ? (
           <Image
             src={finalImgSrc as string}
@@ -140,7 +140,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       {/* 2. Content Section */}
-      <div className="p-4 sm:p-5 flex flex-col relative z-20 bg-white dark:bg-[#0a1120]">
+      <div className="p-3 sm:p-5 flex flex-col relative z-20 bg-white dark:bg-[#0a1120] w-full">
         
         <div>
 
@@ -197,15 +197,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* 3. Action Buttons - 3 in one line */}
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 sm:gap-3 w-full">
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 sm:gap-3 w-full">
           
           <a 
             href={displayPhone ? `tel:${displayPhone}` : '#'}
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ಫೋನ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "Phone number not available")); } }}
-            className={`flex-1 inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 rounded-xl transition-all shadow-md border bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-600 gap-1 sm:gap-2 group/btn`}
+            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-md border bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-600 gap-1.5 sm:gap-2 group/btn`}
           >
-            <Phone size={16} className={displayPhone ? "group-hover/btn:animate-pulse" : ""} /> 
-            <span className="text-[11px] sm:text-sm font-bold">{t("ಕರೆ", "Call")}</span>
+            <Phone className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:animate-pulse" : ""}`} /> 
+            <span className="hidden sm:inline text-sm font-bold">{t("ಕರೆ", "Call")}</span>
           </a>
 
           <a 
@@ -213,18 +213,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
             target={displayPhone ? "_blank" : "_self"}
             rel="noopener noreferrer"
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "WhatsApp number not available")); } }}
-            className={`flex-1 inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 rounded-xl transition-all shadow-md border bg-[#25D366] text-white hover:bg-[#1DA851] border-[#1DA851] gap-1 sm:gap-2 group/btn`}
+            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-md border bg-[#25D366] text-white hover:bg-[#1DA851] border-[#1DA851] gap-1.5 sm:gap-2 group/btn`}
           >
-            <MessageCircle size={16} className={displayPhone ? "group-hover/btn:scale-110 transition-transform" : ""} /> 
-            <span className="text-[11px] sm:text-sm font-bold">WhatsApp</span>
+            <MessageCircle className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:scale-110 transition-transform" : ""}`} /> 
+            <span className="hidden sm:inline text-sm font-bold">WhatsApp</span>
           </a>
 
           <Link 
             href={`/business/${finalRouteSlug}`}
-            className="flex-[1.2] inline-flex flex-col sm:flex-row items-center justify-center py-2.5 sm:py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition-all shadow-lg shadow-sky-500/25 border border-sky-400 gap-1 sm:gap-2 group/btn"
+            className="flex-1 sm:flex-[1.2] inline-flex flex-row items-center justify-center py-2 sm:py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-lg sm:shadow-sky-500/25 border border-sky-400 gap-1.5 sm:gap-2 group/btn"
           >
-            <Navigation size={16} className="group-hover/btn:translate-x-1 transition-transform" /> 
-            <span className="text-[11px] sm:text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>
+            <Navigation className="w-5 h-5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" /> 
+            <span className="hidden sm:inline text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>
           </Link>
 
         </div>
