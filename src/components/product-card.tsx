@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
+import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 export interface BusinessListDTO {
@@ -28,9 +28,10 @@ export interface BusinessListDTO {
   whatsapp?: string | null;
   address?: string | null;
   // Backend dynamic features
-  top_search?: boolean;
-  hot_deal?: boolean;
-  is_open?: boolean;
+  is_top_search?: boolean;
+  is_featured?: boolean;
+  is_trusted?: boolean;
+  is_currently_open?: boolean;
   dynamic_badges?: string[];
 }
 
@@ -59,7 +60,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   
   const isVerified = product.is_verified || false;
   // Backend driven "open" status. Defaulting to true visually if undefined.
-  const isOpen = product.is_open !== false; 
+  const isOpen = product.is_currently_open !== false; 
 
   let finalImgSrc = product.main_image_upload || product.image_url;
   
@@ -76,9 +77,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Collect dynamic badges
   const badges = [];
-  if (product.top_search) badges.push({ text: "Top Search", color: "bg-amber-500 text-white border-amber-400" });
-  if (product.hot_deal) badges.push({ text: "Hot Deal", color: "bg-rose-500 text-white border-rose-400" });
-  if (isVerified) badges.push({ text: "Verified", color: "bg-sky-500 text-white border-sky-400" });
+  if (product.is_top_search) badges.push({ text: "Top Rated", color: "bg-amber-500 text-white border-amber-400" });
+  if (product.is_featured) badges.push({ text: "Featured", color: "bg-rose-500 text-white border-rose-400" });
+  if (isVerified) badges.push({ text: "Verified", color: "bg-emerald-500 text-white border-emerald-400" });
+  if (product.is_trusted) badges.push({ text: "Trusted", color: "bg-sky-500 text-white border-sky-400" });
   if (product.dynamic_badges) {
     product.dynamic_badges.forEach(b => badges.push({ text: b, color: "bg-purple-500 text-white border-purple-400" }));
   }
@@ -105,6 +107,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           </div>
         )}
+        {/* Clickable Image Overlay */}
+        <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
         
         {/* Gradient Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none"></div>
@@ -139,10 +143,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="p-4 sm:p-5 flex flex-col relative z-20 bg-white dark:bg-[#0a1120]">
         
         <div>
-          {/* Category Badge */}
-          <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/20 px-2 py-0.5 rounded-md mb-2">
-            {category}
-          </span>
 
           {/* Business Name */}
           <Link href={`/business/${finalRouteSlug}`} className="block group/title mb-2">
@@ -154,16 +154,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {/* Yelp-style Star Rating */}
           <div className="flex items-center gap-2 mb-3">
             <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star 
-                  key={star} 
-                  size={16} 
-                  className={star <= Math.round(displayRating) 
-                    ? "fill-amber-500 text-amber-500" 
-                    : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
-                  } 
-                />
-              ))}
+              {[1, 2, 3, 4, 5].map((star) => {
+                const isFull = star <= displayRating;
+                const isHalf = !isFull && star - 0.5 <= displayRating;
+                
+                if (isHalf) {
+                  return (
+                    <div key={star} className="relative w-4 h-4 text-amber-500">
+                      <Star size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800 absolute top-0 left-0" />
+                      <StarHalf size={16} className="fill-amber-500 absolute top-0 left-0" />
+                    </div>
+                  );
+                }
+                
+                return (
+                  <Star 
+                    key={star} 
+                    size={16} 
+                    className={isFull 
+                      ? "fill-amber-500 text-amber-500" 
+                      : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
+                    } 
+                  />
+                );
+              })}
             </div>
             <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
               {displayRating.toFixed(1)}
