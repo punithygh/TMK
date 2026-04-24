@@ -1,10 +1,6 @@
 import api from './api';
 
 // 🚨 100% ACCURATE DJANGO MAPPING
-export interface GalleryImage {
-  id: number;
-  image: string; // full URL e.g. "http://127.0.0.1:8000/media/businesses/gallery/photo.webp"
-}
 
 export interface BusinessListing {
   id: number;
@@ -21,7 +17,7 @@ export interface BusinessListing {
   image_url?: string | null;   // Google images
   image_url_2?: string | null; // Extra image slot 2
   image_url_3?: string | null; // Extra image slot 3
-  gallery_images?: GalleryImage[] | null; // Real backend: [{id, image}, ...]
+  gallery_images?: string[] | null; // Real backend: ["http...", "http..."]
   rating: number;
   review_count?: number | null;
   is_verified: boolean;
@@ -115,13 +111,12 @@ export interface CategoryListing {
 
 // 🚀 NATIVE FETCH WRAPPER FOR SERVER COMPONENTS (HIGH SPEED + NO CACHE STALENESS)
 const serverFetch = async (endpoint: string) => {
-  // 🚨 CRITICAL FIX: Server-Side Native Fetch MUST always use localhost (127.0.0.1) 
-  // because NEXT_PUBLIC_API_URL might point to an external IP (like 10.135.x.x) which the Node server cannot route to internally.
-  const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+  // Use centralized environment variable for API
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1` : "";
   const url = `${API_BASE_URL}${endpoint}`;
   
   const res = await fetch(url, {
-    cache: 'no-store', // 🚨 Real-time data from Django
+    next: { revalidate: 3600 }, // 🚨 ISR Caching: Revalidate every 1 hour
     headers: { 'Content-Type': 'application/json' }
   });
 

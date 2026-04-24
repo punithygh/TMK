@@ -3,6 +3,8 @@ import { getOneCourse, getAllCourses } from "@/services/courses";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
 
+export const revalidate = 3600; // 🚨 ISR: Revalidate every 1 hour
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -28,9 +30,29 @@ export async function generateMetadata(
   const titleText = `${business.name} | ${business.category_name} in ${business.area} | Tumakuru Connect`;
   const descriptionText = business.description || `Find the best ${business.category_name} at ${business.name} located in ${business.area}, Tumakuru. Get contact details, reviews, and directions.`;
 
+  // 🚨 Dynamic SEO Keywords for Local Search (Bilingual)
+  const seoKeywords = [
+    `${business.category_name} in Tumkur`,
+    `${business.category_name} in ${business.area}`,
+    `best ${business.category_name} near ${business.area}`,
+    `ತುಮಕೂರಿನಲ್ಲಿ ${business.category_name_kn || business.category_name}`,
+    `${business.name} Tumkur`,
+    `Tumakuru Connect`
+  ];
+
+  const canonicalUrl = `https://tumakuruconnect.com/business/${slug}`;
+
   return {
     title: titleText,
     description: descriptionText,
+    keywords: seoKeywords,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'en-IN': `${canonicalUrl}?lang=en`,
+        'kn-IN': `${canonicalUrl}?lang=kn`,
+      },
+    },
     openGraph: {
       title: titleText,
       description: descriptionText,
@@ -38,6 +60,7 @@ export async function generateMetadata(
         business.main_image_upload || business.image_url as string
       ] : [],
       type: "website",
+      url: canonicalUrl,
     },
   };
 }
@@ -62,7 +85,9 @@ export default async function BusinessDetailPageServer({ params }: Props) {
     similarBusinesses = allBiz
       .filter(b => b.category_name === business.category_name && b.id !== business.id)
       .slice(0, 6);
-  } catch { /* fail silently */ }
+  } catch (error) { 
+    console.error("Failed to fetch similar businesses:", error); 
+  }
 
   // 🚀 4. JSON-LD Structured Data for Google SEO
   const jsonLd = {

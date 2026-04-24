@@ -13,13 +13,7 @@ import CategoryGrid from "@/components/category-grid";
 const getValidImageUrl = (url?: string | null) => {
   if (!url) return null;
   if (url.startsWith('http')) return url;
-  
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-    return `http://${host}:8000${url.startsWith('/') ? '' : '/'}${url}`;
-  }
-  
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
   return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
@@ -101,7 +95,7 @@ export default function HomeClient({
                 <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30`}>
                   <div className={unifiedImageClass}>
                     {imgSrc ? (
-                      <img src={imgSrc} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" loading="lazy" />
+                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                     ) : (
                       <Store size={40} className="text-slate-300 dark:text-slate-700" />
                     )}

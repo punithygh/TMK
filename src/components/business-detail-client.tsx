@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   Phone, MessageCircle, MapPin, Share2, Edit3, Heart, 
   Star, ChevronRight, CheckCircle, Car, Wifi, 
@@ -131,7 +132,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     getUserDashboard().then(data => {
       const bookmarked = data.my_bookmarks.some(b => b.business.id === business.id);
       setIsBookmarked(bookmarked);
-    }).catch(() => {});
+    }).catch(err => { console.error("Failed to fetch bookmarks:", err); });
   }, [isAuthenticated, business.id]);
 
   useEffect(() => {
@@ -232,10 +233,10 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const handleShare = async () => {
     if (!business) return;
     const shareData = { title: t(business.name_kn, business.name), text: `Check out ${t(business.name_kn, business.name)} on Tumakuru Connect`, url: window.location.href };
-    if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
+    if (navigator.share) { try { await navigator.share(shareData); } catch (err) { console.error("Share failed:", err); } } 
     else if (navigator.clipboard && navigator.clipboard.writeText) {
       try { await navigator.clipboard.writeText(shareData.url); showToast(t("✅ ಲಿಂಕ್ ಕಾಪಿ ಮಾಡಲಾಗಿದೆ!", "✅ Link copied to clipboard!")); } 
-      catch (err) { showToast(t("❌ ಕಾಪಿ ವಿಫಲವಾಗಿದೆ", "❌ Copy failed")); }
+      catch (err) { console.error("Clipboard copy failed:", err); showToast(t("❌ ಕಾಪಿ ವಿಫಲವಾಗಿದೆ", "❌ Copy failed")); }
     }
   };
 
@@ -265,7 +266,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const title = t(business.name_kn, business.name);
   const location = t(business.area_kn, business.area);
   const category = t(business.category_name_kn, business.category_name);
-  const backendUrl = typeof window !== 'undefined' ? (window.location.hostname === 'localhost' ? 'http://127.0.0.1:8000' : process.env.NEXT_PUBLIC_API_URL || "") : "";
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
   const resolveUrl = (url: unknown): string | null => {
     if (!url || typeof url !== 'string' || !url.trim()) return null;
@@ -309,7 +310,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
         {/* ✅ Desktop 3-Image Hero Gallery */}
         <div className="hidden md:flex gap-3 w-full h-[350px] lg:h-[400px] mb-8 group/hero-gallery">
           <div className="flex-[2] h-full bg-slate-100 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 shadow-sm relative cursor-pointer group/main" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
-            {galleryImages[0] ? <img src={galleryImages[0]} alt={title as string} className="w-full h-full object-cover group-hover/main:scale-[1.03] transition-transform duration-700" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
+            {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 66vw" className="object-cover group-hover/main:scale-[1.03] transition-transform duration-700" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
           </div>
           <div className="flex-[1] h-full flex flex-col gap-3">
             {galleryImages.length > 1 ? (
@@ -363,7 +364,9 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="md:hidden relative -mx-4 mb-4">
           <div ref={galleryRef} onScroll={handleGalleryScroll} className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide" style={{WebkitOverflowScrolling:'touch'}}>
             {galleryImages.length > 0 ? galleryImages.map((img, i) => (
-              <div key={i} className="w-full shrink-0 snap-center h-[260px] relative" onClick={() => { setLightboxIndex(i); setLightboxOpen(true); }}><img src={img} alt={`${title} ${i+1}`} className="w-full h-full object-cover" loading={i > 0 ? 'lazy' : 'eager'} /></div>
+              <div key={i} className="w-full shrink-0 snap-center h-[260px] relative" onClick={() => { setLightboxIndex(i); setLightboxOpen(true); }}>
+                <Image src={img} alt={`${title} ${i+1}`} fill priority={i === 0} sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+              </div>
             )) : <div className="w-full h-[260px] bg-slate-100 dark:bg-slate-900 flex items-center justify-center"><Store className="w-16 h-16 text-slate-300 dark:text-slate-700" /></div>}
           </div>
           {galleryImages.length > 1 && <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">{galleryImages.map((_, i) => (<div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === activeGalleryDot ? 'bg-white w-4' : 'bg-white/50'}`} />))}</div>}
@@ -497,7 +500,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                 <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ಫೋಟೋಗಳು", "Photos")}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 md:h-[420px] rounded-3xl overflow-hidden group/gallery cursor-pointer relative shadow-lg">
                   <div className="col-span-2 md:col-span-3 row-span-2 relative w-full h-[250px] md:h-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
-                    {galleryImages[0] ? <img src={galleryImages[0]} alt={title as string} className="w-full h-full object-cover transition-all duration-700 group-hover/gallery:scale-[1.02]" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
+                    {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-all duration-700 group-hover/gallery:scale-[1.02]" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
                   </div>
                   {galleryImages.length > 1 && (
                     <div className="hidden md:block relative w-full h-[150px] md:h-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}>
@@ -549,7 +552,9 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               <div className="flex flex-col">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 py-6 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex gap-4 md:w-[250px] shrink-0">
-                    <img src="https://i.pravatar.cc/150?u=gary" alt="User Avatar" className="w-16 h-16 rounded-full object-cover shadow-sm" />
+                    <div className="w-16 h-16 rounded-full bg-sky-100 dark:bg-sky-900 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xl shadow-sm shrink-0">
+                      G
+                    </div>
                     <div className="flex flex-col"><h4 className="font-bold text-slate-900 dark:text-white flex items-center flex-wrap">Gary H. <span className="bg-[#f15c4f] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded ml-2 shadow-sm">Elite 26</span></h4><p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Severna Park, MD</p><div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-semibold"><span className="flex items-center gap-1"><User size={13} /> 1496</span><span className="flex items-center gap-1"><Star size={13} /> 994</span></div></div>
                   </div>
                   <div className="flex-1">

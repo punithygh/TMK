@@ -2,6 +2,8 @@ import { Metadata, ResolvingMetadata } from "next";
 import ListingsClient from "@/components/listings-client";
 import Script from "next/script";
 
+export const revalidate = 3600; // 🚨 ISR: Revalidate every 1 hour
+
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
