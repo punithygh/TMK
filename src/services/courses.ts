@@ -109,6 +109,14 @@ export interface CategoryListing {
   icon_url?: string;
 }
 
+export interface Banner {
+  id: number;
+  title: string;
+  image_url: string | null;
+  link_url?: string | null;
+  order: number;
+}
+
 // 🚀 NATIVE FETCH WRAPPER FOR SERVER COMPONENTS (HIGH SPEED + NO CACHE STALENESS)
 const serverFetch = async (endpoint: string) => {
   // Use centralized environment variable for API
@@ -203,6 +211,17 @@ export const getCategories = async (): Promise<CategoryListing[]> => {
     return data as CategoryListing[];
   } catch (error) {
     console.error('🚨 API Error (Categories):', error);
+    return [];
+  }
+};
+
+// 🚀 7. Banner Slider Fetch (Homepage - /api/v1/banners/)
+export const getBanners = async (): Promise<Banner[]> => {
+  try {
+    const data = await serverFetch('/banners/');
+    return data as Banner[];
+  } catch (error) {
+    console.error('🚨 API Error (Banners):', error);
     return [];
   }
 };

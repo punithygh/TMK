@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation"; // 🚨 usePathname ಸೇರಿಸಲಾಗಿದೆ
+import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft } from "lucide-react"; // 🚨 ArrowLeft ಸೇರಿಸಲಾಗಿದೆ
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname(); // 🚨 ಪ್ರಸ್ತುತ ಪೇಜ್ ಯಾವುದು ಎಂದು ತಿಳಿಯಲು
+  const isHomePage = pathname === "/"; // 🚨 ಹೋಮ್ ಪೇಜ್ ಚೆಕ್
   
   const { lang, setLang, t } = useLanguage(); 
   const { user, isAuthenticated, logout } = useAuth();
@@ -17,6 +19,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false); // 🚨 ಮೊಬೈಲ್ ಸರ್ಚ್ ಓವರ್‌ಲೇ ಸ್ಟೇಟ್
 
   useEffect(() => {
     setMounted(true);
@@ -26,14 +29,12 @@ export default function Navbar() {
   const [placeholder, setPlaceholder] = useState("");
   const [isListening, setIsListening] = useState(false);
 
-  // 🚨 1. Smart Scroll (Hide on scroll down, show on scroll up)
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      // Show navbar if scrolling up or at the very top
       if (currentScrollY < 50 || currentScrollY < lastScrollY) {
         setIsVisible(true);
       } else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
@@ -46,9 +47,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // 🚨 ಗಮನಿಸಿ: ಇಲ್ಲಿಂದ Cookie useEffect ಅನ್ನು ತೆಗೆಯಲಾಗಿದೆ, ಏಕೆಂದರೆ LanguageContext ಅದನ್ನು ನೋಡಿಕೊಳ್ಳುತ್ತದೆ.
-
-  // 🚨 3. React-based Typing Effect for Search Bar
   useEffect(() => {
     const phrases =
       lang === "kn"
@@ -89,7 +87,6 @@ export default function Navbar() {
     return () => clearTimeout(typingTimer);
   }, [lang]);
 
-  // 🚨 4. Web Speech API (Voice Search)
   const handleVoiceSearch = () => {
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       const SpeechRecognition =
@@ -108,6 +105,7 @@ export default function Navbar() {
         const transcript = e.results[0][0].transcript;
         setSearchQuery(transcript);
         router.push(`/listings?q=${encodeURIComponent(transcript)}`);
+        setIsSearchOverlayOpen(false); // 🚨 ವಾಯ್ಸ್ ಸರ್ಚ್ ಆದಮೇಲೆ ಓವರ್‌ಲೇ ಕ್ಲೋಸ್ ಮಾಡು
       };
 
       recognition.onend = () => {
@@ -124,6 +122,7 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/listings?q=${encodeURIComponent(searchQuery)}`);
+      setIsSearchOverlayOpen(false); // 🚨 ಸರ್ಚ್ ಆದಮೇಲೆ ಓವರ್‌ಲೇ ಕ್ಲೋಸ್ ಮಾಡು
     }
   };
 
@@ -131,29 +130,41 @@ export default function Navbar() {
     <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/90 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 gap-y-3 md:gap-y-0 max-w-[1400px] mx-auto">
         
-        {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher & Menu */}
+        {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher/Search & Menu */}
         <div className="flex md:hidden items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2 no-underline group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="bg-gradient-to-br from-sky-500 to-sky-400 w-8 h-8 rounded-lg flex items-center justify-center shadow-md shadow-sky-500/30 shrink-0">
-              <Hexagon className="text-white w-5 h-5 fill-white/20" />
-            </div>
-            <div className="font-extrabold text-[20px] text-slate-900 dark:text-white tracking-tight uppercase whitespace-nowrap">
-              TUMAKURU<span className="text-sky-500 dark:text-sky-400">CONNECT</span>
+          <Link href="/" className="flex items-center no-underline group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="font-black text-[26px] tracking-tighter whitespace-nowrap flex items-center">
+              <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
+              <div className="relative ml-[1px] flex flex-col justify-end">
+                <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                  connect
+                </span>
+                <div className="absolute -bottom-[-5px] left-0 w-full h-[2px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+              </div>
             </div>
           </Link>
           
           <div className="flex items-center gap-2 shrink-0">
-            {/* Mobile Lang Switcher (Smaller) */}
-            <div 
-              className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
-              onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
-            >
-              <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-sky-500 to-blue-600 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
-              <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
-              <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
-            </div>
+            {/* 🚨 CONDITION: Home Page = Language, Other Pages = Search Icon */}
+            {isHomePage ? (
+              <div 
+                className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
+                onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
+              >
+                <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-sky-500 to-blue-600 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
+                <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
+                <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsSearchOverlayOpen(true)}
+                className="p-1.5 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-500 border border-sky-200 dark:border-sky-500/20 hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors"
+                aria-label="Open Search"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            )}
 
-            {/* Mobile Hamburger Menu */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
@@ -165,23 +176,24 @@ export default function Navbar() {
 
         {/* 🖥️ DESKTOP LOGO */}
         <div className="hidden md:flex items-center justify-start w-auto shrink-0">
-          <Link href="/" className="flex items-center gap-3 no-underline group">
-            <div className="bg-gradient-to-br from-sky-500 to-sky-400 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/30 shrink-0 group-hover:scale-105 transition-transform">
-              <Hexagon className="text-white w-6 h-6 fill-white/20" />
+          <Link href="/" className="flex flex-col justify-center leading-none no-underline group">
+            <div className="font-black text-[28px] tracking-tighter whitespace-nowrap flex items-center group-hover:scale-[1.02] transition-transform duration-300">
+              <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
+              <div className="relative ml-[2px] flex flex-col justify-end">
+                <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                  connect
+                </span>
+                <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+              </div>
             </div>
-            <div className="flex flex-col justify-center leading-none">
-              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase whitespace-nowrap">
-                TUMAKURU<span className="text-sky-500 dark:text-sky-400">CONNECT</span>
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest mt-1">
-                Local Search Engine
-              </div>
+            <div className="w-full ml-[100px] pr10 mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold lowercase tracking-widest group-hover:text-sky-500 transition-colors duration-300">
+              Local Business Engine
             </div>
           </Link>
         </div>
 
-        {/* 🔍 SEARCH BAR (Mobile & Desktop Unified) */}
-        <div className="flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px]">
+        {/* 🔍 SEARCH BAR (Desktop Only - Hidden on Mobile) */}
+        <div className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px]">
           <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
             <Search className="absolute left-4 w-4 h-4 text-slate-400" />
             <input
@@ -205,8 +217,6 @@ export default function Navbar() {
 
         {/* 🖥️ DESKTOP RIGHT ACTIONS */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
-          
-          {/* Desktop Theme Switcher */}
           {mounted && (
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -255,7 +265,6 @@ export default function Navbar() {
             </Link>
           )}
           
-          {/* Desktop Lang Switch (iOS Style Toggle) */}
           <div 
             className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[76px] h-10 cursor-pointer shrink-0" 
             onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
@@ -265,13 +274,11 @@ export default function Navbar() {
             <span className={`relative z-10 w-1/2 text-center text-xs font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>E</span>
           </div>
         </div>
-
       </div>
 
       {/* 📱 MOBILE OFFCANVAS MENU */}
       <div className={`md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#050b14] border-b border-slate-200 dark:border-slate-800 shadow-xl transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-[400px] py-4 opacity-100' : 'max-h-0 py-0 border-none opacity-0 pointer-events-none'}`}>
         <div className="flex flex-col px-4 gap-3">
-          
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{t("ಥೀಮ್ ಬದಲಾಯಿಸಿ", "Change Theme")}</span>
             {mounted && (
@@ -284,17 +291,14 @@ export default function Navbar() {
               </button>
             )}
           </div>
-
           <Link href="/free-listing" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
             <Megaphone className="w-5 h-5 text-sky-500" />
             <span className="text-sm font-bold">{t("ಉಚಿತ ಲಿಸ್ಟಿಂಗ್", "Free Listing")}</span>
           </Link>
-
           <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
             <Layers className="w-5 h-5 text-sky-500" />
             <span className="text-sm font-bold">{t("ವರ್ಗಗಳು", "Categories")}</span>
           </Link>
-
           {isAuthenticated && user ? (
             <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400">
               <LayoutDashboard className="w-5 h-5" />
@@ -306,6 +310,40 @@ export default function Navbar() {
               <span className="text-sm font-bold">{t("ಲಾಗಿನ್", "Login")}</span>
             </Link>
           )}
+        </div>
+      </div>
+
+      {/* 📱 🚨 MOBILE FULL-SCREEN SEARCH OVERLAY (YELP STYLE) 🚨 */}
+      <div className={`md:hidden fixed inset-0 z-[100000] bg-slate-50 dark:bg-[#050b14] transition-transform duration-300 ease-in-out flex flex-col ${isSearchOverlayOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
+        <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#050b14] border-b border-slate-200 dark:border-slate-800 shadow-sm pt-safe-top">
+          <button 
+            type="button"
+            onClick={() => setIsSearchOverlayOpen(false)}
+            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          
+          <form 
+            onSubmit={handleSearchSubmit} 
+            className="flex-1 relative flex items-center"
+          >
+            <input
+              type="text"
+              autoFocus={isSearchOverlayOpen}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={lang === "kn" ? "ಹುಡುಕಿ..." : "Search in Tumkur..."}
+              className="w-full h-11 pl-4 pr-12 rounded-full border border-sky-500/30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-base outline-none shadow-[0_0_10px_rgba(14,165,233,0.1)] focus:border-sky-500"
+            />
+            <button
+              type="button"
+              onClick={handleVoiceSearch}
+              className={`absolute right-2 p-2 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-sky-500"}`}
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+          </form>
         </div>
       </div>
     </nav>
