@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    formats: ['image/avif', 'image/webp'],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
       {
