@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  Hexagon, 
   Facebook, 
   Instagram, 
   Youtube, 
@@ -102,21 +101,24 @@ export default function Footer() {
         <footer className="bg-white dark:bg-slate-900 pt-10 pb-5 px-4 sm:px-6">
           <div className="max-w-[1300px] mx-auto flex flex-col md:flex-row flex-wrap gap-10 justify-between items-center md:items-start">
             
-            {/* Brand Column */}
+            {/* 🌟 Brand Column (Updated Logo Here) 🌟 */}
             <div className="flex-1 min-w-[250px] flex flex-col items-center md:items-start w-full">
-              <Link href="/" className="flex items-center gap-3 mb-4 no-underline group">
-                <div className="bg-gradient-to-br from-sky-500 to-sky-400 w-[26px] md:w-8 h-[26px] md:h-8 rounded-lg flex items-center justify-center shrink-0">
-                  <Hexagon className="text-white w-4 md:w-5 h-4 md:h-5 fill-white/20" />
-                </div>
-                <div className="font-extrabold text-[18px] md:text-xl text-slate-900 dark:text-white tracking-tight uppercase whitespace-nowrap">
-                  TUMAKURU<span className="text-sky-500 dark:text-sky-400">CONNECT</span>
+              <Link href="/" className="flex flex-col items-center md:items-start justify-center leading-none no-underline group mb-5">
+                <div className="font-black text-[26px] md:text-[28px] tracking-tighter whitespace-nowrap flex items-center group-hover:scale-[1.02] transition-transform duration-300">
+                  <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
+                  <div className="relative ml-[2px] flex flex-col justify-end">
+                    <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                      connect
+                    </span>
+                    <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+                  </div>
                 </div>
               </Link>
               
-              <p className="text-slate-600 dark:text-slate-400 text-[12px] md:text-[13px] leading-relaxed mb-4 text-center md:text-left max-w-[95%] md:max-w-sm">
+              <p className="text-slate-600 dark:text-slate-400 text-[12px] md:text-[15px] leading-relaxed mb-4 text-center md:text-left max-w-[95%] md:max-w-sm">
                 {lang === "kn" 
-                  ? "ನಮ್ಮ ತುಮಕೂರಿನ ಸಮಗ್ರ ಮಾಹಿತಿ, ವ್ಯಾಪಾರ ಮತ್ತು ಸೇವೆಗಳ ಅತಿದೊಡ್ಡ ಡಿಜಿಟಲ್ ಡೈರೆಕ್ಟರಿ. ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಎಲ್ಲವನ್ನೂ ಹುಡುಕಿ, ಸಂಪರ್ಕಿಸಿ!" 
-                  : "Namma Tumkur's largest digital directory for businesses, services, and local information. Find and connect with just one click!"}
+                  ? "ಇದು ನಮ್ಮ ತುಮಕೂರು, ನಮ್ಮ ಹೆಮ್ಮೆ. ನಮ್ಮೂರ ಉದ್ಯಮ ಮತ್ತು ಸೇವೆಗಳನ್ನು ಹುಡುಕಲು ಅಲೆದಾಟ ಬೇಕಿಲ್ಲ, ಈಗ ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ!" 
+                  : "Our Tumkur, Our Pride. No more searching for local businesses and services—everything is now just a click away!"}
               </p>
               
               <div className="flex gap-6 justify-center md:justify-start">
@@ -124,7 +126,6 @@ export default function Footer() {
                   <Facebook className="w-6 h-6 text-[#1877F2]" />
                 </a>
                 <a href="https://www.instagram.com/tumakuru_connect" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 dark:hover:text-white hover:-translate-y-1 transition-all duration-300">
-                  {/* Instagram gradient icon placeholder using lucide */}
                   <Instagram className="w-6 h-6 text-[#E1306C]" />
                 </a>
                 <a href="https://youtube.com/@foodiegeeks23" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-slate-900 dark:hover:text-white hover:-translate-y-1 transition-all duration-300">
@@ -166,7 +167,6 @@ export default function Footer() {
       </div>
 
       {/* ====== 3. MOBILE BOTTOM NAVIGATION (100% Width) ====== */}
-      {/* 🚨 md:hidden ensures it completely disappears on desktop. Fixed to stick strictly to bottom edge-to-edge */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-[9999]">
         <div className="w-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 flex justify-around items-center pt-3 pb-3 px-2 shadow-[0_-5px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_-5px_30px_rgba(0,0,0,0.5)] pb-safe-bottom">
           <Link href="/" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/' ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>

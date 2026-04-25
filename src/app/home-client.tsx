@@ -58,7 +58,7 @@ export default function HomeClient({
   const unifiedImageClass = "h-[160px] md:h-[180px] bg-slate-100 dark:bg-slate-900 relative flex items-center justify-center overflow-hidden shrink-0";
 
   return (
-    <div className="flex flex-col gap-12 md:gap-16 pb-24 overflow-x-hidden bg-slate-50 dark:bg-[#050b14] min-h-screen transition-colors duration-300">
+    <div className="flex flex-col gap-4 md:gap-16 pb-24 overflow-x-hidden bg-slate-50 dark:bg-[#050b14] min-h-screen transition-colors duration-300">
       
       {/* 1. HERO SECTION */}
       <Hero />

@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/context/LanguageContext";
-import api from "@/services/api";
+import { useLanguage } from "@/context/LanguageContext"; // 🚨 ಭಾಷೆ ಬದಲಾಯಿಸಲು ಮರಳಿ ಸೇರಿಸಲಾಗಿದೆ
 import { 
   Building2, 
   Stethoscope, 
@@ -13,9 +12,9 @@ import {
   Map, 
   Briefcase, 
   GraduationCap,
-  LayoutGrid
+  LayoutGrid,
+  MoreHorizontal
 } from "lucide-react";
-
 import Image from "next/image";
 
 interface Category {
@@ -30,72 +29,79 @@ interface CategoryGridProps {
   initialCategories: Category[];
 }
 
+// 🚨 YELP STYLE: Clean dark icons, thin stroke, no colorful backgrounds
 const getCategoryIcon = (slug: string) => {
-  const iconProps = { className: "w-6 h-6 md:w-7 md:h-7" };
-  const iconMap: Record<string, { icon: React.ReactNode, colorClass: string }> = {
-    'hotel': { icon: <Building2 {...iconProps} />, colorClass: "text-orange-500 bg-orange-500/10" },
-    'hospital': { icon: <Stethoscope {...iconProps} />, colorClass: "text-red-500 bg-red-500/10" },
-    'pg': { icon: <BedSingle {...iconProps} />, colorClass: "text-blue-500 bg-blue-500/10" },
-    'restaurant': { icon: <Utensils {...iconProps} />, colorClass: "text-green-500 bg-green-500/10" },
-    'shop': { icon: <ShoppingBag {...iconProps} />, colorClass: "text-pink-500 bg-pink-500/10" },
-    'real-estate': { icon: <Map {...iconProps} />, colorClass: "text-purple-500 bg-purple-500/10" },
-    'jobs': { icon: <Briefcase {...iconProps} />, colorClass: "text-amber-500 bg-amber-500/10" },
-    'education': { icon: <GraduationCap {...iconProps} />, colorClass: "text-indigo-500 bg-indigo-500/10" },
+  const iconProps = { 
+    className: "w-7 h-7 md:w-8 md:h-8 text-slate-800 dark:text-slate-200 transition-colors duration-300 group-hover:text-sky-500", 
+    strokeWidth: 1.5 
+  };
+  
+  const iconMap: Record<string, { icon: React.ReactNode }> = {
+    'hotel': { icon: <Building2 {...iconProps} /> },
+    'hospital': { icon: <Stethoscope {...iconProps} /> },
+    'pg': { icon: <BedSingle {...iconProps} /> },
+    'restaurant': { icon: <Utensils {...iconProps} /> },
+    'shop': { icon: <ShoppingBag {...iconProps} /> },
+    'real-estate': { icon: <Map {...iconProps} /> },
+    'jobs': { icon: <Briefcase {...iconProps} /> },
+    'education': { icon: <GraduationCap {...iconProps} /> },
   };
 
-  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} />, colorClass: "text-slate-500 bg-slate-200 dark:text-slate-400 dark:bg-slate-800" };
+  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} /> };
 };
 
 export default function CategoryGrid({ initialCategories = [] }: CategoryGridProps) {
-  const { t } = useLanguage(); 
+  const { t } = useLanguage(); // 🚨 ಭಾಷೆ ಬದಲಾಯಿಸಲು ಟಾಗಲ್
   const [isExpanded, setIsExpanded] = useState(false);
 
   const categories = initialCategories;
 
   return (
-    <div className="w-full relative z-10">
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4 pb-4 px-1">
+    <div className="w-full relative z-10 pt-1 bg-white dark:bg-[#050b14]">
+        {/* 🚨 YELP GRID: 4 columns on mobile, clean spacing, no outer borders */}
+        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-y-6 gap-x-2 pb-6 px-4 max-w-[1200px] mx-auto">
           {categories.map((category, index) => {
-            const { icon, colorClass } = getCategoryIcon(category.slug.toLowerCase());
+            const { icon } = getCategoryIcon(category.slug.toLowerCase());
             
-            // Bulletproof logic: Always limit to 7 items on mobile if not expanded, 
-            // so the 8th slot is perfectly reserved for the 'View More' button.
+            // Limit to 7 items on mobile if not expanded, 8th slot is for 'More'
             const showOnMobile = isExpanded || index < 7;
 
             return (
               <React.Fragment key={category.id}>
-                {/* 📱 MOBILE VERSION: Physically removed from DOM if not expanded. Guaranteed to show with 'flex md:hidden' */}
+                {/* 📱 MOBILE VERSION: Yelp Style - Direct Icon + Dynamic Text */}
                 {showOnMobile && (
                   <Link
                     href={`/listings?category=${category.slug}`}
-                    className="flex md:hidden group flex-col items-center justify-center p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 no-underline h-[95px] w-full max-w-[90px] mx-auto"
+                    className="flex md:hidden group flex-col items-center justify-start no-underline w-full gap-2"
                   >
-                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner ${colorClass}`}>
+                    <div className="relative flex items-center justify-center h-10 w-10">
                       {category.icon_url ? (
-                        <Image src={category.icon_url} alt={category.name} width={24} height={24} className="object-contain drop-shadow-md" />
+                        <Image src={category.icon_url} alt={category.name} width={28} height={28} className="object-contain" />
                       ) : (
                         icon
                       )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                    {/* 🚨 ಹೆಡರ್‌ನಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಬದಲಾಗುತ್ತದೆ */}
+                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight">
                       {t(category.name_kn, category.name)}
                     </span>
                   </Link>
                 )}
 
-                {/* 💻 DESKTOP VERSION: Always rendered, but strictly hidden on mobile with 'hidden md:flex' */}
+                {/* 💻 DESKTOP VERSION: Similar minimal layout + Dynamic Text */}
                 <Link
                   href={`/listings?category=${category.slug}`}
-                  className="hidden md:flex group flex-col items-center justify-center p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 hover:scale-[1.03] transition-all duration-300 no-underline h-[110px] w-full"
+                  className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1 transition-transform duration-300"
                 >
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shadow-inner ${colorClass}`}>
+                  <div className="relative flex items-center justify-center h-14 w-14 rounded-2xl bg-slate-50 dark:bg-slate-800/50 group-hover:shadow-md transition-all duration-300 border border-transparent group-hover:border-sky-100 dark:group-hover:border-sky-900/50">
                     {category.icon_url ? (
-                      <Image src={category.icon_url} alt={category.name} width={32} height={32} className="object-contain drop-shadow-md" />
+                      <Image src={category.icon_url} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
                     ) : (
-                      icon
+                      <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
                     )}
                   </div>
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                  {/* 🚨 ಹೆಡರ್‌ನಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಬದಲಾಗುತ್ತದೆ */}
+                  <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight group-hover:text-sky-600 dark:group-hover:text-sky-400">
                     {t(category.name_kn, category.name)}
                   </span>
                 </Link>
@@ -103,17 +109,17 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
             );
           })}
 
-          {/* 📱 MOBILE 'VIEW MORE' BUTTON: Guaranteed to show with 'flex md:hidden' */}
+          {/* 📱 MOBILE 'VIEW MORE' BUTTON: Yelp Style 3 dots icon */}
           {!isExpanded && categories.length > 7 && (
             <button
               onClick={() => setIsExpanded(true)}
-              className="flex md:hidden group flex-col items-center justify-center p-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] border border-slate-200 dark:border-slate-700/50 hover:shadow-[0_8px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/50 hover:-translate-y-1 transition-all duration-300 h-[95px] w-full max-w-[90px] mx-auto"
+              className="flex md:hidden group flex-col items-center justify-start w-full bg-transparent border-none outline-none gap-2"
             >
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-inner text-sky-400 bg-sky-500/10">
-                <LayoutGrid className="w-6 h-6 drop-shadow-md" />
+              <div className="relative flex items-center justify-center h-10 w-10">
+                <MoreHorizontal className="w-8 h-8 text-slate-800 dark:text-slate-200 stroke-[1.5px] transition-colors duration-300 group-hover:text-sky-500" />
               </div>
-              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 text-center whitespace-nowrap overflow-hidden text-ellipsis w-full antialiased group-hover:text-sky-600 dark:group-hover:text-sky-400">
-                {t("ಇನ್ನಷ್ಟು", "View More")}
+              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight">
+                {t("ಇನ್ನಷ್ಟು", "More")}
               </span>
             </button>
           )}

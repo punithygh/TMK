@@ -115,6 +115,7 @@ export interface Banner {
   image_url: string | null;
   link_url?: string | null;
   order: number;
+  view_time?: number;
 }
 
 // 🚀 NATIVE FETCH WRAPPER FOR SERVER COMPONENTS (HIGH SPEED + NO CACHE STALENESS)
