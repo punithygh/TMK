@@ -52,13 +52,13 @@ export default function HomeClient({
   const scrollContainerClass = "flex gap-4 md:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scroll-pl-4 sm:scroll-pl-0 after:content-[''] after:w-1 after:shrink-0";
   
   // ✅ UNIFORM CARD SIZE (Movie Review Size for all cards)
-  const unifiedCardClass = "group min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] shrink-0 snap-start bg-white dark:bg-[#0a1120] border border-slate-200 dark:border-slate-800/80 rounded-2xl overflow-hidden transition-all duration-400 hover:-translate-y-2 flex flex-col relative shadow-sm hover:shadow-lg";
+  const unifiedCardClass = "group min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] shrink-0 snap-start bg-white dark:bg-[#0a1120] border border-red-200 dark:border-slate-800/80 rounded-xl overflow-hidden transition-all duration-300 flex flex-col relative hover:shadow-md hover:border-red-300 dark:hover:border-slate-700";
   
   // ✅ UNIFORM IMAGE HEIGHT
   const unifiedImageClass = "h-[160px] md:h-[180px] bg-slate-100 dark:bg-slate-900 relative flex items-center justify-center overflow-hidden shrink-0";
 
   return (
-    <div className="flex flex-col gap-4 md:gap-16 pb-24 overflow-x-hidden bg-slate-50 dark:bg-[#050b14] min-h-screen transition-colors duration-300">
+    <div className="flex flex-col gap-4 md:gap-16 pb-24 overflow-x-hidden bg-white dark:bg-[#050b14] min-h-screen transition-colors duration-300">
       
       {/* 1. HERO SECTION */}
       <Hero />
@@ -92,7 +92,7 @@ export default function HomeClient({
               const rating = Number(biz.rating) || 5;
 
               return (
-                <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30`}>
+                <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass}`}>
                   <div className={unifiedImageClass}>
                     {imgSrc ? (
                       <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
@@ -136,7 +136,7 @@ export default function HomeClient({
               const imgSrc = getValidImageUrl(article.image_upload || article.image_url);
               const title = lang === 'kn' ? (article.title_kn || article.title) : article.title;
               return (
-              <Link key={`movie-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(245,158,11,0.15)] hover:border-amber-500/30`}>
+              <Link key={`movie-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
                    {imgSrc ? (
                      <Image src={imgSrc} alt={title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
@@ -179,7 +179,7 @@ export default function HomeClient({
               const imgSrc = getValidImageUrl(article.image_upload || article.image_url);
               const title = lang === 'kn' ? (article.title_kn || article.title) : article.title;
               return (
-              <Link key={`news-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(14,165,233,0.15)] hover:border-sky-500/30`}>
+              <Link key={`news-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
                    {imgSrc ? (
                      <Image src={imgSrc} alt={title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
@@ -187,7 +187,7 @@ export default function HomeClient({
                      <Newspaper size={40} className="text-slate-300 dark:text-slate-700" />
                    )}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] to-transparent opacity-80" />
-                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-sky-500 dark:text-sky-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-sky-200 dark:border-sky-500/20 z-10 uppercase tracking-wider shadow-md">
+                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-red-600 dark:text-sky-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-red-200 dark:border-sky-500/20 z-10 uppercase tracking-wider shadow-md">
                      {article.type_display || "NEWS"}
                    </span>
                 </div>
@@ -195,7 +195,7 @@ export default function HomeClient({
                   <h3 className="font-extrabold text-slate-900 dark:text-white text-[15px] md:text-[16px] line-clamp-2 mb-4 leading-snug drop-shadow-md" title={title}>{title}</h3>
                   <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
                     <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400 dark:text-slate-500"/> {t("ಇತ್ತೀಚಿನದು", "Recent")}</span>
-                    <span className="text-sky-500 dark:text-sky-400 flex items-center gap-1.5 group-hover:text-sky-600 dark:group-hover:text-sky-300 transition-colors">
+                    <span className="text-red-600 dark:text-sky-400 flex items-center gap-1.5 group-hover:text-red-700 dark:group-hover:text-sky-300 transition-colors">
                       {t("ಹೆಚ್ಚು ಓದಿ", "Read More")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
@@ -221,7 +221,7 @@ export default function HomeClient({
             {socialPosts?.length > 0 ? socialPosts.map((post: any) => {
               const imgSrc = getValidImageUrl(post.thumbnail);
               return (
-              <Link key={`social-${post.id}`} href={post.link || "#"} target="_blank" className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)] hover:border-indigo-500/30`}>
+              <Link key={`social-${post.id}`} href={post.link || "#"} target="_blank" className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
                    {imgSrc && <Image src={imgSrc} alt={post.title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-40 transition-opacity duration-500" />}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] via-white/40 dark:via-[#0a1120]/40 to-transparent opacity-90" />
@@ -269,7 +269,7 @@ export default function HomeClient({
                 <Link 
                   key={`review-${review.id}`} 
                   href={`/business/${review.business?.slug || '#'}`} 
-                  className={`${unifiedCardClass} hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] hover:border-emerald-500/30`}
+                  className={`${unifiedCardClass}`}
                 >
                   <div className={unifiedImageClass}>
                      {bizImgSrc ? (

@@ -97,7 +97,7 @@ const Hero = () => {
           <form
             onSubmit={handleSearchSubmit}
             /* 🌟 Design Updates: BLUE Glass, Background showing through & Thick Blue Border 🌟 */
-            className="flex items-center w-full bg-blue-500/20 backdrop-blur-xl rounded-full p-1.5 border-[3px] border-blue-500 shadow-2xl focus-within:border-blue-400 focus-within:bg-blue-500/30 transition-all duration-300"
+            className="flex items-center w-full bg-white/10 dark:bg-white/5 backdrop-blur-xl rounded-full p-1.5 border-[3px] border-red-600 dark:border-blue-500 shadow-2xl focus-within:border-red-500 dark:focus-within:border-blue-400 focus-within:bg-white/20 dark:focus-within:bg-white/10 transition-all duration-300"
           >
             <input
               type="text"
@@ -109,7 +109,7 @@ const Hero = () => {
             />
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-500 text-white rounded-full h-11 w-11 flex items-center justify-center transition-all shadow-lg shrink-0 ml-1"
+              className="bg-red-600 hover:bg-red-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-full h-11 w-11 flex items-center justify-center transition-all shadow-lg shrink-0 ml-1"
             >
               <Search size={20} className="drop-shadow-sm" />
             </button>

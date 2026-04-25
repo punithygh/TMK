@@ -80,16 +80,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
   if (product.is_top_search) badges.push({ text: "Top Rated", color: "bg-amber-500 text-white border-amber-400" });
   if (product.is_featured) badges.push({ text: "Featured", color: "bg-rose-500 text-white border-rose-400" });
   if (isVerified) badges.push({ text: "Verified", color: "bg-emerald-500 text-white border-emerald-400" });
-  if (product.is_trusted) badges.push({ text: "Trusted", color: "bg-sky-500 text-white border-sky-400" });
+  if (product.is_trusted) badges.push({ text: "Trusted", color: "bg-red-600 dark:bg-sky-500 text-white border-red-500 dark:border-sky-400" });
   if (product.dynamic_badges) {
     product.dynamic_badges.forEach(b => badges.push({ text: b, color: "bg-purple-500 text-white border-purple-400" }));
   }
 
   return (
-    <div className="group bg-white dark:bg-[#0a1120] rounded-xl sm:rounded-2xl md:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 hover:border-sky-500/50 hover:shadow-2xl hover:shadow-sky-500/10 transition-all duration-300 flex flex-col sm:flex-row relative mb-3 sm:mb-6">
+    <div className="group bg-white dark:bg-[#0a1120] rounded-xl sm:rounded-2xl md:rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800/80 hover:border-gray-300 dark:hover:border-slate-700 hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row relative mb-3 sm:mb-6">
       
       {/* 1. Image Section - Mobile: Top, Desktop: Left */}
-      <div className="relative h-44 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-slate-200 dark:border-slate-800/80">
+      <div className="relative h-44 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-gray-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-slate-800/80">
         {hasValidImage ? (
           <Image
             src={finalImgSrc as string}
@@ -146,7 +146,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Business Name */}
           <Link href={`/business/${finalRouteSlug}`} className="block group/title mb-2">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-sky-500 transition-colors line-clamp-2">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-red-600 dark:group-hover/title:text-sky-500 transition-colors line-clamp-2">
               {title}
             </h3>
           </Link>
@@ -197,12 +197,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* 3. Action Buttons - 3 in one line */}
-        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800/80 flex gap-2 sm:gap-3 w-full">
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-slate-800/80 flex gap-2 sm:gap-3 w-full">
           
           <a 
             href={displayPhone ? `tel:${displayPhone}` : '#'}
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ಫೋನ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "Phone number not available")); } }}
-            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-md border bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-600 gap-1.5 sm:gap-2 group/btn`}
+            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-sm border bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200 dark:bg-slate-800 dark:text-white dark:border-slate-700 gap-1.5 sm:gap-2 group/btn`}
           >
             <Phone className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:animate-pulse" : ""}`} /> 
             <span className="hidden sm:inline text-sm font-bold">{t("ಕರೆ", "Call")}</span>
@@ -213,7 +213,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             target={displayPhone ? "_blank" : "_self"}
             rel="noopener noreferrer"
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "WhatsApp number not available")); } }}
-            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-md border bg-[#25D366] text-white hover:bg-[#1DA851] border-[#1DA851] gap-1.5 sm:gap-2 group/btn`}
+            className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-sm border bg-green-50 text-green-700 hover:bg-green-100 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 gap-1.5 sm:gap-2 group/btn`}
           >
             <MessageCircle className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:scale-110 transition-transform" : ""}`} /> 
             <span className="hidden sm:inline text-sm font-bold">WhatsApp</span>
@@ -221,7 +221,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
           <Link 
             href={`/business/${finalRouteSlug}`}
-            className="flex-1 sm:flex-[1.2] inline-flex flex-row items-center justify-center py-2 sm:py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg sm:rounded-xl transition-all shadow-sm sm:shadow-lg sm:shadow-sky-500/25 border border-sky-400 gap-1.5 sm:gap-2 group/btn"
+            className="flex-1 sm:flex-[1.2] inline-flex flex-row items-center justify-center py-2 sm:py-3 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-lg transition-colors shadow-sm border border-transparent gap-1.5 sm:gap-2 group/btn"
           >
             <Navigation className="w-5 h-5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" /> 
             <span className="hidden sm:inline text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>

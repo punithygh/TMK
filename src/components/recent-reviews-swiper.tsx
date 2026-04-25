@@ -20,7 +20,7 @@ export default function RecentReviewsSwiper({ initialReviews = [] }: RecentRevie
     <div className="w-full">
       <div className="flex items-center justify-between mb-6 px-1">
         <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <MessageSquareQuote className="text-sky-500 dark:text-sky-400" size={24} />
+          <MessageSquareQuote className="text-red-600 dark:text-sky-400" size={24} />
           {t("ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆಗಳು", "Recent Activity")}
         </h2>
       </div>
@@ -36,12 +36,12 @@ export default function RecentReviewsSwiper({ initialReviews = [] }: RecentRevie
             return (
               <div 
                 key={review.id} 
-                className="min-w-[280px] md:min-w-[320px] max-w-[320px] flex-shrink-0 bg-white dark:bg-[#0c1220] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 snap-center md:snap-start shadow-lg hover:border-sky-300 dark:hover:border-sky-500/30 transition-all duration-300 flex flex-col h-full"
+                className="min-w-[280px] md:min-w-[320px] max-w-[320px] flex-shrink-0 bg-white dark:bg-[#0c1220] border border-red-200 dark:border-slate-800 rounded-2xl p-5 snap-center md:snap-start shadow-lg hover:border-red-300 dark:hover:border-sky-500/30 transition-all duration-300 flex flex-col h-full"
               >
                 {/* User Info & Rating */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-500 flex items-center justify-center font-bold text-lg border border-sky-200 dark:border-sky-500/20">
+                    <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center font-bold text-lg border border-red-200 dark:border-sky-500/20">
                       {review.user_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -67,16 +67,16 @@ export default function RecentReviewsSwiper({ initialReviews = [] }: RecentRevie
                 {/* Business Link */}
                 <Link 
                   href={`/business/${review.business_area_slug}`} 
-                  className="mt-auto flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-sky-400 dark:hover:border-sky-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-xl transition-all group no-underline"
+                  className="mt-auto flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-red-400 dark:hover:border-sky-500 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-xl transition-all group no-underline"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
-                    <Store className="w-4 h-4 text-sky-600 dark:text-sky-500" />
+                  <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
+                    <Store className="w-4 h-4 text-red-600 dark:text-sky-500" />
                   </div>
                   <div className="flex flex-col overflow-hidden">
                     <span className="text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider">
                       {t("ರಿವ್ಯೂ ಮಾಡಿದ ಸ್ಥಳ", "Reviewed At")}
                     </span>
-                    <span className="text-slate-900 dark:text-white font-bold text-xs truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                    <span className="text-slate-900 dark:text-white font-bold text-xs truncate group-hover:text-red-600 dark:group-hover:text-sky-400 transition-colors">
                       {bizName}
                     </span>
                   </div>

@@ -39,17 +39,17 @@ export default function ContactPage() {
       {/* 1. Header Section */}
       <div className="bg-slate-900 pt-28 pb-32 px-4 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-          <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-sky-500/10 blur-[100px]"></div>
+          <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-red-600/10 dark:bg-sky-500/10 blur-[100px]"></div>
           <div className="absolute bottom-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[80px]"></div>
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center justify-center p-3 bg-sky-500/10 rounded-2xl mb-6 shadow-inner border border-sky-500/20">
-            <MessageSquareText className="w-8 h-8 text-sky-400" />
+          <div className="inline-flex items-center justify-center p-3 bg-red-50 dark:bg-sky-500/10 rounded-2xl mb-6 shadow-inner border border-red-200 dark:border-sky-500/20">
+            <MessageSquareText className="w-8 h-8 text-red-600 dark:text-sky-400" />
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
             {t("ನಮ್ಮನ್ನು ", "Get In ")}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-400 dark:to-blue-500">
               {t("ಸಂಪರ್ಕಿಸಿ", "Touch")}
             </span>
           </h1>
@@ -68,13 +68,13 @@ export default function ContactPage() {
           {/* Contact Info Sidebar */}
           <div className="md:col-span-2 flex flex-col gap-6">
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 flex-1">
-              <h3 className="text-xl font-bold text-slate-800 mb-8 border-b-2 border-sky-500 inline-block pb-2">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-8 border-b-2 border-red-600 dark:border-sky-500 inline-block pb-2">
                 {t("ಸಂಪರ್ಕ ಮಾಹಿತಿ", "Contact Information")}
               </h3>
               
               <div className="space-y-8">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-sky-100">
+                  <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-red-100 dark:border-sky-500/20">
                     <MapPin size={24} />
                   </div>
                   <div>
@@ -86,28 +86,28 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-sky-100">
+                  <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-red-100 dark:border-sky-500/20">
                     <Mail size={24} />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-1">
                       {t("ಇಮೇಲ್ ಮಾಡಿ", "Email Us")}
                     </h4>
-                    <a href="mailto:Punithygh@gmail.com" className="text-slate-600 font-medium hover:text-sky-500 transition-colors">
+                    <a href="mailto:Punithygh@gmail.com" className="text-slate-600 dark:text-slate-400 font-medium hover:text-red-600 dark:hover:text-sky-500 transition-colors">
                       Punithygh@gmail.com
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-sky-100">
+                  <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center shrink-0 shadow-sm border border-red-100 dark:border-sky-500/20">
                     <Phone size={24} />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-1">
                       {t("ಕರೆ ಮಾಡಿ", "Call Us")}
                     </h4>
-                    <a href="tel:+918553538505" className="text-slate-600 font-medium hover:text-sky-500 transition-colors">
+                    <a href="tel:+918553538505" className="text-slate-600 dark:text-slate-400 font-medium hover:text-red-600 dark:hover:text-sky-500 transition-colors">
                       +91 8553538505
                     </a>
                   </div>
@@ -158,7 +158,7 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder={lang === 'kn' ? "ಉದಾ: ಪುನೀತ್" : "e.g., Punith"}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-medium"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-600/50 dark:focus:ring-sky-500/50 focus:border-red-600 dark:focus:border-sky-500 transition-all font-medium"
                     />
                   </div>
                   
@@ -173,7 +173,7 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="hello@example.com"
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-medium"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-600/50 dark:focus:ring-sky-500/50 focus:border-red-600 dark:focus:border-sky-500 transition-all font-medium"
                     />
                   </div>
                 </div>
@@ -189,14 +189,14 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder={lang === 'kn' ? "ನಾವು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?" : "How can we help you?"}
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-medium resize-y min-h-[120px]"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white px-4 py-3.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-600/50 dark:focus:ring-sky-500/50 focus:border-red-600 dark:focus:border-sky-500 transition-all font-medium resize-y min-h-[120px]"
                   ></textarea>
                 </div>
 
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg shadow-sky-500/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+                  className="w-full bg-red-600 hover:bg-red-700 dark:bg-sky-500 dark:hover:bg-sky-400 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg shadow-red-600/30 dark:shadow-sky-500/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
                 >
                   {isSubmitting ? (
                     <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

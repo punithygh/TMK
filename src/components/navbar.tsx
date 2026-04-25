@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation"; // 🚨 usePathname ಸೇರಿಸಲಾಗಿದೆ
-import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft } from "lucide-react"; // 🚨 ArrowLeft ಸೇರಿಸಲಾಗಿದೆ
+import { useRouter, usePathname } from "next/navigation";
+import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname(); // 🚨 ಪ್ರಸ್ತುತ ಪೇಜ್ ಯಾವುದು ಎಂದು ತಿಳಿಯಲು
-  const isHomePage = pathname === "/"; // 🚨 ಹೋಮ್ ಪೇಜ್ ಚೆಕ್
+  const pathname = usePathname();
+  const isHomePage = pathname === "/";
   
   const { lang, setLang, t } = useLanguage(); 
   const { user, isAuthenticated, logout } = useAuth();
@@ -19,7 +19,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false); // 🚨 ಮೊಬೈಲ್ ಸರ್ಚ್ ಓವರ್‌ಲೇ ಸ್ಟೇಟ್
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -105,7 +105,7 @@ export default function Navbar() {
         const transcript = e.results[0][0].transcript;
         setSearchQuery(transcript);
         router.push(`/listings?q=${encodeURIComponent(transcript)}`);
-        setIsSearchOverlayOpen(false); // 🚨 ವಾಯ್ಸ್ ಸರ್ಚ್ ಆದಮೇಲೆ ಓವರ್‌ಲೇ ಕ್ಲೋಸ್ ಮಾಡು
+        setIsSearchOverlayOpen(false);
       };
 
       recognition.onend = () => {
@@ -122,12 +122,12 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/listings?q=${encodeURIComponent(searchQuery)}`);
-      setIsSearchOverlayOpen(false); // 🚨 ಸರ್ಚ್ ಆದಮೇಲೆ ಓವರ್‌ಲೇ ಕ್ಲೋಸ್ ಮಾಡು
+      setIsSearchOverlayOpen(false);
     }
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/90 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+    <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 gap-y-3 md:gap-y-0 max-w-[1400px] mx-auto">
         
         {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher/Search & Menu */}
@@ -136,29 +136,32 @@ export default function Navbar() {
             <div className="font-black text-[26px] tracking-tighter whitespace-nowrap flex items-center">
               <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
               <div className="relative ml-[1px] flex flex-col justify-end">
-                <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
                   connect
                 </span>
-                <div className="absolute -bottom-[-5px] left-0 w-full h-[2px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+                <div className="absolute bottom-[5px] left-0 w-full h-[2px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
               </div>
             </div>
           </Link>
           
           <div className="flex items-center gap-2 shrink-0">
-            {/* 🚨 CONDITION: Home Page = Language, Other Pages = Search Icon */}
             {isHomePage ? (
-              <div 
-                className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
-                onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
-              >
-                <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-sky-500 to-blue-600 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
-                <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
-                <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
-              </div>
+              mounted ? (
+                <div 
+                  className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
+                  onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
+                >
+                  <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
+                  <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
+                  <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
+                </div>
+              ) : (
+                <div className="w-[60px] h-8 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse"></div>
+              )
             ) : (
               <button 
                 onClick={() => setIsSearchOverlayOpen(true)}
-                className="p-1.5 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-500 border border-sky-200 dark:border-sky-500/20 hover:bg-sky-100 dark:hover:bg-sky-500/20 transition-colors"
+                className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-gray-700 border border-red-200 dark:border-sky-500/20 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-colors shadow-sm"
                 aria-label="Open Search"
               >
                 <Search className="w-5 h-5" />
@@ -167,7 +170,7 @@ export default function Navbar() {
 
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -180,13 +183,13 @@ export default function Navbar() {
             <div className="font-black text-[28px] tracking-tighter whitespace-nowrap flex items-center group-hover:scale-[1.02] transition-transform duration-300">
               <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
               <div className="relative ml-[2px] flex flex-col justify-end">
-                <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
                   connect
                 </span>
-                <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+                <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
               </div>
             </div>
-            <div className="w-full ml-[100px] pr10 mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold lowercase tracking-widest group-hover:text-sky-500 transition-colors duration-300">
+            <div className="w-full ml-[100px] pr10 mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold lowercase tracking-widest group-hover:text-red-600 dark:group-hover:text-sky-500 transition-colors duration-300">
               Local Business Engine
             </div>
           </Link>
@@ -195,19 +198,19 @@ export default function Navbar() {
         {/* 🔍 SEARCH BAR (Desktop Only - Hidden on Mobile) */}
         <div className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px]">
           <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
-            <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-4 w-4 h-4 text-red-600 dark:text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={placeholder}
-              className="w-full h-10 md:h-11 pl-10 pr-12 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white text-sm outline-none transition-all focus:border-sky-500 focus:shadow-[0_0_12px_rgba(14,165,233,0.2)] placeholder:text-slate-400"
+              className="w-full h-10 md:h-11 pl-10 pr-12 rounded-full border border-red-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white text-sm outline-none transition-all focus:border-red-600 dark:focus:border-sky-500 shadow-inner placeholder:text-gray-400"
               required
             />
             <button
               type="button"
               onClick={handleVoiceSearch}
-              className={`absolute right-3 p-1.5 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-sky-400 hover:bg-sky-500/10"}`}
+              className={`absolute right-3 p-1.5 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-red-600 hover:bg-red-50 dark:text-sky-400 dark:hover:bg-sky-500/10"}`}
               aria-label="Voice Search"
             >
               <Mic className="w-4 h-4" />
@@ -217,62 +220,76 @@ export default function Navbar() {
 
         {/* 🖥️ DESKTOP RIGHT ACTIONS */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-full bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-          )}
-
-          <Link href="/free-listing" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-slate-700 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-sky-500 dark:hover:border-sky-400 hover:text-sky-600 dark:hover:text-sky-400">
-            <Megaphone className="w-4 h-4" />
-            <span>{t("ಉಚಿತ ಲಿಸ್ಟಿಂಗ್", "Free Listing")}</span>
-          </Link>
-          
-          {isAuthenticated && user ? (
-            <div className="relative">
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-sky-400 dark:hover:border-sky-400 text-slate-700 dark:text-white"
+          {mounted ? (
+            <>
+              {/* Theme Toggle */}
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="p-2 rounded-full bg-white border border-gray-200 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
               >
-                <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase">
-                  {user.first_name.charAt(0)}
-                </div>
-                <span className="max-w-[80px] truncate">{user.first_name}</span>
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 text-slate-800 dark:text-slate-200">
-                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
-                    <p className="text-sm font-bold truncate">{user.mobile}</p>
-                  </div>
-                  <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
-                    <LayoutDashboard className="w-4 h-4" /> {t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}
-                  </Link>
-                  <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors text-left">
-                    <LogOut className="w-4 h-4" /> {t("ಲಾಗ್ ಔಟ್", "Logout")}
+              {/* Add Business Link (Replaced Free Listing) */}
+              <Link href="/add-business" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-slate-700 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-red-600 dark:hover:border-sky-400 hover:text-red-600 dark:hover:text-sky-400">
+                <Megaphone className="w-4 h-4" />
+                <span>{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
+              </Link>
+              
+              {/* Auth User Profile / Login */}
+              {isAuthenticated && user ? (
+                <div className="relative">
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-400 dark:hover:border-sky-400 text-slate-700 dark:text-white"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-red-600 dark:bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase">
+                      {user.first_name.charAt(0)}
+                    </div>
+                    <span className="max-w-[80px] truncate">{user.first_name}</span>
                   </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 text-slate-800 dark:text-slate-200">
+                      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
+                        <p className="text-sm font-bold truncate">{user.mobile}</p>
+                      </div>
+                      <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-sky-400 transition-colors">
+                        <LayoutDashboard className="w-4 h-4" /> {t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}
+                      </Link>
+                      <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors text-left">
+                        <LogOut className="w-4 h-4" /> {t("ಲಾಗ್ ಔಟ್", "Logout")}
+                      </button>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <Link href="/login" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-colors bg-red-600 dark:bg-sky-600 text-white border-none hover:bg-red-700 dark:hover:bg-sky-700 shadow-sm">
+                  <UserCircle className="w-4 h-4" />
+                  <span>{t("ಲಾಗಿನ್", "Login")}</span>
+                </Link>
               )}
-            </div>
+              
+              {/* Language Switcher */}
+              <div 
+                className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[76px] h-10 cursor-pointer shrink-0" 
+                onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
+              >
+                <div className={`absolute top-1 bottom-1 w-[32px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[39px]'}`} />
+                <span className={`relative z-10 w-1/2 text-center text-xs font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
+                <span className={`relative z-10 w-1/2 text-center text-xs font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>E</span>
+              </div>
+            </>
           ) : (
-            <Link href="/login" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-sky-500 text-white border-none hover:bg-sky-400 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5">
-              <UserCircle className="w-4 h-4" />
-              <span>{t("ಲಾಗಿನ್", "Login")}</span>
-            </Link>
+            /* Hydration Mismatch ತಡೆಯಲು Skeleton Loader */
+            <div className="flex gap-4 items-center">
+              <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse"></div>
+              <div className="w-32 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"></div>
+              <div className="w-24 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse"></div>
+              <div className="w-[76px] h-10 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse"></div>
+            </div>
           )}
-          
-          <div 
-            className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[76px] h-10 cursor-pointer shrink-0" 
-            onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
-          >
-            <div className={`absolute top-1 bottom-1 w-[32px] bg-gradient-to-r from-sky-500 to-blue-600 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[39px]'}`} />
-            <span className={`relative z-10 w-1/2 text-center text-xs font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
-            <span className={`relative z-10 w-1/2 text-center text-xs font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>E</span>
-          </div>
         </div>
       </div>
 
@@ -291,30 +308,30 @@ export default function Navbar() {
               </button>
             )}
           </div>
-          <Link href="/free-listing" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
-            <Megaphone className="w-5 h-5 text-sky-500" />
-            <span className="text-sm font-bold">{t("ಉಚಿತ ಲಿಸ್ಟಿಂಗ್", "Free Listing")}</span>
+          <Link href="/add-business" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
+            <Megaphone className="w-5 h-5 text-red-600 dark:text-sky-500" />
+            <span className="text-sm font-bold">{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
           </Link>
-          <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200">
-            <Layers className="w-5 h-5 text-sky-500" />
+          <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
+            <Layers className="w-5 h-5 text-red-600 dark:text-sky-500" />
             <span className="text-sm font-bold">{t("ವರ್ಗಗಳು", "Categories")}</span>
           </Link>
-          {isAuthenticated && user ? (
-            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400">
+          {mounted && isAuthenticated && user ? (
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 text-red-600 dark:text-sky-400">
               <LayoutDashboard className="w-5 h-5" />
               <span className="text-sm font-bold">{t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}</span>
             </Link>
-          ) : (
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/30">
+          ) : mounted ? (
+            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-600 dark:bg-gradient-to-r dark:from-sky-500 dark:to-blue-600 text-white shadow-lg shadow-red-600/30 dark:shadow-sky-500/30">
               <UserCircle className="w-5 h-5" />
               <span className="text-sm font-bold">{t("ಲಾಗಿನ್", "Login")}</span>
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
 
       {/* 📱 🚨 MOBILE FULL-SCREEN SEARCH OVERLAY (YELP STYLE) 🚨 */}
-      <div className={`md:hidden fixed inset-0 z-[100000] bg-slate-50 dark:bg-[#050b14] transition-transform duration-300 ease-in-out flex flex-col ${isSearchOverlayOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
+      <div className={`md:hidden fixed inset-0 z-[100000] bg-white dark:bg-[#050b14] transition-transform duration-300 ease-in-out flex flex-col ${isSearchOverlayOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#050b14] border-b border-slate-200 dark:border-slate-800 shadow-sm pt-safe-top">
           <button 
             type="button"
@@ -334,12 +351,12 @@ export default function Navbar() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={lang === "kn" ? "ಹುಡುಕಿ..." : "Search in Tumkur..."}
-              className="w-full h-11 pl-4 pr-12 rounded-full border border-sky-500/30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-base outline-none shadow-[0_0_10px_rgba(14,165,233,0.1)] focus:border-sky-500"
+              className="w-full h-11 pl-4 pr-12 rounded-full border border-red-500/30 dark:border-sky-500/30 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-base outline-none shadow-[0_0_10px_rgba(220,38,38,0.1)] dark:shadow-[0_0_10px_rgba(14,165,233,0.1)] focus:border-red-600 dark:focus:border-sky-500"
             />
             <button
               type="button"
               onClick={handleVoiceSearch}
-              className={`absolute right-2 p-2 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-sky-500"}`}
+              className={`absolute right-2 p-2 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-red-600 dark:text-sky-500"}`}
             >
               <Mic className="w-5 h-5" />
             </button>

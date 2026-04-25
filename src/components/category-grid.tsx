@@ -32,7 +32,7 @@ interface CategoryGridProps {
 // 🚨 YELP STYLE: Clean dark icons, thin stroke, no colorful backgrounds
 const getCategoryIcon = (slug: string) => {
   const iconProps = { 
-    className: "w-7 h-7 md:w-8 md:h-8 text-slate-800 dark:text-slate-200 transition-colors duration-300 group-hover:text-sky-500", 
+    className: "w-7 h-7 md:w-8 md:h-8 text-slate-800 dark:text-slate-200 transition-colors duration-300 group-hover:text-red-600 dark:group-hover:text-sky-500 group-active:text-red-600 dark:group-active:text-sky-500", 
     strokeWidth: 1.5 
   };
   
@@ -82,7 +82,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                       )}
                     </div>
                     {/* 🚨 ಹೆಡರ್‌ನಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಬದಲಾಗುತ್ತದೆ */}
-                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight">
+                    <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight group-active:text-red-600 dark:group-active:text-sky-400 transition-colors duration-300">
                       {t(category.name_kn, category.name)}
                     </span>
                   </Link>
@@ -93,7 +93,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                   href={`/listings?category=${category.slug}`}
                   className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1 transition-transform duration-300"
                 >
-                  <div className="relative flex items-center justify-center h-14 w-14 rounded-2xl bg-slate-50 dark:bg-slate-800/50 group-hover:shadow-md transition-all duration-300 border border-transparent group-hover:border-sky-100 dark:group-hover:border-sky-900/50">
+                  <div className="relative flex items-center justify-center h-14 w-14 rounded-xl bg-white dark:bg-slate-800/50 group-hover:shadow-sm transition-all duration-300 border border-gray-200 dark:border-transparent group-hover:border-gray-300 dark:group-hover:border-sky-900/50">
                     {category.icon_url ? (
                       <Image src={category.icon_url} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
                     ) : (
@@ -101,7 +101,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                     )}
                   </div>
                   {/* 🚨 ಹೆಡರ್‌ನಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಬದಲಾಗುತ್ತದೆ */}
-                  <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                  <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight group-hover:text-red-600 dark:group-hover:text-sky-400">
                     {t(category.name_kn, category.name)}
                   </span>
                 </Link>
@@ -116,9 +116,9 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
               className="flex md:hidden group flex-col items-center justify-start w-full bg-transparent border-none outline-none gap-2"
             >
               <div className="relative flex items-center justify-center h-10 w-10">
-                <MoreHorizontal className="w-8 h-8 text-slate-800 dark:text-slate-200 stroke-[1.5px] transition-colors duration-300 group-hover:text-sky-500" />
+                <MoreHorizontal className="w-8 h-8 text-slate-800 dark:text-slate-200 stroke-[1.5px] transition-colors duration-300 group-hover:text-red-600 dark:group-hover:text-sky-500 group-active:text-red-600 dark:group-active:text-sky-500" />
               </div>
-              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight">
+              <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 text-center leading-tight group-active:text-red-600 dark:group-active:text-sky-400 transition-colors duration-300">
                 {t("ಇನ್ನಷ್ಟು", "More")}
               </span>
             </button>

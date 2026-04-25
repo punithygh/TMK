@@ -23,12 +23,12 @@ const ProductList = ({ products, isLoading }: ProductListProps) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {[...Array(6)].map((_, index) => (
-          <div key={index} className="h-[380px] w-full rounded-2xl bg-slate-200 animate-pulse">
-            <div className="h-48 bg-slate-300 rounded-t-2xl"></div>
+          <div key={index} className="h-[380px] w-full rounded-2xl bg-gray-100 dark:bg-slate-800 animate-pulse border border-gray-200 dark:border-slate-700">
+            <div className="h-48 bg-gray-200 dark:bg-slate-700 rounded-t-2xl"></div>
             <div className="p-5 space-y-4">
-              <div className="h-6 w-3/4 bg-slate-300 rounded"></div>
-              <div className="h-4 w-1/2 bg-slate-300 rounded"></div>
-              <div className="h-10 w-full bg-slate-300 rounded-xl mt-4"></div>
+              <div className="h-6 w-3/4 bg-gray-200 dark:bg-slate-700 rounded"></div>
+              <div className="h-4 w-1/2 bg-gray-200 dark:bg-slate-700 rounded"></div>
+              <div className="h-10 w-full bg-gray-200 dark:bg-slate-700 rounded-xl mt-4"></div>
             </div>
           </div>
         ))}

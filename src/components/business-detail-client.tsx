@@ -16,8 +16,8 @@ import { BusinessListing } from "@/services/courses";
 import { submitEnquiry, toggleBookmark, submitReview, getUserDashboard } from "@/services/user";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "parking": <Car size={24} className="text-sky-400" />,
-  "ಪಾರ್ಕಿಂಗ್": <Car size={24} className="text-sky-400" />,
+  "parking": <Car size={24} className="text-red-600 dark:text-sky-400" />,
+  "ಪಾರ್ಕಿಂಗ್": <Car size={24} className="text-red-600 dark:text-sky-400" />,
   "wifi": <Wifi size={24} className="text-green-400" />,
   "ವೈಫೈ": <Wifi size={24} className="text-green-400" />,
   "ac": <Snowflake size={24} className="text-blue-300" />,
@@ -30,8 +30,8 @@ const iconMap: Record<string, React.ReactNode> = {
   "ತುರ್ತು": <Clock size={24} className="text-rose-500" />,
   "veg": <Leaf size={24} className="text-emerald-500" />,
   "ಸಾಕಾಹಾರ": <Leaf size={24} className="text-emerald-500" />,
-  "verified": <BadgeCheck size={24} className="text-sky-500" />,
-  "ಪರಿಶೋಧಿತ": <BadgeCheck size={24} className="text-sky-500" />,
+  "verified": <BadgeCheck size={24} className="text-red-600 dark:text-sky-500" />,
+  "ಪರಿಶೋಧಿತ": <BadgeCheck size={24} className="text-red-600 dark:text-sky-500" />,
   "delivery": <Truck size={24} className="text-orange-500" />,
   "ಡೆಲಿವರಿ": <Truck size={24} className="text-orange-500" />,
   "ambulance": <Activity size={24} className="text-rose-500" />,
@@ -88,10 +88,10 @@ function ReviewForm({ businessId, onSuccess, t }: { businessId: number; onSucces
       <textarea
         value={comment} onChange={e => setComment(e.target.value)}
         placeholder={t("ನಿಮ್ಮ ಅನುಭವ ಹಂಚಿಕೊಳ್ಳಿ...", "Share your experience...")} rows={3}
-        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-500 resize-none"
+        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-red-600 dark:focus:border-sky-500 resize-none"
       />
       {status === "error" && <p className="text-rose-500 text-sm">{t("ವಿಫಲವಾಗಿದೆ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ", "Failed, please try again")}</p>}
-      <button type="submit" disabled={rating === 0 || status === "loading"} className="self-start bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2">
+      <button type="submit" disabled={rating === 0 || status === "loading"} className="self-start bg-red-600 hover:bg-red-700 dark:bg-sky-500 dark:hover:bg-sky-600 disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors flex items-center gap-2">
         {status === "loading" ? <Loader2 size={16} className="animate-spin" /> : <Star size={16} />}
         {t("ಸಲ್ಲಿಸಿ", "Submit Review")}
       </button>
@@ -297,37 +297,37 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   ].filter(t => t.show), [realProducts, realServices, realAmenities, galleryImages]);
 
   return (
-    <div className="w-full bg-slate-50 dark:bg-[#0a1120] min-h-screen pb-24 md:pb-10 font-poppins relative">
+    <div className="w-full bg-white dark:bg-[#0a1120] min-h-screen pb-24 md:pb-10 font-poppins relative">
       <div className="max-w-[1200px] mx-auto px-4 md:px-[3%] pt-6 md:pt-8">
         
         {/* Breadcrumbs */}
-        <div className="hidden md:flex items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400 mb-5 font-semibold whitespace-nowrap overflow-x-auto scrollbar-hide">
-          <Link href="/" className="hover:text-sky-500 transition-colors">{t("ತುಮಕೂರು", "Tumkur")}</Link> <ChevronRight size={14} />
-          <Link href={`/listings?category=${business.category_name}`} className="hover:text-sky-500 transition-colors">{category}</Link> <ChevronRight size={14} />
-          <span className="font-bold text-slate-800 dark:text-white truncate">{title as string}</span>
+        <div className="hidden md:flex items-center gap-2 text-[13px] text-red-600 dark:text-slate-400 mb-5 font-semibold whitespace-nowrap overflow-x-auto scrollbar-hide">
+          <Link href="/" className="hover:text-red-700 dark:hover:text-sky-500 transition-colors">{t("ತುಮಕೂರು", "Tumkur")}</Link> <ChevronRight size={14} className="text-red-400 dark:text-slate-500" />
+          <Link href={`/listings?category=${business.category_name}`} className="hover:text-red-700 dark:hover:text-sky-500 transition-colors">{category}</Link> <ChevronRight size={14} className="text-red-400 dark:text-slate-500" />
+          <span className="font-bold text-red-700 dark:text-white truncate">{title as string}</span>
         </div>
 
         {/* ✅ Desktop 3-Image Hero Gallery */}
         <div className="hidden md:flex gap-3 w-full h-[350px] lg:h-[400px] mb-8 group/hero-gallery">
-          <div className="flex-[2] h-full bg-slate-100 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/80 shadow-sm relative cursor-pointer group/main" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
+          <div className="flex-[2] h-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-red-200 dark:border-slate-800/80 hover:shadow-md transition-shadow relative cursor-pointer group/main" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
             {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 66vw" className="object-cover group-hover/main:scale-[1.03] transition-transform duration-700" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
           </div>
           <div className="flex-[1] h-full flex flex-col gap-3">
             {galleryImages.length > 1 ? (
-              <div className="flex-1 h-1/2 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800/80 cursor-pointer group/small-1" onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}>
+              <div className="flex-1 h-1/2 bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800/80 cursor-pointer group/small-1" onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}>
                 <img src={galleryImages[1]} alt={`${title} Photo 2`} className="w-full h-full object-cover group-hover/small-1:scale-110 transition-transform duration-700" />
               </div>
-            ) : <div className="flex-1 h-1/2 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-slate-800/80"><Store className="w-10 h-10 text-slate-200 dark:text-slate-800" /></div>}
+            ) : <div className="flex-1 h-1/2 bg-gray-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center border border-gray-200 dark:border-slate-800/80"><Store className="w-10 h-10 text-slate-200 dark:text-slate-800" /></div>}
             
             {galleryImages.length > 2 ? (
-              <div className="flex-1 h-1/2 relative bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800/80 cursor-pointer group/jd-more" onClick={() => { setLightboxIndex(2); setLightboxOpen(true); }}>
+              <div className="flex-1 h-1/2 relative bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800/80 cursor-pointer group/jd-more" onClick={() => { setLightboxIndex(2); setLightboxOpen(true); }}>
                 <img src={galleryImages[2]} alt={`${title} Photo 3`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
-                <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-2 hover:bg-sky-500 transition-all z-10 group-hover/jd-more:scale-105 shadow-lg">
-                  <Edit3 size={14} className="text-sky-400" />
+                <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-2 hover:bg-red-600 dark:hover:bg-sky-500 transition-all z-10 group-hover/jd-more:scale-105 shadow-lg">
+                  <Edit3 size={14} className="text-red-300 dark:text-sky-400" />
                   <span className="text-[10px] font-bold uppercase tracking-tight">{galleryImages.length > 3 ? `${galleryImages.length - 2}+ Add & View` : 'Add & View More'}</span>
                 </div>
               </div>
-            ) : <div className="flex-1 h-1/2 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-slate-800/80"><Store className="w-10 h-10 text-slate-200 dark:text-slate-800" /></div>}
+            ) : <div className="flex-1 h-1/2 bg-gray-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center border border-gray-200 dark:border-slate-800/80"><Store className="w-10 h-10 text-slate-200 dark:text-slate-800" /></div>}
           </div>
         </div>
 
@@ -336,7 +336,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">{title as string}</h1>
-              {business.is_verified && <span className="inline-flex items-center gap-1 bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 px-2.5 py-1 rounded-md text-xs font-bold border border-sky-200 dark:border-sky-500/20 shadow-sm mt-1"><BadgeCheck size={16} /> VERIFIED</span>}
+              {business.is_verified && <span className="inline-flex items-center gap-1 bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 px-2.5 py-1 rounded-md text-xs font-bold border border-red-200 dark:border-sky-500/20 shadow-sm mt-1"><BadgeCheck size={16} /> VERIFIED</span>}
             </div>
             <div className="flex items-center gap-3 mt-3">
               {business.rating && Number(business.rating) > 0 ? (
@@ -350,13 +350,13 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
               <span className="text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] md:text-xs">{category}</span>
               <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-              <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium"><MapPin size={16} className="text-sky-500" /> {business.address || `${location}, Tumkur`}</span>
+              <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium"><MapPin size={16} className="text-red-600 dark:text-sky-500" /> {business.address || `${location}, Tumkur`}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
-            <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-500'}`}><Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span></button>
-            <button onClick={handleShare} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm group"><Share2 size={18} className="text-sky-500 group-hover:scale-110 transition-transform" /> <span className="hidden md:inline">{t("ಹಂಚಿ", "Share")}</span></button>
-            <button onClick={() => setIsSuggestOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm group"><Edit3 size={18} className="text-slate-400 group-hover:text-sky-500 transition-colors" /> <span className="hidden md:inline text-sm">{t("ಆರ್ಡರ್ ಸುಧಾರಿಸಿ", "Suggest Edit")}</span></button>
+            <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-colors border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-rose-500'}`}><Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span></button>
+            <button onClick={handleShare} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shadow-sm group"><Share2 size={18} className="text-red-600 dark:text-sky-500 group-hover:scale-110 transition-transform" /> <span className="hidden md:inline">{t("ಹಂಚಿ", "Share")}</span></button>
+            <button onClick={() => setIsSuggestOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shadow-sm group"><Edit3 size={18} className="text-slate-400 group-hover:text-red-600 dark:group-hover:text-sky-500 transition-colors" /> <span className="hidden md:inline text-sm">{t("ಆರ್ಡರ್ ಸುಧಾರಿಸಿ", "Suggest Edit")}</span></button>
           </div>
         </div>
 
@@ -375,7 +375,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
         </div>
         <div className="md:hidden mb-5">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white leading-tight flex-1">{title as string} {business.is_verified && <BadgeCheck size={16} className="inline ml-1.5 text-sky-500 -mt-0.5" />}</h1>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white leading-tight flex-1">{title as string} {business.is_verified && <BadgeCheck size={16} className="inline ml-1.5 text-red-600 dark:text-sky-500 -mt-0.5" />}</h1>
             <div className="flex gap-1 shrink-0">
               <button onClick={handleShare} className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Share2 size={16} className="text-slate-600 dark:text-slate-400" /></button>
               <button onClick={() => setIsSuggestOpen(true)} className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Edit3 size={16} className="text-slate-600 dark:text-slate-400" /></button>
@@ -388,29 +388,29 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             {business.is_open !== null && business.is_open !== undefined && <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${business.is_open ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'}`}>{business.is_open ? t("ತೆರೆದಿದೆ","Open") : t("ಮುಚ್ಚಿದೆ","Closed")}</span>}
             <span className="text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">{category}</span>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1.5 leading-relaxed"><MapPin size={13} className="text-sky-500 shrink-0 mt-0.5" /> {business.address || `${location}, Tumkur`}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1.5 leading-relaxed"><MapPin size={13} className="text-red-600 dark:text-sky-500 shrink-0 mt-0.5" /> {business.address || `${location}, Tumkur`}</p>
           <div className="flex gap-2 mt-4">
             {business.phone ? <a href={`tel:${business.phone}`} className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><Phone size={16} /> {t("ಕರೆ","Call")}</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><Phone size={16} /></button>}
             {business.phone ? <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MessageCircle size={16} /> WhatsApp</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><MessageCircle size={16} /></button>}
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-sky-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MapPin size={16} /> {t("ದಾರಿ","Direction")}</a>
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 dark:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MapPin size={16} /> {t("ದಾರಿ","Direction")}</a>
           </div>
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex flex-wrap md:flex-nowrap gap-3 mb-10 w-full pb-8">
-          {business.phone ? <a href={`tel:${business.phone}`} className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 group"><Phone size={18} className="group-hover:animate-pulse" /> <span>{t("ಈಗ ಕರೆ ಮಾಡಿ", "Call Now")} - {business.phone}</span></a> : <button disabled className="flex-1 md:flex-none bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm cursor-not-allowed border border-slate-200 dark:border-slate-700"><Phone size={18} /> <span>{t("ಸಂಪರ್ಕ ಲಭ್ಯವಿಲ್ಲ", "No Contact")}</span></button>}
-          {business.phone && <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.`} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none bg-[#25D366] hover:bg-[#1DA851] text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-[#25D366]/20 group"><MessageCircle size={18} className="group-hover:scale-110 transition-transform" /> <span>WhatsApp</span></a>}
-          <button onClick={() => setIsEnquiryOpen(true)} className="w-full md:w-auto md:ml-auto bg-sky-50 dark:bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white dark:text-sky-400 border border-sky-200 dark:border-sky-500/30 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-sm"><Store size={18} /> {t("ಅತ್ಯುತ್ತಮ ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Best Deal")}</button>
+        <div className="hidden md:flex flex-wrap md:flex-nowrap gap-3 mb-10 w-full pb-8 border-b border-gray-200 dark:border-slate-800">
+          {business.phone ? <a href={`tel:${business.phone}`} className="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm group"><Phone size={18} className="group-hover:animate-pulse" /> <span>{t("ಈಗ ಕರೆ ಮಾಡಿ", "Call Now")} - {business.phone}</span></a> : <button disabled className="flex-1 md:flex-none bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm cursor-not-allowed border border-gray-200 dark:border-slate-700"><Phone size={18} /> <span>{t("ಸಂಪರ್ಕ ಲಭ್ಯವಿಲ್ಲ", "No Contact")}</span></button>}
+          {business.phone && <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.`} target="_blank" rel="noopener noreferrer" className="flex-1 md:flex-none bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400 flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm group"><MessageCircle size={18} className="group-hover:scale-110 transition-transform" /> <span>WhatsApp</span></a>}
+          <button onClick={() => setIsEnquiryOpen(true)} className="w-full md:w-auto md:ml-auto bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm"><Store size={18} /> {t("ಅತ್ಯುತ್ತಮ ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Best Deal")}</button>
         </div>
 
         {/* ✅ STICKY MENU BAR */}
        {/* ✅ PERFECT NEW STICKY MENU BAR (100% Width Fix) */}
-        <div className="sticky top-[56px] md:top-[56px] bg-white dark:bg-slate-900 z-[90] border-b border-slate-200 dark:border-slate-800 shadow-[0_4px_10px_-4px_rgba(0,0,0,0.05)] mb-4 md:mb-8 -mx-4 px-4 md:mx-[-3.2%] md:px-[3.2%]">
+        <div className="sticky top-[56px] md:top-[56px] bg-white dark:bg-slate-900 z-[90] border-b border-gray-200 dark:border-slate-800 shadow-sm mb-4 md:mb-8 -mx-4 px-4 md:mx-[-3.2%] md:px-[3.2%]">
           <ul id="jd-scroll-menu" className="flex overflow-x-auto whitespace-nowrap scrollbar-hide relative pt-2">
             {dynamicTabs.map((tab) => (
               <li key={tab.id} id={`tab-${tab.id}`} className="inline-block flex-shrink-0 relative">
-                <button onClick={() => { const el = document.getElementById(tab.id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 140, behavior: "smooth" }); }} className={`relative px-4 pb-3.5 pt-1 text-[14.5px] font-bold transition-all duration-300 ${activeTab === tab.id ? 'text-[#0070e0] dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>{t(tab.labelKn, tab.labelEn)}</button>
-                {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#0070e0] dark:bg-sky-400 rounded-t-md shadow-[0_-2px_4px_rgba(0,112,224,0.15)]"></div>}
+                <button onClick={() => { const el = document.getElementById(tab.id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 140, behavior: "smooth" }); }} className={`relative px-4 pb-3.5 pt-1 text-[14.5px] font-bold transition-all duration-300 ${activeTab === tab.id ? 'text-red-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>{t(tab.labelKn, tab.labelEn)}</button>
+                {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-red-600 dark:bg-sky-400 rounded-t-md shadow-[0_-2px_4px_rgba(220,38,38,0.15)] dark:shadow-[0_-2px_4px_rgba(14,165,233,0.15)]"></div>}
               </li>
             ))}
           </ul>
@@ -420,13 +420,13 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="flex-1 min-w-0">
             
             {/* 1. OVERVIEW */}
-            <section id="overview" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+            <section id="overview" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-5">{t("ಹೈಲೈಟ್ಸ್", "Highlights from the Business")}</h2>
               {highlights.length > 0 ? (
                 <div className="grid grid-cols-4 gap-3 md:flex md:flex-wrap md:gap-8">
                   {highlights.slice(0, 4).map((item, i) => (
                     <div key={i} className="flex flex-col items-center gap-2 text-center">
-                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm">{iconMap[Object.keys(iconMap).find(k => item.toLowerCase().includes(k)) || "default"]}</div>
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm">{iconMap[Object.keys(iconMap).find(k => item.toLowerCase().includes(k)) || "default"]}</div>
                       <span className="text-[10px] md:text-[11px] text-slate-600 dark:text-slate-400 font-semibold leading-tight line-clamp-2">{item}</span>
                     </div>
                   ))}
@@ -435,7 +435,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             </section>
 
             {/* 2. SERVICES & AMENITIES */}
-            <section id="services" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+            <section id="services" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
               <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ಸೇವೆಗಳು ಮತ್ತು ಸೌಲಭ್ಯಗಳು", "Services & Amenities")}</h2>
               {realAmenities.length > 0 || realServices.length > 0 || realProducts.length > 0 ? (
                 <>
@@ -449,7 +449,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                   </div>
                   {([...realAmenities, ...realServices, ...realProducts].length > 8) && (
                     <div className="flex justify-center mt-6">
-                      <button onClick={() => setIsViewAllOpen(true)} className="border border-sky-500 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/10 font-bold px-8 py-2 rounded-lg text-sm transition-colors">{t("ಎಲ್ಲವನ್ನು ನೋಡಿ", "View all")}</button>
+                      <button onClick={() => setIsViewAllOpen(true)} className="border border-red-600 text-red-600 hover:bg-red-50 dark:border-sky-500 dark:text-sky-500 dark:hover:bg-sky-500/10 font-bold px-8 py-2 rounded-lg text-sm transition-colors">{t("ಎಲ್ಲವನ್ನು ನೋಡಿ", "View all")}</button>
                     </div>
                   )}
                 </>
@@ -457,14 +457,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             </section>
 
             {/* 3. QUICK INFO */}
-            <section id="quick-info" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+            <section id="quick-info" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
               <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ಮಾಹಿತಿ", "Quick Info")}</h2>
               <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400 mt-2 mb-3 uppercase tracking-wider">{t("ವಿವರಣೆ", "Business summary")}</h3>
               <p className="text-[13px] md:text-base text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{t(business.description_kn, business.description) || t("ವಿವರಗಳು ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿವೆ.", "Detailed information will be updated soon.")}</p>
             </section>
 
             {/* 4. LOCATION & HOURS */}
-            <section id="location-hours" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+            <section id="location-hours" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
               <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ವಿಳಾಸ ಮತ್ತು ಸಮಯ", "Location & Hours")}</h2>
               <div className="flex flex-col md:flex-row gap-8 md:gap-10">
                 <div className="flex-[1.5]">
@@ -472,20 +472,20 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                     <iframe width="100%" height="100%" frameBorder="0" scrolling="no" src={`https://maps.google.com/maps?q=${encodeURIComponent(business.address || `${location}, Tumkur`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}></iframe>
                   </div>
                   <div className="flex items-start gap-4 mb-6">
-                    <MapPin className="text-sky-500 shrink-0 mt-1" size={22} />
+                    <MapPin className="text-red-600 dark:text-sky-500 shrink-0 mt-1" size={22} />
                     <div>
                       <p className="text-slate-900 dark:text-white font-extrabold text-lg mb-1">{t(business.name_kn, business.name)}</p>
                       <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-2 font-medium">{business.address || `${location}, Tumkur, Karnataka, India`}</p>
-                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="text-sky-500 font-bold text-sm hover:underline flex items-center gap-1">{t("ದಾರಿ ಹುಡುಕಿ", "Get Directions")} <ChevronRight size={14} /></a>
+                      <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="text-red-600 dark:text-sky-500 font-bold text-sm hover:underline flex items-center gap-1">{t("ದಾರಿ ಹುಡುಕಿ", "Get Directions")} <ChevronRight size={14} /></a>
                     </div>
                   </div>
                 </div>
                 <div className="flex-1 shrink-0">
                   <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-md">
-                    <h3 className="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><Clock size={18} className="text-sky-500" /> {t("ಕೆಲಸದ ಸಮಯ", "Working Hours")}</h3>
+                    <h3 className="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><Clock size={18} className="text-red-600 dark:text-sky-500" /> {t("ಕೆಲಸದ ಸಮಯ", "Working Hours")}</h3>
                     {business.working_hours ? (
                       <div className="flex items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0"><Clock size={18} className="text-sky-500" /></div>
+                        <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0"><Clock size={18} className="text-red-600 dark:text-sky-500" /></div>
                         <div><p className="text-base font-bold text-slate-900 dark:text-white">{business.working_hours}</p><p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t("ಪ್ರತಿದಿನ", "Everyday")}</p></div>
                       </div>
                     ) : <p className="text-sm text-slate-500 dark:text-slate-400 italic flex items-center gap-2"><Clock size={14} /> {t("ಸಮಯದ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ", "Hours not available")}</p>}
@@ -496,19 +496,19 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
             {/* 5. PHOTOS */}
             {galleryImages.length > 0 && (
-              <section id="photos" className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800 scroll-mt-[150px]">
+              <section id="photos" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
                 <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6">{t("ಫೋಟೋಗಳು", "Photos")}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-2 md:gap-3 md:h-[420px] rounded-3xl overflow-hidden group/gallery cursor-pointer relative shadow-lg">
-                  <div className="col-span-2 md:col-span-3 row-span-2 relative w-full h-[250px] md:h-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
+                  <div className="col-span-2 md:col-span-3 row-span-2 relative w-full h-[250px] md:h-full bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
                     {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-all duration-700 group-hover/gallery:scale-[1.02]" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
                   </div>
                   {galleryImages.length > 1 && (
-                    <div className="hidden md:block relative w-full h-[150px] md:h-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}>
+                    <div className="hidden md:block relative w-full h-[150px] md:h-full bg-gray-200 dark:bg-slate-800 overflow-hidden border border-gray-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(1); setLightboxOpen(true); }}>
                       <img src={galleryImages[1]} alt="Gallery 2" className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" />
                     </div>
                   )}
                   {galleryImages.length > 2 && (
-                    <div className="hidden md:block relative w-full h-[150px] md:h-full bg-slate-300 dark:bg-slate-800 overflow-hidden group border border-slate-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(2); setLightboxOpen(true); }}>
+                    <div className="hidden md:block relative w-full h-[150px] md:h-full bg-gray-300 dark:bg-slate-800 overflow-hidden group border border-gray-200 dark:border-slate-800/80" onClick={() => { setLightboxIndex(2); setLightboxOpen(true); }}>
                       <img src={galleryImages[2]} alt="Gallery 3" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white group-hover:bg-black/60"><span className="text-2xl font-bold">{galleryImages.length > 3 ? `+${galleryImages.length - 2}` : '+'}</span><span className="text-sm font-extrabold uppercase mt-1">{t("ಫೋಟೋಗಳು","View Photos")}</span></div>
                     </div>
@@ -537,22 +537,22 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               </div>
               <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-t border-b border-slate-200 dark:border-slate-800 py-4 mb-8">
                 <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-sky-500 cursor-pointer shadow-sm"><option>Yelp Sort</option><option>Newest First</option></select>
-                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-sky-500 cursor-pointer shadow-sm"><option>English (172)</option><option>Kannada (8)</option></select>
-                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-sky-500 cursor-pointer shadow-sm"><option>Filter by rating</option><option>5 Stars</option></select>
+                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>Yelp Sort</option><option>Newest First</option></select>
+                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>English (172)</option><option>Kannada (8)</option></select>
+                  <select className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>Filter by rating</option><option>5 Stars</option></select>
                 </div>
-                <div className="w-full lg:w-[320px] flex items-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden shadow-sm focus-within:border-sky-500 transition-all">
+                <div className="w-full lg:w-[320px] flex items-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden shadow-sm focus-within:border-red-600 dark:focus-within:border-sky-500 transition-all">
                   <input type="text" placeholder="Search reviews" className="w-full px-4 py-2 outline-none bg-transparent text-sm text-slate-800 dark:text-white" />
                   <button className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border-l border-slate-300 dark:border-slate-700 hover:bg-slate-100 transition-colors"><Search size={18} className="text-slate-500" /></button>
                 </div>
               </div>
               {isAuthenticated ? (
-                <div className="mb-10 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800"><h3 className="font-bold text-slate-900 dark:text-white mb-3 text-sm">{t("ವಿಮರ್ಶೆ ಬರೆಯಿರಿ", "Write a Review")}</h3><ReviewForm businessId={business.id} onSuccess={() => {}} t={t} /></div>
-              ) : <div className="mb-10 flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800"><span className="text-sm text-slate-600 dark:text-slate-400">{t("ವಿಮರ್ಶೆ ಬರೆಯಲು ಲಾಗಿನ್ ಮಾಡಿ", "Login to write a review")}</span><button onClick={() => router.push('/login')} className="text-sm font-bold text-sky-500 hover:text-sky-600">Login</button></div>}
+                <div className="mb-10 p-5 bg-white dark:bg-slate-900/50 rounded-2xl border border-gray-200 dark:border-slate-800"><h3 className="font-bold text-slate-900 dark:text-white mb-3 text-sm">{t("ವಿಮರ್ಶೆ ಬರೆಯಿರಿ", "Write a Review")}</h3><ReviewForm businessId={business.id} onSuccess={() => {}} t={t} /></div>
+              ) : <div className="mb-10 flex items-center justify-between p-4 bg-white dark:bg-slate-900/50 rounded-xl border border-gray-200 dark:border-slate-800"><span className="text-sm text-slate-600 dark:text-slate-400">{t("ವಿಮರ್ಶೆ ಬರೆಯಲು ಲಾಗಿನ್ ಮಾಡಿ", "Login to write a review")}</span><button onClick={() => router.push('/login')} className="text-sm font-bold text-red-600 hover:text-red-700 dark:text-sky-500 dark:hover:text-sky-600">Login</button></div>}
               <div className="flex flex-col">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6 py-6 border-b border-slate-200 dark:border-slate-800">
                   <div className="flex gap-4 md:w-[250px] shrink-0">
-                    <div className="w-16 h-16 rounded-full bg-sky-100 dark:bg-sky-900 flex items-center justify-center text-sky-600 dark:text-sky-300 font-bold text-xl shadow-sm shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-sky-900 flex items-center justify-center text-red-600 dark:text-sky-300 font-bold text-xl shadow-sm shrink-0">
                       G
                     </div>
                     <div className="flex flex-col"><h4 className="font-bold text-slate-900 dark:text-white flex items-center flex-wrap">Gary H. <span className="bg-[#f15c4f] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded ml-2 shadow-sm">Elite 26</span></h4><p className="text-[13px] text-slate-600 dark:text-slate-400 mt-0.5 font-medium">Severna Park, MD</p><div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-semibold"><span className="flex items-center gap-1"><User size={13} /> 1496</span><span className="flex items-center gap-1"><Star size={13} /> 994</span></div></div>
@@ -570,14 +570,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
           <div className="hidden lg:block w-[320px] shrink-0 sticky top-[150px] h-fit">
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl">
-              <h3 className="text-base font-bold text-white mb-5 leading-tight">{t("ಇವರ ವಿವರ ಪಡೆಯಿರಿ", "Get Details for")} <span className="text-sky-500">{title as string}</span></h3>
+              <h3 className="text-base font-bold text-white mb-5 leading-tight">{t("ಇವರ ವಿವರ ಪಡೆಯಿರಿ", "Get Details for")} <span className="text-red-600 dark:text-sky-500">{title as string}</span></h3>
               <form onSubmit={submitForm} className="flex flex-col gap-4">
-                <input type="text" value={enquiryData.name} onChange={e => setEnquiryData({...enquiryData, name: e.target.value})} placeholder={t("ನಿಮ್ಮ ಹೆಸರು", "Your Name")} className="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-sky-500" required />
+                <input type="text" value={enquiryData.name} onChange={e => setEnquiryData({...enquiryData, name: e.target.value})} placeholder={t("ನಿಮ್ಮ ಹೆಸರು", "Your Name")} className="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-red-600 dark:focus:border-sky-500" required />
                 <div>
-                  <input type="tel" value={enquiryData.phone} onChange={e => { setEnquiryData({...enquiryData, phone: e.target.value}); if (phoneError) setPhoneError(""); }} placeholder={t("ಮೋಬೈಲ್ ಸಂಖ್ಯೆ", "Mobile Number")} className={`w-full bg-slate-950 border text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-sky-500 ${phoneError ? 'border-rose-500' : 'border-slate-700'}`} required />
+                  <input type="tel" value={enquiryData.phone} onChange={e => { setEnquiryData({...enquiryData, phone: e.target.value}); if (phoneError) setPhoneError(""); }} placeholder={t("ಮೋಬೈಲ್ ಸಂಖ್ಯೆ", "Mobile Number")} className={`w-full bg-slate-950 border text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-red-600 dark:focus:border-sky-500 ${phoneError ? 'border-rose-500' : 'border-slate-700'}`} required />
                   {phoneError && <p className="text-rose-400 text-xs mt-1">{phoneError}</p>}
                 </div>
-                <button type="submit" disabled={formStatus !== "idle"} className="w-full bg-sky-500 text-white font-bold py-3 rounded-lg text-sm hover:bg-sky-400 transition-colors flex items-center justify-center gap-2 mt-2">
+                <button type="submit" disabled={formStatus !== "idle"} className="w-full bg-red-600 hover:bg-red-700 dark:bg-sky-500 text-white font-bold py-3 rounded-lg text-sm dark:hover:bg-sky-400 transition-colors flex items-center justify-center gap-2 mt-2">
                   {formStatus === "idle" ? t("ಅತ್ಯುತ್ತಮ ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Best Deal") : formStatus === "success" ? <CheckCircle size={18} /> : <Loader2 className="animate-spin" size={18} />}
                 </button>
               </form>
@@ -588,14 +588,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
       {similarBusinesses.length > 0 && (
         <div className="max-w-[1200px] mx-auto px-4 md:px-[3%] mb-10">
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-2"><Store size={22} className="text-sky-500" /> {t("ಇದೇ ರೀತಿಯ ಬ್ಯುಸಿನೆಸ್‌ಗಳು", "Similar Businesses")}</h2>
+          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-6 flex items-center gap-2"><Store size={22} className="text-red-600 dark:text-sky-500" /> {t("ಇದೇ ರೀತಿಯ ಬ್ಯುಸಿನೆಸ್‌ಗಳು", "Similar Businesses")}</h2>
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
             {similarBusinesses.slice(0, 6).map(sb => {
               const sbTitle = t(sb.name_kn, sb.name);
               const sbSlug = sb.business_area_slug || sb.slug || `${sb.id}`;
               const sbImg = sb.main_image_upload || sb.image_url;
               return (
-                <Link key={sb.id} href={`/business/${sbSlug}`} className="min-w-[220px] md:min-w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-sky-500/50 hover:shadow-xl transition-all duration-300 shrink-0 group">
+                <Link key={sb.id} href={`/business/${sbSlug}`} className="min-w-[220px] md:min-w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-red-600/50 dark:hover:border-sky-500/50 hover:shadow-xl transition-all duration-300 shrink-0 group">
                   <div className="h-36 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
                     {sbImg ? <img src={typeof sbImg === 'string' && sbImg.startsWith('http') ? sbImg : `${backendUrl}${sbImg}`} alt={sbTitle as string} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400" /></div>}
                     {sb.is_verified && <span className="absolute top-2 left-2 bg-sky-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">Verified</span>}

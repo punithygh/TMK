@@ -55,7 +55,7 @@ export default function Footer() {
     <>
       <div className="w-full mt-auto">
         {/* ====== 1. SEO FOOTER (Dark Background) ====== */}
-        <div className="bg-slate-100 dark:bg-[#02060f] border-t border-slate-200 dark:border-slate-800 py-10 px-4 sm:px-6">
+        <div className="bg-gray-50 dark:bg-[#02060f] border-t border-gray-200 dark:border-slate-800 py-10 px-4 sm:px-6">
           <div className="max-w-[1300px] mx-auto flex flex-col gap-8">
             
             {/* Categories */}
@@ -107,10 +107,10 @@ export default function Footer() {
                 <div className="font-black text-[26px] md:text-[28px] tracking-tighter whitespace-nowrap flex items-center group-hover:scale-[1.02] transition-transform duration-300">
                   <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
                   <div className="relative ml-[2px] flex flex-col justify-end">
-                    <span className="text-sky-500 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                    <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
                       connect
                     </span>
-                    <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-sky-500 dark:bg-sky-400 shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+                    <div className="absolute -bottom-[1px] left-0 w-full h-[2.5px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
                   </div>
                 </div>
               </Link>
@@ -160,7 +160,7 @@ export default function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="max-w-[1300px] mx-auto mt-6 md:mt-8 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-center items-center gap-1 text-[11px] md:text-sm text-slate-500 whitespace-nowrap pb-24 md:pb-0">
+          <div className="max-w-[1300px] mx-auto mt-6 md:mt-8 pt-4 border-t border-gray-200 dark:border-slate-800 flex justify-center items-center gap-1 text-[11px] md:text-sm text-gray-500 whitespace-nowrap pb-24 md:pb-0">
             &copy; 2026 Tumakuru Connect. Designed with <Heart className="w-3 h-3 md:w-4 md:h-4 text-red-500 fill-red-500" /> for Tumkur.
           </div>
         </footer>
@@ -168,7 +168,7 @@ export default function Footer() {
 
       {/* ====== 3. MOBILE BOTTOM NAVIGATION (100% Width) ====== */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-[9999]">
-        <div className="w-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 flex justify-around items-center pt-3 pb-3 px-2 shadow-[0_-5px_30px_rgba(0,0,0,0.1)] dark:shadow-[0_-5px_30px_rgba(0,0,0,0.5)] pb-safe-bottom">
+        <div className="w-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-gray-200 dark:border-slate-800 flex justify-around items-center pt-3 pb-3 px-2 shadow-sm dark:shadow-[0_-5px_30px_rgba(0,0,0,0.5)] pb-safe-bottom">
           <Link href="/" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/' ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
             <Home className="w-[22px] h-[22px]" />
             <span>{lang === "kn" ? "ಮುಖಪುಟ" : "Home"}</span>
@@ -177,9 +177,9 @@ export default function Footer() {
             <Layers className="w-[22px] h-[22px]" />
             <span>{lang === "kn" ? "ವರ್ಗಗಳು" : "Categories"}</span>
           </Link>
-          <Link href="/free-listing" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/free-listing' ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
+          <Link href="/add-business" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/add-business' ? 'text-red-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'}`}>
             <PlusCircle className="w-[22px] h-[22px]" />
-            <span>{lang === "kn" ? "ಲಿಸ್ಟಿಂಗ್" : "Listing"}</span>
+            <span>{lang === "kn" ? "ಬ್ಯುಸಿನೆಸ್" : "Business"}</span>
           </Link>
           
           {isAuth ? (

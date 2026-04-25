@@ -56,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="kn" className="scroll-smooth" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${montserrat.variable} font-sans antialiased bg-slate-50 text-slate-900 dark:bg-[#050b14] dark:text-white min-h-screen flex flex-col`}
+        className={`${poppins.variable} ${montserrat.variable} font-sans antialiased bg-white text-gray-900 dark:bg-[#050b14] dark:text-white min-h-screen flex flex-col`}
         suppressHydrationWarning
       >
         <ThemeProvider

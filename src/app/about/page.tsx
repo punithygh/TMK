@@ -14,17 +14,17 @@ export default function AboutPage() {
       <div className="bg-slate-900 pt-28 pb-20 px-4 relative overflow-hidden">
         {/* Abstract Background Design */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-          <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-sky-500/10 blur-[100px]"></div>
+          <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-red-600/10 dark:bg-sky-500/10 blur-[100px]"></div>
           <div className="absolute bottom-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[80px]"></div>
         </div>
 
         <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <div className="inline-flex items-center justify-center p-3 bg-sky-500/10 rounded-2xl mb-6 shadow-inner border border-sky-500/20">
-            <Info className="w-8 h-8 text-sky-400" />
+          <div className="inline-flex items-center justify-center p-3 bg-red-50 dark:bg-sky-500/10 rounded-2xl mb-6 shadow-inner border border-red-200 dark:border-sky-500/20">
+            <Info className="w-8 h-8 text-red-600 dark:text-sky-400" />
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
             {t("ತುಮಕೂರು ಕನೆಕ್ಟ್ ", "About Tumakuru ")}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-400 dark:to-blue-500">
               {t("ಬಗ್ಗೆ", "Connect")}
             </span>
           </h1>
@@ -50,12 +50,12 @@ export default function AboutPage() {
           </section>
 
           {/* Vision */}
-          <section className="bg-sky-50 rounded-2xl p-6 md:p-8 border border-sky-100 relative overflow-hidden">
+          <section className="bg-red-50 dark:bg-slate-900/50 rounded-2xl p-6 md:p-8 border border-red-100 dark:border-slate-800 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
               <Target size={120} />
             </div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-sky-500 text-white p-2 rounded-xl">
+              <div className="bg-red-600 dark:bg-sky-500 text-white p-2 rounded-xl">
                 <Target size={24} />
               </div>
               <h2 className="text-2xl font-bold text-slate-800">
@@ -76,7 +76,7 @@ export default function AboutPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-sky-300 transition-all group">
+              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-red-300 dark:hover:border-sky-300 transition-all group">
                 <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <MapPin size={24} />
                 </div>
@@ -88,7 +88,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-sky-300 transition-all group">
+              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-red-300 dark:hover:border-sky-300 transition-all group">
                 <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <ShieldCheck size={24} />
                 </div>
@@ -100,7 +100,7 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-sky-300 transition-all group">
+              <div className="bg-white border border-slate-200 p-6 rounded-2xl hover:shadow-lg hover:border-red-300 dark:hover:border-sky-300 transition-all group">
                 <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
                   <TrendingUp size={24} />
                 </div>
@@ -120,7 +120,7 @@ export default function AboutPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-blue-600/10"></div>
             <div className="relative z-10">
               <div className="inline-flex items-center justify-center p-3 bg-white/10 backdrop-blur-md rounded-full mb-5">
-                <Users className="w-8 h-8 text-sky-400" />
+                <Users className="w-8 h-8 text-red-500 dark:text-sky-400" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">
                 {t("ನಮ್ಮ ಜೊತೆ ಕೈಜೋಡಿಸಿ", "Join the Community")}
@@ -131,7 +131,7 @@ export default function AboutPage() {
                   : "Whether you are a user looking for services or a business owner looking to grow, Tumakuru Connect is your trusted partner. Let's grow together!"}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/add-business" className="bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-sky-500/30">
+                <Link href="/add-business" className="bg-red-600 hover:bg-red-700 dark:bg-sky-500 dark:hover:bg-sky-400 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-lg shadow-red-600/30 dark:shadow-sky-500/30">
                   {t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}
                 </Link>
                 <Link href="/listings" className="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-xl transition-colors border border-slate-700">
