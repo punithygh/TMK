@@ -6,7 +6,8 @@ import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/product-card";
-import api from "@/services/api";
+import { getSupabaseBusinesses } from "@/services/supabaseData";
+import MiniMap from "@/components/MiniMap";
 
 type ListingsClientProps = {
   initialQ: string;
@@ -71,36 +72,30 @@ export default function ListingsClient({
     else setIsLoading(true);
 
     try {
-      const queryParams = new URLSearchParams({
-        page: pageNum.toString(),
-        ...(initialQ && { search: initialQ }),
-        ...(initialCategory && { category__slug: initialCategory }),
-        ...(currentFilters.star_rating && { star_rating: currentFilters.star_rating }),
-        ...(currentFilters.budget && { budget: currentFilters.budget }),
-        ...(currentFilters.area && { area: currentFilters.area }),
-        ...(currentFilters.is_verified && { is_verified: currentFilters.is_verified }),
-        ...(currentFilters.is_top_search && { is_top_search: currentFilters.is_top_search }),
-        ...(currentFilters.is_trusted && { is_trusted: currentFilters.is_trusted }),
-        ...(currentFilters.is_featured && { is_featured: currentFilters.is_featured }),
+      const limit = 10;
+      const offset = (pageNum - 1) * limit;
+
+      const data = await getSupabaseBusinesses({
+        search: initialQ,
+        category: initialCategory,
+        star_rating: currentFilters.star_rating,
+        is_verified: currentFilters.is_verified,
+        is_featured: currentFilters.is_featured,
+        is_top_search: currentFilters.is_top_search,
+        is_trusted: currentFilters.is_trusted,
+        sort_by: currentFilters.sort_by,
+        limit,
+        offset
       });
 
-      if (currentFilters.sort_by) {
-        if (currentFilters.sort_by === 'rating') queryParams.append('ordering', '-rating');
-        if (currentFilters.sort_by === 'popular') queryParams.append('ordering', '-page_views');
-        if (currentFilters.sort_by === 'distance') queryParams.append('ordering', 'distance');
-      }
-
-      const response = await api.get(`/businesses/?${queryParams.toString()}`);
-      const data = response.data;
-
       if (isNewFilter) {
-        setBusinesses(data.results || data);
+        setBusinesses(data);
       } else {
-        setBusinesses(prev => [...prev, ...(data.results || data)]);
+        setBusinesses(prev => [...prev, ...data]);
       }
 
-      setTotalCount(data.count || (data.results ? data.results.length : data.length));
-      setHasMore(data.next !== null && data.next !== undefined);
+      setTotalCount(data.length); // Supabase range doesn't return total count easily without extra query, but let's use length for now or add count to service
+      setHasMore(data.length === limit);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     } finally {
@@ -265,15 +260,23 @@ export default function ListingsClient({
         <h1 className="text-xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight line-clamp-1">
           {t(`Best ${displayTitle} in Tumkur`, `Best ${displayTitle} in Tumkur`)}
         </h1>
-        <button 
-          onClick={() => {
-            if (navigator.share) navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
-            else navigator.clipboard.writeText(window.location.href).then(() => alert("Link copied to clipboard!"));
-          }}
-          className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-white rounded-full text-xs md:text-sm font-semibold transition-colors border border-gray-200 dark:border-slate-700 w-fit shrink-0 shadow-sm"
-        >
-          <Share2 size={14} className="text-red-600 dark:text-sky-400" /> <span className="hidden sm:inline">{t("ಶೇರ್ ಮಾಡಿ", "Share List")}</span><span className="sm:hidden">Share</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <Link 
+            href="/radius-search"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-full text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-lg active:scale-95"
+          >
+            <Map size={14} className="animate-pulse" /> <span>{t("ಮ್ಯಾಪ್", "Nearby Map")}</span>
+          </Link>
+          <button 
+            onClick={() => {
+              if (navigator.share) navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
+              else navigator.clipboard.writeText(window.location.href).then(() => alert("Link copied to clipboard!"));
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-white rounded-full text-xs md:text-sm font-semibold transition-colors border border-gray-200 dark:border-slate-700 w-fit shrink-0 shadow-sm"
+          >
+            <Share2 size={14} className="text-red-600 dark:text-sky-400" /> <span className="hidden sm:inline">{t("ಶೇರ್ ಮಾಡಿ", "Share List")}</span><span className="sm:hidden">Share</span>
+          </button>
+        </div>
       </div>
 
       {/* ====== YELP STYLE HORIZONTAL FILTERS ====== */}
@@ -302,6 +305,17 @@ export default function ListingsClient({
               {value: "distance", label: "Distance"}
             ]}
           />
+        </div>
+        
+        {/* Nearby Filter (Mobile Priority) */}
+        <div className="shrink-0 snap-start">
+          <Link 
+            href="/radius-search"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold border bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+          >
+            <Map size={14} className="text-red-600 dark:text-sky-500" />
+            {t("ಸಮೀಪದ", "Nearby")}
+          </Link>
         </div>
 
         {/* Quick Tag Pills */}
@@ -374,6 +388,9 @@ export default function ListingsClient({
         
         {/* Main List */}
         <div className={`flex-1 min-w-0 transition-opacity duration-300 w-full ${isFiltering ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+          
+          {/* 📱 Mobile Mini Map Removed as requested */}
+
           {businesses.length > 0 ? (
             <>
               <div className="flex flex-col gap-0">
@@ -418,7 +435,8 @@ export default function ListingsClient({
         </div>
 
         {/* Right Sidebar: Lead Gen (Desktop Only) */}
-        <div className="hidden xl:block w-[360px] shrink-0 sticky top-[100px] h-fit self-start">
+        <div className="hidden xl:flex w-[360px] shrink-0 sticky top-[100px] max-h-[calc(100vh-120px)] overflow-y-auto self-start flex-col gap-6 pr-2 custom-scrollbar">
+          <MiniMap businesses={businesses} />
           {renderLeadForm()}
         </div>
 

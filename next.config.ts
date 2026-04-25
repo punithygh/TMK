@@ -5,7 +5,14 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
-      // 🚀 Supabase Storage — S3-compatible endpoint (ನಿಮ್ಮ ಬ್ಯುಸಿನೆಸ್ ಇಮೇಜ್‌ಗಳಿಗಾಗಿ)
+      // ✅ 1. ಇದೇ ನಿಮ್ಮ ಎರ್ರರ್ ಸಾಲ್ವ್ ಮಾಡುವ ಮುಖ್ಯವಾದ ಲೈನ್ (Public Storage)
+      {
+        protocol: "https",
+        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/**",
+      },
+      // 🚀 Supabase Storage — S3-compatible endpoint
       {
         protocol: "https",
         hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
@@ -24,19 +31,19 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
         port: "8000",
-        pathname: "/media/**",
+        pathname: "/**",
       },
       {
         protocol: "http",
         hostname: "10.135.87.238",
         port: "8000",
-        pathname: "/media/**",
+        pathname: "/**",
       },
       {
         protocol: "http",
         hostname: "localhost",
         port: "8000",
-        pathname: "/media/**",
+        pathname: "/**",
       },
       // ಇತರ ಎಕ್ಸ್‌ಟರ್ನಲ್ ಹೋಸ್ಟ್‌ಗಳು
       {

@@ -16,6 +16,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import Image from "next/image";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 interface Category {
   id: number;
@@ -75,8 +76,8 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                     className="flex md:hidden group flex-col items-center justify-start no-underline w-full gap-2"
                   >
                     <div className="relative flex items-center justify-center h-10 w-10">
-                      {category.icon_url ? (
-                        <Image src={category.icon_url} alt={category.name} width={28} height={28} className="object-contain" />
+                      {getSupabaseImageUrl(category.icon_url) ? (
+                        <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={28} height={28} className="object-contain" />
                       ) : (
                         icon
                       )}
@@ -94,8 +95,8 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                   className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1 transition-transform duration-300"
                 >
                   <div className="relative flex items-center justify-center h-14 w-14 rounded-xl bg-white dark:bg-slate-800/50 group-hover:shadow-sm transition-all duration-300 border border-gray-200 dark:border-transparent group-hover:border-gray-300 dark:group-hover:border-sky-900/50">
-                    {category.icon_url ? (
-                      <Image src={category.icon_url} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
+                    {getSupabaseImageUrl(category.icon_url) ? (
+                      <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
                     ) : (
                       <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
                     )}

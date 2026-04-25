@@ -1,29 +1,36 @@
-import { getAllCourses, getArticles, getSocialPosts, getCategories, getRecentReviews } from '@/services/courses';
+import { 
+  getSupabaseBusinesses, 
+  getSupabaseBanners,
+  getSupabaseArticles,
+  getSupabaseSocialPosts,
+  getSupabaseCategories,
+  getSupabaseRecentReviews
+} from '@/services/supabaseData';
 import HomeClient from './home-client';
 
 export default async function Home() {
-  // 🚨 ಡಮ್ಮಿ ಡೇಟಾ ತೆಗೆದು, ಸಂಪೂರ್ಣವಾಗಿ Django API ಇಂದ ಡೇಟಾ ಪಡೆಯಲಾಗುತ್ತಿದೆ
-  // 🚨 High Speed Server-Side Fetching with cache: 'no-store'
-  // 🚀 PARALLEL FETCHING: Promise.all ಅನ್ನು ಬಳಸಿ 6 API ಕಾಲ್‌ಗಳನ್ನು ಏಕಕಾಲದಲ್ಲಿ (Parallel) ಫೆಚ್ ಮಾಡಲಾಗುತ್ತಿದೆ.
   const [
     trendingBusinesses,
+    banners,
     movieReviews,
     newsArticles,
     socialPosts,
     categories,
     recentReviews
   ] = await Promise.all([
-    getAllCourses(),
-    getArticles('MOVIE'),
-    getArticles('NEWS'),
-    getSocialPosts(),
-    getCategories(),
-    getRecentReviews()
+    getSupabaseBusinesses(),
+    getSupabaseBanners(),
+    getSupabaseArticles('MOVIE'),
+    getSupabaseArticles('NEWS'),
+    getSupabaseSocialPosts(),
+    getSupabaseCategories(),
+    getSupabaseRecentReviews()
   ]);
 
   return (
     <HomeClient 
       trendingBusinesses={trendingBusinesses}
+      banners={banners}
       movieReviews={movieReviews}
       newsArticles={newsArticles}
       socialPosts={socialPosts}

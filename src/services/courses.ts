@@ -45,6 +45,11 @@ export interface BusinessListing {
   top_search?: boolean;
   hot_deal?: boolean;
   dynamic_badges?: string[];
+  // GIS Fields
+  location?: any; 
+  lat?: number;
+  lng?: number;
+  distance?: number;
 }
 
 // Legacy interface kept for backward compat — no longer used for working hours

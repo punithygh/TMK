@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 export interface BusinessListDTO {
   id: number;
@@ -62,15 +63,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   // Backend driven "open" status. Defaulting to true visually if undefined.
   const isOpen = product.is_currently_open !== false; 
 
-  let finalImgSrc = product.main_image_upload || product.image_url;
-  
-  if (finalImgSrc) {
-    finalImgSrc = finalImgSrc.trim(); 
-    if (!finalImgSrc.startsWith('http')) {
-      let backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      finalImgSrc = `${backendUrl}${finalImgSrc.startsWith('/') ? '' : '/'}${finalImgSrc}`;
-    }
-  }
+  let finalImgSrc = getSupabaseImageUrl(product.main_image_upload || product.image_url);
 
   const hasValidImage = finalImgSrc && finalImgSrc.trim() !== "" && !imgError;
   const displayPhone = product.phone || ""; 

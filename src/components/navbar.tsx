@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft } from "lucide-react";
+import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft, MapPin } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
@@ -161,10 +161,10 @@ export default function Navbar() {
             ) : (
               <button 
                 onClick={() => setIsSearchOverlayOpen(true)}
-                className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-gray-700 border border-red-200 dark:border-sky-500/20 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-colors shadow-sm"
+                className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] dark:shadow-[0_0_10px_rgba(14,165,233,0.3)] active:scale-95"
                 aria-label="Open Search"
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-5 h-5 drop-shadow-md" />
               </button>
             )}
 
@@ -198,7 +198,7 @@ export default function Navbar() {
         {/* 🔍 SEARCH BAR (Desktop Only - Hidden on Mobile) */}
         <div className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px]">
           <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
-            <Search className="absolute left-4 w-4 h-4 text-red-600 dark:text-slate-400" />
+            <Search className="absolute left-4 w-4 h-4 text-red-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(14,165,233,0.4)]" />
             <input
               type="text"
               value={searchQuery}
@@ -230,6 +230,7 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
+              
               {/* Add Business Link (Replaced Free Listing) */}
               <Link href="/add-business" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-slate-700 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-red-600 dark:hover:border-sky-400 hover:text-red-600 dark:hover:text-sky-400">
                 <Megaphone className="w-4 h-4" />

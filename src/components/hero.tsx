@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { getBanners, Banner } from "@/services/courses";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 const FALLBACK_BANNER: Banner = {
   id: 0,
@@ -17,11 +18,11 @@ const FALLBACK_BANNER: Banner = {
   view_time: 5,
 };
 
-const Hero = () => {
+const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
   const router = useRouter();
   const { lang, t } = useLanguage();
 
-  const [banners, setBanners] = useState<Banner[]>([FALLBACK_BANNER]);
+  const [banners, setBanners] = useState<Banner[]>(initialBanners && initialBanners.length > 0 ? initialBanners : [FALLBACK_BANNER]);
   const [current, setCurrent] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -32,10 +33,13 @@ const Hero = () => {
   const [typingSpeed, setTypingSpeed] = useState(100);
 
   useEffect(() => {
-    getBanners().then((data) => {
-      if (data && data.length > 0) setBanners(data);
-    });
-  }, []);
+    // Only fetch internally if no banners were passed as props
+    if (!initialBanners || initialBanners.length === 0) {
+      getBanners().then((data) => {
+        if (data && data.length > 0) setBanners(data);
+      });
+    }
+  }, [initialBanners]);
 
   const goToNext = useCallback(() => {
     setVisible(false);
@@ -84,8 +88,8 @@ const Hero = () => {
   return (
     <section className="relative w-full overflow-hidden aspect-video md:aspect-[21/9] max-h-[80vh] lg:max-h-[600px]">
       <div className="absolute inset-0 z-0" style={{ opacity: visible ? 1 : 0, transition: "opacity 500ms ease-in-out" }}>
-        {activeBanner.image_url ? (
-          <Image key={activeBanner.id} src={activeBanner.image_url} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center" />
+        {getSupabaseImageUrl(activeBanner.image_url) ? (
+          <Image key={activeBanner.id} src={getSupabaseImageUrl(activeBanner.image_url) || ""} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#050b14] via-[#0c1a35] to-[#071020]" />
         )}

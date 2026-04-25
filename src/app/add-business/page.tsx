@@ -3,6 +3,7 @@ import React, { useState, useRef } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Building2, MapPin, Phone, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft, Loader2, ShieldCheck, Upload, X } from "lucide-react";
 import api from "@/services/api";
+import { geocodeAddress } from "@/services/geocoding";
 
 const STEPS = ["Business Info", "Location", "Contact & Hours", "Photos & Details"];
 
@@ -52,10 +53,25 @@ export default function AddBusinessPage() {
   const handleSubmit = async () => {
     setLoading(true); setError("");
     try {
+      // 🚀 GIS AUTOMATION: Auto-Geocode Address
+      const fullAddress = `${form.full_address}, ${form.area}, Tumakuru, Karnataka`;
+      const geo = await geocodeAddress(fullAddress);
+      
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => v && fd.append(k, v));
+      
+      if (geo) {
+        fd.append("lat", geo.lat.toString());
+        fd.append("lng", geo.lng.toString());
+        // For Supabase/PostGIS
+        fd.append("location", `POINT(${geo.lng} ${geo.lat})`);
+      }
+
       files.forEach((f, i) => f && fd.append(`image_${i + 1}`, f));
+      
+      // Save to API (Django or Supabase Edge Function)
       await api.post("/submit-business/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      
       setSuccess(true);
     } catch (e: any) {
       setError(e?.response?.data?.message || (lang === "kn" ? "ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ." : "Something went wrong. Please try again."));

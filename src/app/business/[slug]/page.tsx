@@ -1,7 +1,9 @@
 import { Metadata, ResolvingMetadata } from "next";
-import { getOneCourse, getAllCourses } from "@/services/courses";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
+import { getSupabaseBusinessBySlug, getSupabaseBusinesses } from "@/services/supabaseData";
+import { BusinessListing } from "@/services/courses";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 export const revalidate = 3600; // 🚨 ISR: Revalidate every 1 hour
 
@@ -9,7 +11,7 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// 🚨 1. SERVER-SIDE SEO GENERATION (Dynamically reads from Django Backend)
+// 🚨 1. SERVER-SIDE SEO GENERATION (Dynamically reads from Supabase)
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
@@ -17,7 +19,7 @@ export async function generateMetadata(
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
 
-  const business = await getOneCourse(slug);
+  const business = await getSupabaseBusinessBySlug(slug);
 
   if (!business) {
     return {
@@ -56,8 +58,8 @@ export async function generateMetadata(
     openGraph: {
       title: titleText,
       description: descriptionText,
-      images: business.main_image_upload || business.image_url ? [
-        business.main_image_upload || business.image_url as string
+      images: getSupabaseImageUrl((business as any).main_image_upload || business.image_url) ? [
+        getSupabaseImageUrl((business as any).main_image_upload || business.image_url) as string
       ] : [],
       type: "website",
       url: canonicalUrl,
@@ -70,23 +72,23 @@ export default async function BusinessDetailPageServer({ params }: Props) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
 
-  // 🚀 Fetch data securely on the SERVER
-  const business = await getOneCourse(slug);
+  // 🚀 Fetch data securely on the SERVER from SUPABASE
+  const business = await getSupabaseBusinessBySlug(slug);
 
   // If 404, trigger Next.js built-in notFound page
   if (!business) {
     notFound();
   }
 
-  // 🚀 3. Fetch similar businesses (same category, different ID)
-  let similarBusinesses: Awaited<ReturnType<typeof getAllCourses>> = [];
+  // 🚀 3. Fetch similar businesses (same category, different ID) from SUPABASE
+  let similarBusinesses: BusinessListing[] = [];
   try {
-    const allBiz = await getAllCourses();
+    const allBiz = await getSupabaseBusinesses();
     similarBusinesses = allBiz
       .filter(b => b.category_name === business.category_name && b.id !== business.id)
       .slice(0, 6);
   } catch (error) { 
-    console.error("Failed to fetch similar businesses:", error); 
+    console.error("Failed to fetch similar businesses from Supabase:", error); 
   }
 
   // 🚀 4. JSON-LD Structured Data for Google SEO
@@ -105,8 +107,8 @@ export default async function BusinessDetailPageServer({ params }: Props) {
     },
     ...(business.phone && { "telephone": business.phone }),
     ...(business.category_name && { "additionalType": business.category_name }),
-    ...((business.main_image_upload || business.image_url) && {
-      "image": business.main_image_upload || business.image_url
+    ...(((business as any).main_image_upload || business.image_url) && {
+      "image": getSupabaseImageUrl((business as any).main_image_upload || business.image_url)
     }),
     ...(business.rating && Number(business.rating) > 0 && {
       "aggregateRating": {

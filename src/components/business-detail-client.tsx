@@ -14,6 +14,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { BusinessListing } from "@/services/courses";
 import { submitEnquiry, toggleBookmark, submitReview, getUserDashboard } from "@/services/user";
+import NearbyPlaces from "./NearbyPlaces";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 const iconMap: Record<string, React.ReactNode> = {
   "parking": <Car size={24} className="text-red-600 dark:text-sky-400" />,
@@ -269,8 +271,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
   const resolveUrl = (url: unknown): string | null => {
-    if (!url || typeof url !== 'string' || !url.trim()) return null;
-    return url.trim().startsWith('http') ? url.trim() : `${backendUrl}${url.trim().startsWith('/') ? '' : '/'}${url.trim()}`;
+    return getSupabaseImageUrl(url as string);
   };
 
   let mainImage = resolveUrl(business.main_image_upload) || resolveUrl(business.image_url);
@@ -354,6 +355,12 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             </div>
           </div>
           <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
+            <Link 
+              href={`/radius-search?lat=${business.lat}&lng=${business.lng}&name=${encodeURIComponent(title as string)}`}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white border border-transparent rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 group"
+            >
+              <MapPin size={18} className="animate-pulse" /> <span className="hidden md:inline">{t("ಹತ್ತಿರದ ನೋಡಿ", "Nearby Map")}</span>
+            </Link>
             <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-colors border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-rose-500'}`}><Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span></button>
             <button onClick={handleShare} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shadow-sm group"><Share2 size={18} className="text-red-600 dark:text-sky-500 group-hover:scale-110 transition-transform" /> <span className="hidden md:inline">{t("ಹಂಚಿ", "Share")}</span></button>
             <button onClick={() => setIsSuggestOpen(true)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors shadow-sm group"><Edit3 size={18} className="text-slate-400 group-hover:text-red-600 dark:group-hover:text-sky-500 transition-colors" /> <span className="hidden md:inline text-sm">{t("ಆರ್ಡರ್ ಸುಧಾರಿಸಿ", "Suggest Edit")}</span></button>
@@ -392,7 +399,8 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="flex gap-2 mt-4">
             {business.phone ? <a href={`tel:${business.phone}`} className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><Phone size={16} /> {t("ಕರೆ","Call")}</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><Phone size={16} /></button>}
             {business.phone ? <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MessageCircle size={16} /> WhatsApp</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><MessageCircle size={16} /></button>}
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 dark:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MapPin size={16} /> {t("ದಾರಿ","Direction")}</a>
+            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 py-2.5 rounded-xl font-bold text-sm shadow-sm"><MapPin size={16} className="text-red-600 dark:text-sky-500" /></a>
+            <Link href={`/radius-search?lat=${business.lat}&lng=${business.lng}&name=${encodeURIComponent(title as string)}`} className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 dark:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><Search size={16} /> {t("ಹತ್ತಿರದ", "Nearby")}</Link>
           </div>
         </div>
 
@@ -492,6 +500,15 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                   </div>
                 </div>
               </div>
+
+              {/* GIS COMPONENT: Nearby Places */}
+              {business.lat && business.lng && (
+                <NearbyPlaces 
+                  lat={business.lat} 
+                  lng={business.lng} 
+                  businessName={business.name} 
+                />
+              )}
             </section>
 
             {/* 5. PHOTOS */}
@@ -597,7 +614,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               return (
                 <Link key={sb.id} href={`/business/${sbSlug}`} className="min-w-[220px] md:min-w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-red-600/50 dark:hover:border-sky-500/50 hover:shadow-xl transition-all duration-300 shrink-0 group">
                   <div className="h-36 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                    {sbImg ? <img src={typeof sbImg === 'string' && sbImg.startsWith('http') ? sbImg : `${backendUrl}${sbImg}`} alt={sbTitle as string} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400" /></div>}
+                    {sbImg ? <img src={getSupabaseImageUrl(sbImg as string) || ""} alt={sbTitle as string} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400" /></div>}
                     {sb.is_verified && <span className="absolute top-2 left-2 bg-sky-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">Verified</span>}
                   </div>
                   <div className="p-3">

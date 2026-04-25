@@ -10,15 +10,11 @@ import { Flame, Film, Newspaper, Clock, Hash, BadgeCheck, Youtube, Instagram, Fa
 import Hero from '@/components/hero';
 import CategoryGrid from "@/components/category-grid";
 
-const getValidImageUrl = (url?: string | null) => {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
-  return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-};
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 export default function HomeClient({
   trendingBusinesses,
+  banners,
   movieReviews,
   newsArticles,
   socialPosts,
@@ -61,7 +57,7 @@ export default function HomeClient({
     <div className="flex flex-col gap-4 md:gap-16 pb-24 overflow-x-hidden bg-white dark:bg-[#050b14] min-h-screen transition-colors duration-300">
       
       {/* 1. HERO SECTION */}
-      <Hero />
+      <Hero banners={banners} />
 
       <motion.main 
         variants={containerVariants}
@@ -86,7 +82,7 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {trendingBusinesses?.length > 0 ? trendingBusinesses.slice(0, 8).map((biz: any) => {
-              const imgSrc = getValidImageUrl(biz.main_image_upload || biz.image_url);
+              const imgSrc = getSupabaseImageUrl(biz.main_image_upload || biz.image_url);
               const title = lang === 'kn' ? (biz.name_kn || biz.name) : biz.name;
               const slug = biz.business_area_slug || biz.slug || biz.id;
               const rating = Number(biz.rating) || 5;
@@ -133,7 +129,7 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {movieReviews?.length > 0 ? movieReviews.map((article: any) => {
-              const imgSrc = getValidImageUrl(article.image_upload || article.image_url);
+              const imgSrc = getSupabaseImageUrl(article.image_upload || article.image_url);
               const title = lang === 'kn' ? (article.title_kn || article.title) : article.title;
               return (
               <Link key={`movie-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass}`}>
@@ -176,7 +172,7 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {newsArticles?.length > 0 ? newsArticles.map((article: any) => {
-              const imgSrc = getValidImageUrl(article.image_upload || article.image_url);
+              const imgSrc = getSupabaseImageUrl(article.image_upload || article.image_url);
               const title = lang === 'kn' ? (article.title_kn || article.title) : article.title;
               return (
               <Link key={`news-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass}`}>
@@ -219,7 +215,7 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {socialPosts?.length > 0 ? socialPosts.map((post: any) => {
-              const imgSrc = getValidImageUrl(post.thumbnail);
+              const imgSrc = getSupabaseImageUrl(post.thumbnail);
               return (
               <Link key={`social-${post.id}`} href={post.link || "#"} target="_blank" className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
@@ -259,9 +255,9 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {recentReviews?.length > 0 ? recentReviews.map((review: any) => {
-              const bizImgSrc = getValidImageUrl(review.business?.main_image_upload || review.business?.image_url);
+              const bizImgSrc = getSupabaseImageUrl(review.business?.main_image_upload || review.business?.image_url);
               const bizName = lang === 'kn' ? (review.business?.name_kn || review.business?.name) : review.business?.name;
-              const userAvatar = getValidImageUrl(review.user?.profile_picture); 
+              const userAvatar = getSupabaseImageUrl(review.user?.profile_picture); 
               const userName = review.user?.first_name || review.customer_name || "User";
               const rating = Number(review.rating) || 5;
 
