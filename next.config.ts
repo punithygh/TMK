@@ -5,6 +5,21 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
+      // 🚀 Supabase Storage — S3-compatible endpoint (ನಿಮ್ಮ ಬ್ಯುಸಿನೆಸ್ ಇಮೇಜ್‌ಗಳಿಗಾಗಿ)
+      {
+        protocol: "https",
+        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
+        port: "",
+        pathname: "/storage/v1/s3/**",
+      },
+      // 🚀 Supabase Storage — Legacy storage endpoint
+      {
+        protocol: "https",
+        hostname: "yddhgsviyqmkxpnflpnu.storage.supabase.co",
+        port: "",
+        pathname: "/**",
+      },
+      // ಲೋಕಲ್ ಸರ್ವರ್ ಸೆಟ್ಟಿಂಗ್ಸ್
       {
         protocol: "http",
         hostname: "127.0.0.1",
@@ -23,27 +38,25 @@ const nextConfig: NextConfig = {
         port: "8000",
         pathname: "/media/**",
       },
+      // ಇತರ ಎಕ್ಸ್‌ಟರ್ನಲ್ ಹೋಸ್ಟ್‌ಗಳು
       {
         protocol: "https",
         hostname: "images.unsplash.com",
         port: "",
         pathname: "/**",
       },
-      // 🚀 ಹೊಸದು: Google ಇಮೇಜ್ ಲಿಂಕ್‌ಗಳನ್ನು ಅಲೋ ಮಾಡುವುದು
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
         port: "",
         pathname: "/**",
       },
-      // 🚀 ಹೊಸದು: ನೀವು ಬೇರೆ ಯಾವುದೇ ವೆಬ್‌ಸೈಟ್‌ನ ಲಿಂಕ್ ಹಾಕಿದ್ದರೂ (ಉದಾ: placeholder)
       {
         protocol: "https",
         hostname: "via.placeholder.com",
         port: "",
         pathname: "/**",
       },
-      // 🚀 ಹೊಸದು: Cloudinary ಅಥವಾ AWS S3 ಬಳಸಿದ್ದರೆ (ಭವಿಷ್ಯಕ್ಕಾಗಿ)
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
