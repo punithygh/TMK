@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft, MapPin } from "lucide-react";
+import { Search, Mic, Megaphone, UserCircle, Hexagon, LogOut, LayoutDashboard, Sun, Moon, Menu, X, Layers, ArrowLeft, MapPin, Store } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 export default function Navbar() {
   const router = useRouter();
@@ -28,6 +29,12 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [placeholder, setPlaceholder] = useState("");
   const [isListening, setIsListening] = useState(false);
+
+  // 🚀 YELP-STYLE AUTOCOMPLETE
+  const [suggestions, setSuggestions] = useState<{id: number, name: string, name_kn?: string, slug?: string, area_slug?: string}[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -123,8 +130,49 @@ export default function Navbar() {
     if (searchQuery.trim()) {
       router.push(`/listings?q=${encodeURIComponent(searchQuery)}`);
       setIsSearchOverlayOpen(false);
+      setShowSuggestions(false);
     }
   };
+
+  // 🚀 YELP AUTOCOMPLETE: Debounced live search
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (!query || query.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    setLoadingSuggestions(true);
+    try {
+      const { supabase } = await import('@/utils/supabase');
+      // 🚀 YELP-GRADE: Call Fuzzy Search RPC (Handles Typos & Spelling Mistakes)
+      const { data } = await supabase
+        .rpc('search_businesses_fuzzy', { search_query: query })
+        .limit(6);
+      setSuggestions(data || []);
+      setShowSuggestions(true);
+    } catch { setSuggestions([]); } 
+    finally { setLoadingSuggestions(false); }
+  }, []);
+
+  // Debounce: wait 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) fetchSuggestions(searchQuery);
+      else { setSuggestions([]); setShowSuggestions(false); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchSuggestions]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   return (
     <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
@@ -195,17 +243,19 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* 🔍 SEARCH BAR (Desktop Only - Hidden on Mobile) */}
-        <div className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px]">
+        {/* 🔍 SEARCH BAR (Desktop Only) — Yelp-Style with Autocomplete */}
+        <div ref={searchRef} className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px] flex-col">
           <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
             <Search className="absolute left-4 w-4 h-4 text-red-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(14,165,233,0.4)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
               placeholder={placeholder}
               className="w-full h-10 md:h-11 pl-10 pr-12 rounded-full border border-red-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white text-sm outline-none transition-all focus:border-red-600 dark:focus:border-sky-500 shadow-inner placeholder:text-gray-400"
               required
+              autoComplete="off"
             />
             <button
               type="button"
@@ -216,6 +266,49 @@ export default function Navbar() {
               <Mic className="w-4 h-4" />
             </button>
           </form>
+
+          {/* 🚀 AUTOCOMPLETE DROPDOWN */}
+          {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
+            <div className="absolute top-[46px] left-0 right-0 bg-white dark:bg-[#0c1220] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-[99999] animate-in fade-in slide-in-from-top-2 duration-200">
+              {loadingSuggestions && suggestions.length === 0 ? (
+                <div className="px-4 py-3 text-slate-500 text-sm text-center">ಹುಡುಕುತ್ತಿದ್ದೇವೆ...</div>
+              ) : (
+                suggestions.map((s) => {
+                  const sSlug = (lang === 'kn' && s.name_kn ? null : null) || s.slug || s.area_slug || `${s.id}`;
+                  const sName = lang === 'kn' && s.name_kn ? s.name_kn : s.name;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-left border-b border-slate-100 dark:border-slate-800 last:border-none"
+                      onClick={() => {
+                        router.push(`/business/${sSlug}`);
+                        setShowSuggestions(false);
+                        setSearchQuery('');
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-sky-500/10 flex items-center justify-center shrink-0">
+                        <Store size={14} className="text-red-600 dark:text-sky-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{sName}</p>
+                      </div>
+                      <Search size={12} className="text-slate-300 shrink-0" />
+                    </button>
+                  );
+                })
+              )}
+              {suggestions.length > 0 && (
+                <button
+                  type="button"
+                  className="w-full px-4 py-2.5 text-xs font-bold text-red-600 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-center"
+                  onClick={() => { router.push(`/listings?q=${encodeURIComponent(searchQuery)}`); setShowSuggestions(false); }}
+                >
+                  {lang === 'kn' ? `"${searchQuery}" ಗಾಗಿ ಎಲ್ಲ ಫಲಿತಾಂಶ ನೋಡಿ →` : `See all results for "${searchQuery}" →`}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 🖥️ DESKTOP RIGHT ACTIONS */}
@@ -244,8 +337,12 @@ export default function Navbar() {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-400 dark:hover:border-sky-400 text-slate-700 dark:text-white"
                   >
-                    <div className="w-6 h-6 rounded-full bg-red-600 dark:bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase">
-                      {user.first_name.charAt(0)}
+                    <div className="w-7 h-7 rounded-full bg-red-600 dark:bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase overflow-hidden border border-white/20 dark:border-slate-700 shadow-sm">
+                      {user.profile_image ? (
+                        <img src={getSupabaseImageUrl(user.profile_image) || ''} className="w-full h-full object-cover" alt="Profile" />
+                      ) : (
+                        user.first_name.charAt(0)
+                      )}
                     </div>
                     <span className="max-w-[80px] truncate">{user.first_name}</span>
                   </button>
@@ -313,7 +410,7 @@ export default function Navbar() {
             <Megaphone className="w-5 h-5 text-red-600 dark:text-sky-500" />
             <span className="text-sm font-bold">{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
           </Link>
-          <Link href="/categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
+          <Link href="/#categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
             <Layers className="w-5 h-5 text-red-600 dark:text-sky-500" />
             <span className="text-sm font-bold">{t("ವರ್ಗಗಳು", "Categories")}</span>
           </Link>

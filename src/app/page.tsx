@@ -18,7 +18,7 @@ export default async function Home() {
     categories,
     recentReviews
   ] = await Promise.all([
-    getSupabaseBusinesses(),
+    getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 }),
     getSupabaseBanners(),
     getSupabaseArticles('MOVIE'),
     getSupabaseArticles('NEWS'),

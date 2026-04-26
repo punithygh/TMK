@@ -23,13 +23,13 @@ export async function generateMetadata(
 
   if (!business) {
     return {
-      title: "Business Not Found - Tumakuru Connect",
+      title: "Business Not Found - Tumkurconnect",
       description: "The requested business profile could not be found.",
     };
   }
 
   // Generate an SEO Title
-  const titleText = `${business.name} | ${business.category_name} in ${business.area} | Tumakuru Connect`;
+  const titleText = `${business.name} | ${business.category_name} in ${business.area} | Tumkurconnect`;
   const descriptionText = business.description || `Find the best ${business.category_name} at ${business.name} located in ${business.area}, Tumakuru. Get contact details, reviews, and directions.`;
 
   // 🚨 Dynamic SEO Keywords for Local Search (Bilingual)
@@ -39,7 +39,7 @@ export async function generateMetadata(
     `best ${business.category_name} near ${business.area}`,
     `ತುಮಕೂರಿನಲ್ಲಿ ${business.category_name_kn || business.category_name}`,
     `${business.name} Tumkur`,
-    `Tumakuru Connect`
+    `Tumkurconnect`
   ];
 
   const canonicalUrl = `https://tumakuruconnect.com/business/${slug}`;
@@ -91,12 +91,16 @@ export default async function BusinessDetailPageServer({ params }: Props) {
     console.error("Failed to fetch similar businesses from Supabase:", error); 
   }
 
-  // 🚀 4. JSON-LD Structured Data for Google SEO
+  const canonicalUrl = `https://tumakuruconnect.com/business/${slug}`;
+
+  // 🚀 4. YELP-GRADE JSON-LD Structured Data for Google SEO
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": business.name,
+    "alternateName": business.name_kn || undefined,
     "description": business.description || `${business.category_name} in ${business.area}, Tumakuru`,
+    "url": canonicalUrl,
     "address": {
       "@type": "PostalAddress",
       "streetAddress": business.address || "",
@@ -105,6 +109,13 @@ export default async function BusinessDetailPageServer({ params }: Props) {
       "addressCountry": "IN",
       "postalCode": business.pincode || ""
     },
+    ...(business.lat && business.lng && {
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": business.lat,
+        "longitude": business.lng
+      }
+    }),
     ...(business.phone && { "telephone": business.phone }),
     ...(business.category_name && { "additionalType": business.category_name }),
     ...(((business as any).main_image_upload || business.image_url) && {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Star, MessageSquareQuote, Store } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { RecentReview } from "@/services/courses";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 interface RecentReviewsSwiperProps {
   initialReviews: RecentReview[];
@@ -41,8 +42,16 @@ export default function RecentReviewsSwiper({ initialReviews = [] }: RecentRevie
                 {/* User Info & Rating */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center font-bold text-lg border border-red-200 dark:border-sky-500/20">
-                      {review.user_name.charAt(0).toUpperCase()}
+                    <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-500 flex items-center justify-center font-bold text-lg border border-red-200 dark:border-sky-500/20 overflow-hidden">
+                      {review.profile_image ? (
+                        <img 
+                          src={getSupabaseImageUrl(review.profile_image) || ''} 
+                          className="w-full h-full object-cover" 
+                          alt={review.user_name} 
+                        />
+                      ) : (
+                        review.user_name.charAt(0).toUpperCase()
+                      )}
                     </div>
                     <div>
                       <h3 className="text-slate-900 dark:text-white font-semibold text-sm truncate max-w-[120px]">

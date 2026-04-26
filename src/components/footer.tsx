@@ -161,7 +161,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="max-w-[1300px] mx-auto mt-6 md:mt-8 pt-4 border-t border-gray-200 dark:border-slate-800 flex justify-center items-center gap-1 text-[11px] md:text-sm text-gray-500 whitespace-nowrap pb-24 md:pb-0">
-            &copy; 2026 Tumakuru Connect. Designed with <Heart className="w-3 h-3 md:w-4 md:h-4 text-red-500 fill-red-500" /> for Tumkur.
+            &copy; 2026 Tumkurconnect. Designed with <Heart className="w-3 h-3 md:w-4 md:h-4 text-red-500 fill-red-500" /> for Tumkur.
           </div>
         </footer>
       </div>
@@ -173,7 +173,7 @@ export default function Footer() {
             <Home className="w-[22px] h-[22px]" />
             <span>{lang === "kn" ? "ಮುಖಪುಟ" : "Home"}</span>
           </Link>
-          <Link href="/categories" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname.startsWith('/categories') ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
+          <Link href="/#categories" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname.includes('#categories') ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
             <Layers className="w-[22px] h-[22px]" />
             <span>{lang === "kn" ? "ವರ್ಗಗಳು" : "Categories"}</span>
           </Link>

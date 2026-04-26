@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
@@ -52,18 +52,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const address = product.address || `${location}, Tumkur`;
   
   const productSlug = lang === 'kn' && product.slug_kn ? product.slug_kn : product.slug;
-  const finalRouteSlug = product.business_area_slug || productSlug || `${product.id}`;
+  const finalRouteSlug = productSlug || product.business_area_slug || `${product.id}`;
   
-  // "starting 5star erli and rating cutomers kottange adu upgarade agta ogbeku"
+  // ✅ Fixed: No fake 5.0 default — only show real rating from DB
   const parsedRating = Number(product.rating);
-  const displayRating = (!isNaN(parsedRating) && parsedRating > 0) ? parsedRating : 5.0; 
+  const displayRating = (!isNaN(parsedRating) && parsedRating > 0) ? parsedRating : null;
   const reviewCount = product.review_count || 0; 
   
   const isVerified = product.is_verified || false;
   // Backend driven "open" status. Defaulting to true visually if undefined.
   const isOpen = product.is_currently_open !== false; 
 
-  let finalImgSrc = getSupabaseImageUrl(product.main_image_upload || product.image_url);
+  const imageUrl = product.main_image_upload || product.image_url;
+  const finalImgSrc = useMemo(() => getSupabaseImageUrl(imageUrl, { fallbackCategory: product.category_name }), [imageUrl, product.category_name]);
 
   const hasValidImage = finalImgSrc && finalImgSrc.trim() !== "" && !imgError;
   const displayPhone = product.phone || ""; 
@@ -89,9 +90,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
             alt={title as string}
             fill
             sizes="(max-width: 640px) 100vw, 320px"
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="object-cover transition-transform duration-700 group-hover:scale-110 premium-img"
             onError={() => setImgError(true)}
-            unoptimized={finalImgSrc?.includes('googleusercontent.com')}
+            unoptimized={true}
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/50">
@@ -146,39 +147,55 @@ const ProductCard = ({ product }: ProductCardProps) => {
           
           {/* Yelp-style Star Rating */}
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => {
-                const isFull = star <= displayRating;
-                const isHalf = !isFull && star - 0.5 <= displayRating;
-                
-                if (isHalf) {
-                  return (
-                    <div key={star} className="relative w-4 h-4 text-amber-500">
-                      <Star size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800 absolute top-0 left-0" />
-                      <StarHalf size={16} className="fill-amber-500 absolute top-0 left-0" />
-                    </div>
-                  );
-                }
-                
-                return (
-                  <Star 
-                    key={star} 
-                    size={16} 
-                    className={isFull 
-                      ? "fill-amber-500 text-amber-500" 
-                      : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
-                    } 
-                  />
-                );
-              })}
-            </div>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-              {displayRating.toFixed(1)}
-            </span>
-            {reviewCount > 0 && (
-              <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
-                ({reviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})
-              </span>
+            {displayRating !== null ? (
+              <>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isFull = star <= displayRating;
+                    const isHalf = !isFull && star - 0.5 <= displayRating;
+                    
+                    if (isHalf) {
+                      return (
+                        <div key={star} className="relative w-4 h-4 text-amber-500">
+                          <Star size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800 absolute top-0 left-0" />
+                          <StarHalf size={16} className="fill-amber-500 absolute top-0 left-0" />
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <Star 
+                        key={star} 
+                        size={16} 
+                        className={isFull 
+                          ? "fill-amber-500 text-amber-500" 
+                          : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
+                        } 
+                      />
+                    );
+                  })}
+                </div>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                  {displayRating.toFixed(1)}
+                </span>
+                {reviewCount > 0 && (
+                  <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
+                    ({reviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})
+                  </span>
+                )}
+              </>
+            ) : (
+              // ✅ No fake rating — show honest "No Rating Yet"
+              <>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800" />
+                  ))}
+                </div>
+                <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                  {t("ಇನ್ನೂ ರೇಟಿಂಗ್ ಇಲ್ಲ", "No rating yet")}
+                </span>
+              </>
             )}
           </div>
 
@@ -202,7 +219,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </a>
 
           <a 
-            href={displayPhone ? `https://wa.me/91${displayPhone.replace(/\D/g,'')}?text=Hi, I found your business on Tumakuru Connect.` : '#'}
+            href={displayPhone ? `https://wa.me/91${displayPhone.replace(/\D/g,'')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ.` : `Hello, I found your profile on Tumkurconnect.`)}` : '#'}
             target={displayPhone ? "_blank" : "_self"}
             rel="noopener noreferrer"
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "WhatsApp number not available")); } }}

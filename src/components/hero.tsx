@@ -11,7 +11,7 @@ import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 const FALLBACK_BANNER: Banner = {
   id: 0,
-  title: "Tumakuru Connect – Everything One Click",
+  title: "Tumkurconnect – Everything One Click",
   image_url: null,
   link_url: null,
   order: 0,
@@ -88,8 +88,8 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
   return (
     <section className="relative w-full overflow-hidden aspect-video md:aspect-[21/9] max-h-[80vh] lg:max-h-[600px]">
       <div className="absolute inset-0 z-0" style={{ opacity: visible ? 1 : 0, transition: "opacity 500ms ease-in-out" }}>
-        {getSupabaseImageUrl(activeBanner.image_url) ? (
-          <Image key={activeBanner.id} src={getSupabaseImageUrl(activeBanner.image_url) || ""} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center" />
+        {getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) ? (
+          <Image key={activeBanner.id} src={getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) || ""} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center premium-img" unoptimized />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#050b14] via-[#0c1a35] to-[#071020]" />
         )}

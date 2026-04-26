@@ -5,12 +5,19 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
-      // ✅ 1. ಇದೇ ನಿಮ್ಮ ಎರ್ರರ್ ಸಾಲ್ವ್ ಮಾಡುವ ಮುಖ್ಯವಾದ ಲೈನ್ (Public Storage)
+      // ✅ 1. Supabase Public Storage (Direct)
       {
         protocol: "https",
         hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
         port: "",
         pathname: "/storage/v1/object/public/**",
+      },
+      // ✅ 2. Supabase Image Render API (WebP Optimization) — was MISSING, caused errors
+      {
+        protocol: "https",
+        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
+        port: "",
+        pathname: "/storage/v1/render/image/public/**",
       },
       // 🚀 Supabase Storage — S3-compatible endpoint
       {

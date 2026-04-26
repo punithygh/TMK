@@ -3,8 +3,11 @@ import api from './api';
 export interface User {
   id: number;
   first_name: string;
+  last_name?: string;
   mobile: string;
   email: string;
+  username?: string;
+  profile_image?: string | null;
 }
 
 export interface AuthResponse {

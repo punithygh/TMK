@@ -96,6 +96,8 @@ export interface SocialPost {
 export interface RecentReview {
   id: number;
   user_name: string;
+  user_id?: number;
+  profile_image?: string | null;
   rating: number;
   comment: string;
   created_at: string;

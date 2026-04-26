@@ -34,11 +34,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Tumakuru Connect | #1 Local Directory & Search",
-    template: "%s | Tumakuru Connect",
+    default: "Tumkurconnect | #1 Local Directory & Search",
+    template: "%s | Tumkurconnect",
   },
-  description: "Tumakuru Connect is Tumkur's #1 local directory. Search for the best businesses, hotels, hospitals, real estate, and local services.",
-  keywords: ["Tumakuru Connect", "Tumkur business directory", "Tumakuru local services", "best businesses in Tumakuru"],
+  description: "Tumkurconnect is Tumkur's #1 local directory. Search for the best businesses, hotels, hospitals, real estate, and local services.",
+  keywords: ["Tumkurconnect", "Tumkur business directory", "Tumkur local services", "best businesses in Tumkur"],
   alternates: {
     canonical: "https://www.tumakuruconnect.com",
     languages: {

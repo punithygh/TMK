@@ -68,7 +68,7 @@ export default function HomeClient({
       >
         
         {/* 2. EXPLORE SERVICES */}
-        <motion.section variants={itemVariants}>
+        <motion.section variants={itemVariants} id="categories" className="scroll-mt-24">
           <CategoryGrid initialCategories={categories} />
         </motion.section>
 
@@ -82,8 +82,8 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {trendingBusinesses?.length > 0 ? trendingBusinesses.slice(0, 8).map((biz: any) => {
-              const imgSrc = getSupabaseImageUrl(biz.main_image_upload || biz.image_url);
-              const title = lang === 'kn' ? (biz.name_kn || biz.name) : biz.name;
+              const title = t(biz.name_kn, biz.name);
+              const imgSrc = getSupabaseImageUrl(biz.main_image_upload || biz.image_url, { fallbackCategory: biz.category_name });
               const slug = biz.business_area_slug || biz.slug || biz.id;
               const rating = Number(biz.rating) || 5;
 
@@ -91,7 +91,7 @@ export default function HomeClient({
                 <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass}`}>
                   <div className={unifiedImageClass}>
                     {imgSrc ? (
-                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out premium-img" unoptimized={true} />
                     ) : (
                       <Store size={40} className="text-slate-300 dark:text-slate-700" />
                     )}
@@ -172,8 +172,8 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {newsArticles?.length > 0 ? newsArticles.map((article: any) => {
-              const imgSrc = getSupabaseImageUrl(article.image_upload || article.image_url);
-              const title = lang === 'kn' ? (article.title_kn || article.title) : article.title;
+              const title = t(article.title_kn, article.title);
+              const imgSrc = getSupabaseImageUrl(article.main_image_upload || article.image_url, { fallbackCategory: 'news' });
               return (
               <Link key={`news-${article.id}`} href={`/article/${article.slug}`} className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
@@ -219,7 +219,7 @@ export default function HomeClient({
               return (
               <Link key={`social-${post.id}`} href={post.link || "#"} target="_blank" className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
-                   {imgSrc && <Image src={imgSrc} alt={post.title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-40 transition-opacity duration-500" />}
+                   {imgSrc && <Image src={imgSrc} alt={post.title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-40 transition-opacity duration-500" unoptimized={true} />}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] via-white/40 dark:via-[#0a1120]/40 to-transparent opacity-90" />
                    
                    {post.platform === "YOUTUBE" && <Youtube size={56} className="text-red-500 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] z-10" />}

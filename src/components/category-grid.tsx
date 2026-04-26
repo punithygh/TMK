@@ -40,15 +40,21 @@ const getCategoryIcon = (slug: string) => {
   const iconMap: Record<string, { icon: React.ReactNode }> = {
     'hotel': { icon: <Building2 {...iconProps} /> },
     'hospital': { icon: <Stethoscope {...iconProps} /> },
+    'doctor': { icon: <Stethoscope {...iconProps} /> },
     'pg': { icon: <BedSingle {...iconProps} /> },
+    'hostel': { icon: <BedSingle {...iconProps} /> },
     'restaurant': { icon: <Utensils {...iconProps} /> },
+    'food': { icon: <Utensils {...iconProps} /> },
     'shop': { icon: <ShoppingBag {...iconProps} /> },
+    'store': { icon: <ShoppingBag {...iconProps} /> },
     'real-estate': { icon: <Map {...iconProps} /> },
     'jobs': { icon: <Briefcase {...iconProps} /> },
     'education': { icon: <GraduationCap {...iconProps} /> },
+    'school': { icon: <GraduationCap {...iconProps} /> },
   };
 
-  return iconMap[slug] || { icon: <LayoutGrid {...iconProps} /> };
+  const matchedKey = Object.keys(iconMap).find(key => slug.toLowerCase().includes(key));
+  return matchedKey ? iconMap[matchedKey] : { icon: <LayoutGrid {...iconProps} /> };
 };
 
 export default function CategoryGrid({ initialCategories = [] }: CategoryGridProps) {
@@ -77,7 +83,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                   >
                     <div className="relative flex items-center justify-center h-10 w-10">
                       {getSupabaseImageUrl(category.icon_url) ? (
-                        <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={28} height={28} className="object-contain" />
+                        <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={28} height={28} className="object-contain" unoptimized />
                       ) : (
                         icon
                       )}
@@ -96,7 +102,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 >
                   <div className="relative flex items-center justify-center h-14 w-14 rounded-xl bg-white dark:bg-slate-800/50 group-hover:shadow-sm transition-all duration-300 border border-gray-200 dark:border-transparent group-hover:border-gray-300 dark:group-hover:border-sky-900/50">
                     {getSupabaseImageUrl(category.icon_url) ? (
-                      <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
+                      <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" unoptimized />
                     ) : (
                       <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
                     )}

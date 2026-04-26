@@ -7,6 +7,8 @@ import { BusinessListing } from "@/services/courses";
 import { ShieldCheck, Store, CheckCircle2, Send, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { submitSupabaseClaim } from "@/services/supabaseData";
+import { Loader2 } from "lucide-react";
 
 interface ClaimBusinessClientProps {
   business: BusinessListing;
@@ -21,20 +23,32 @@ const getValidImageUrl = (url?: string | null) => {
 
 export default function ClaimBusinessClient({ business }: ClaimBusinessClientProps) {
   const { lang, t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [imgError, setImgError] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [contactInfo, setContactInfo] = useState("");
+  const [details, setDetails] = useState("");
 
   const title = lang === 'kn' && business.name_kn ? business.name_kn : business.name;
   const category = lang === 'kn' && business.category_name_kn ? business.category_name_kn : business.category_name;
   const area = lang === 'kn' && business.area_kn ? business.area_kn : business.area;
   const imgSrc = getValidImageUrl(business.main_image_upload || business.image_url);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to Django API: path('businesses/<int:business_id>/claim/')
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      await submitSupabaseClaim(business.id, user.id, { contact_info: contactInfo, details });
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error("Claim submission failed:", error);
+      alert(t("ವಿಫಲವಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", "Failed. Please try again."));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -143,6 +157,8 @@ export default function ClaimBusinessClient({ business }: ClaimBusinessClientPro
                   <input 
                     type="text" 
                     required
+                    value={contactInfo}
+                    onChange={(e) => setContactInfo(e.target.value)}
                     className="w-full bg-[#050b14] border border-slate-700 text-white px-4 py-3.5 rounded-xl outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-600 font-medium"
                     placeholder={t("ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ನಂಬರ್", "Email or Phone Number")}
                   />
@@ -158,6 +174,8 @@ export default function ClaimBusinessClient({ business }: ClaimBusinessClientPro
                   <textarea 
                     required
                     rows={5}
+                    value={details}
+                    onChange={(e) => setDetails(e.target.value)}
                     className="w-full bg-[#050b14] border border-slate-700 text-white px-4 py-3.5 rounded-xl outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-600 resize-none leading-relaxed"
                     placeholder={t(
                       "ದಯವಿಟ್ಟು ನಿಮ್ಮ ಮಾಲೀಕತ್ವದ ಬಗ್ಗೆ ವಿವರಗಳನ್ನು ಒದಗಿಸಿ, ಉದಾಹರಣೆಗೆ:\n- ಬ್ಯುಸಿನೆಸ್ ನೋಂದಣಿ ಸಂಖ್ಯೆ\n- GST ಸಂಖ್ಯೆ\n- ವೆಬ್‌ಸೈಟ್ ಅಥವಾ ಸೋಷಿಯಲ್ ಮೀಡಿಯಾ ಲಿಂಕ್‌ಗಳು", 
@@ -171,9 +189,10 @@ export default function ClaimBusinessClient({ business }: ClaimBusinessClientPro
 
                 <button 
                   type="submit" 
-                  className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mt-8 shadow-lg shadow-sky-500/20 group"
+                  disabled={loading}
+                  className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mt-8 shadow-lg shadow-sky-500/20 group disabled:opacity-50"
                 >
-                  <Send size={18} className="group-hover:translate-x-1 transition-transform" />
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} className="group-hover:translate-x-1 transition-transform" />}
                   {t("ಕ್ಲೈಮ್ ವಿನಂತಿಯನ್ನು ಸಲ್ಲಿಸಿ", "Submit Claim Request")}
                 </button>
               </form>

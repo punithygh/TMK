@@ -4,6 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Building2, MapPin, Phone, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft, Loader2, ShieldCheck, Upload, X } from "lucide-react";
 import api from "@/services/api";
 import { geocodeAddress } from "@/services/geocoding";
+import { uploadSupabaseFile, submitSupabaseNewBusiness } from "@/services/supabaseData";
 
 const STEPS = ["Business Info", "Location", "Contact & Hours", "Photos & Details"];
 
@@ -31,7 +32,7 @@ export default function AddBusinessPage() {
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const inp = (k: keyof typeof form, ph: string, type = "text") => (
-    <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className={INPUT} />
+    <input type={type} value={form[k]} onChange={e => set(k, e.target.value)} placeholder={ph} className={INPUT} suppressHydrationWarning />
   );
 
   const handleFileChange = (i: number, file: File | null) => {
@@ -53,28 +54,32 @@ export default function AddBusinessPage() {
   const handleSubmit = async () => {
     setLoading(true); setError("");
     try {
-      // 🚀 GIS AUTOMATION: Auto-Geocode Address
+      // 1. GIS AUTOMATION: Auto-Geocode Address
       const fullAddress = `${form.full_address}, ${form.area}, Tumakuru, Karnataka`;
       const geo = await geocodeAddress(fullAddress);
       
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => v && fd.append(k, v));
-      
-      if (geo) {
-        fd.append("lat", geo.lat.toString());
-        fd.append("lng", geo.lng.toString());
-        // For Supabase/PostGIS
-        fd.append("location", `POINT(${geo.lng} ${geo.lat})`);
+      // 2. Upload Files to Supabase Storage
+      const uploadedPaths: string[] = [];
+      for (const file of files) {
+        if (file) {
+          const path = await uploadSupabaseFile(file);
+          uploadedPaths.push(path);
+        }
       }
 
-      files.forEach((f, i) => f && fd.append(`image_${i + 1}`, f));
-      
-      // Save to API (Django or Supabase Edge Function)
-      await api.post("/submit-business/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      // 3. Save Metadata to Supabase
+      const businessData = {
+        ...form,
+        lat: geo?.lat,
+        lng: geo?.lng
+      };
+
+      await submitSupabaseNewBusiness(businessData, uploadedPaths);
       
       setSuccess(true);
     } catch (e: any) {
-      setError(e?.response?.data?.message || (lang === "kn" ? "ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ." : "Something went wrong. Please try again."));
+      console.error("Submission error:", e);
+      setError(e?.message || (lang === "kn" ? "ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ." : "Something went wrong. Please try again."));
     } finally { setLoading(false); }
   };
 
