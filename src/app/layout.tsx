@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Poppins, Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -80,6 +81,21 @@ export default function RootLayout({
             </LanguageProvider>
           </AuthProvider>
         </ThemeProvider>
+        
+        {/* PWA Service Worker Registration */}
+        <Script id="sw-register" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  console.log('SW registration successful with scope: ', registration.scope);
+                }, function(err) {
+                  console.log('SW registration failed: ', err);
+                });
+              });
+            }
+          `}
+        </Script>
       </body>
     </html>
   );
