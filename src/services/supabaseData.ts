@@ -174,7 +174,7 @@ export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radi
   const { data, error } = await supabase.rpc('get_nearby_businesses', {
     user_lat: lat,
     user_long: lng,
-    radius_meters: radius
+    radius_meters: Number(radius)   // explicit Number cast — avoids INT vs FLOAT overload conflict
   });
 
   if (error) {
@@ -182,15 +182,13 @@ export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radi
     return [];
   }
 
-  // Parse locations for all results
-  const parsedData = (data || []).map((biz: any) => {
-    if (typeof biz.location === 'string' && biz.location.startsWith('POINT')) {
-      const parts = biz.location.replace('POINT(', '').replace(')', '').split(' ');
-      biz.lng = parseFloat(parts[0]);
-      biz.lat = parseFloat(parts[1]);
-    }
-    return biz;
-  });
+  // 🚀 RPC now returns extracted_lat / extracted_lng directly via ST_Y / ST_X
+  // No more manual POINT string parsing needed
+  const parsedData = (data || []).map((biz: any) => ({
+    ...biz,
+    lat: biz.extracted_lat ?? biz.lat,
+    lng: biz.extracted_lng ?? biz.lng,
+  }));
 
   console.log(`✅ Success: Found ${parsedData.length} nearby businesses.`);
   return parsedData;

@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Responsive breakpoints — matches card (400), gallery (800), hero (1200) contexts
+    deviceSizes: [400, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes:  [16, 32, 48, 64, 96, 128, 256, 400],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
       // ✅ 1. Supabase Public Storage (Direct)

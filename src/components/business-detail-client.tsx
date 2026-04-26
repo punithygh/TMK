@@ -389,21 +389,22 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const category = t(business.category_name_kn, business.category_name);
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
-  const resolveUrl = (url: unknown): string | null => {
-    return getSupabaseImageUrl(url as string);
+  // 🚀 Context-aware image sizing: hero=1200px AVIF, gallery=800px WebP
+  const resolveUrl = (url: unknown, context: 'hero' | 'gallery' = 'gallery'): string | null => {
+    return getSupabaseImageUrl(url as string, { context });
   };
 
-  let mainImage = resolveUrl(business.main_image_upload) || resolveUrl(business.image_url);
+  let mainImage = resolveUrl(business.main_image_upload, 'hero') || resolveUrl(business.image_url, 'hero');
   const galleryImages: string[] = [];
   if (mainImage) galleryImages.push(mainImage);
   if (business.gallery_images && Array.isArray(business.gallery_images)) {
     business.gallery_images.forEach(item => {
-      const resolved = resolveUrl(typeof item === 'string' ? item : (item as any)?.image);
+      const resolved = resolveUrl(typeof item === 'string' ? item : (item as any)?.image, 'gallery');
       if (resolved && !galleryImages.includes(resolved)) galleryImages.push(resolved);
     });
   }
   [business.image_url_2, business.image_url_3].forEach(extra => {
-    const resolved = resolveUrl(extra);
+    const resolved = resolveUrl(extra, 'gallery');
     if (resolved && !galleryImages.includes(resolved)) galleryImages.push(resolved);
   });
 
