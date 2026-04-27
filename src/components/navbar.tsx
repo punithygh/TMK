@@ -15,7 +15,7 @@ export default function Navbar() {
   const isHomePage = pathname === "/";
   
   const { lang, setLang, t } = useLanguage(); 
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isOwner, isAdmin, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -348,14 +348,29 @@ export default function Navbar() {
                   </button>
 
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 text-slate-800 dark:text-slate-200">
+                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 text-slate-800 dark:text-slate-200">
                       <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
                         <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
                         <p className="text-sm font-bold truncate">{user.mobile}</p>
+                        {/* Role Badge */}
+                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isAdmin ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400' :
+                          isOwner ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400' :
+                          'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {isAdmin ? '⚡ Super Admin' : isOwner ? '🏪 Business Owner' : '👤 User'}
+                        </span>
                       </div>
-                      <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-sky-400 transition-colors">
-                        <LayoutDashboard className="w-4 h-4" /> {t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}
+                      {/* User Dashboard (all users) */}
+                      <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-sky-400 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                        <LayoutDashboard className="w-4 h-4" /> {t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "My Dashboard")}
                       </Link>
+                      {/* Business Dashboard (OWNER & ADMIN only) */}
+                      {(isOwner || isAdmin) && (
+                        <Link href="/business-dashboard" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors" onClick={() => setIsDropdownOpen(false)}>
+                          <Store className="w-4 h-4" /> {t("ಬ್ಯುಸಿನೆಸ್ ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Business Dashboard")}
+                        </Link>
+                      )}
                       <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors text-left">
                         <LogOut className="w-4 h-4" /> {t("ಲಾಗ್ ಔಟ್", "Logout")}
                       </button>
@@ -415,10 +430,19 @@ export default function Navbar() {
             <span className="text-sm font-bold">{t("ವರ್ಗಗಳು", "Categories")}</span>
           </Link>
           {mounted && isAuthenticated && user ? (
-            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 text-red-600 dark:text-sky-400">
-              <LayoutDashboard className="w-5 h-5" />
-              <span className="text-sm font-bold">{t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Dashboard")}</span>
-            </Link>
+            <>
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 text-red-600 dark:text-sky-400">
+                <LayoutDashboard className="w-5 h-5" />
+                <span className="text-sm font-bold">{t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "My Dashboard")}</span>
+              </Link>
+              {/* Business Dashboard — only for OWNER & ADMIN */}
+              {(isOwner || isAdmin) && (
+                <Link href="/business-dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400">
+                  <Store className="w-5 h-5" />
+                  <span className="text-sm font-bold">{t("ಬ್ಯುಸಿನೆಸ್ ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Business Dashboard")}</span>
+                </Link>
+              )}
+            </>
           ) : mounted ? (
             <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-600 dark:bg-gradient-to-r dark:from-sky-500 dark:to-blue-600 text-white shadow-lg shadow-red-600/30 dark:shadow-sky-500/30">
               <UserCircle className="w-5 h-5" />

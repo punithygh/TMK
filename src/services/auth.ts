@@ -1,5 +1,7 @@
 import api from './api';
 
+export type UserRole = 'USER' | 'OWNER' | 'ADMIN';
+
 export interface User {
   id: number;
   first_name: string;
@@ -8,6 +10,9 @@ export interface User {
   email: string;
   username?: string;
   profile_image?: string | null;
+  role: UserRole;
+  is_verified: boolean;
+  subscription_plan?: string;
 }
 
 export interface AuthResponse {
