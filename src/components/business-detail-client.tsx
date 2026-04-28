@@ -360,8 +360,23 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     if (digits.length !== 10) { setPhoneError(t("10 ಅಂಕೆಗಳ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ", "Enter a valid 10-digit number")); return; }
     setPhoneError(""); setFormStatus("loading");
     try {
-      await submitEnquiry(business.id, { customer_name: enquiryData.name, phone_number: enquiryData.phone });
-      setFormStatus("success"); setTimeout(() => { setFormStatus("idle"); setIsEnquiryOpen(false); }, 2000);
+      const res = await submitEnquiry(business.id, { customer_name: enquiryData.name, phone_number: enquiryData.phone });
+      setFormStatus("success"); 
+      setTimeout(() => { 
+        setFormStatus("idle"); setIsEnquiryOpen(false); 
+        
+        // 🚨 Free-Tier Lead Generation: Redirect direct to WhatsApp if owner phone exists
+        if (res.owner_phone) {
+          const waPhone = res.owner_phone.replace(/\D/g, '');
+          const waText = encodeURIComponent(
+            lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು Tumkurconnect ಮೂಲಕ ಎನ್ಕ್ವೈರಿ ಮಾಡುತ್ತಿದ್ದೇನೆ. ನನ್ನ ಹೆಸರು ${enquiryData.name} (${enquiryData.phone}). ದಯವಿಟ್ಟು ಸಂಪರ್ಕಿಸಿ.` 
+            : `Hello ${title}, I am sending an enquiry from Tumkurconnect. My name is ${enquiryData.name} (${enquiryData.phone}). Please contact me.`
+          );
+          window.open(`https://wa.me/91${waPhone}?text=${waText}`, '_blank');
+        } else {
+          alert(t("ನಿಮ್ಮ ವಿಚಾರಣೆ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಕೆಯಾಗಿದೆ!", "Your enquiry was submitted successfully!"));
+        }
+      }, 1000);
     } catch (error) { 
       console.error("Enquiry failed:", error);
       setFormStatus("idle"); alert(t("ವಿಫಲವಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", "Failed to submit enquiry. Please try again.")); 

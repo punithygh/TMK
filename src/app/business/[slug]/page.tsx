@@ -5,7 +5,7 @@ import { getSupabaseBusinessBySlug, getSupabaseBusinesses } from "@/services/sup
 import { BusinessListing } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
-export const revalidate = 3600; // 🚨 ISR: Revalidate every 1 hour
+export const revalidate = 60; // 🚨 ISR: Revalidate every 60 seconds (Top-Level Free Tier Speed Optimization)
 
 type Props = {
   params: Promise<{ slug: string }>;

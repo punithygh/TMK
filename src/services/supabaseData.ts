@@ -223,7 +223,7 @@ export const getSupabaseBanners = async () => {
 export const getSupabaseCategories = async () => {
   const { data, error } = await supabase
     .from('directory_category')
-    .select('*')
+    .select('*, subcategories:directory_subcategory(id, name, name_kn, slug)')
     .order('name', { ascending: true });
 
   if (error) {

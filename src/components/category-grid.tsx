@@ -18,12 +18,20 @@ import {
 import Image from "next/image";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
+interface SubCategory {
+  id: number;
+  name: string;
+  name_kn: string;
+  slug: string;
+}
+
 interface Category {
   id: number;
   name: string;        
   name_kn: string;     
   slug: string;
   icon_url?: string;   
+  subcategories?: SubCategory[];
 }
 
 interface CategoryGridProps {
@@ -60,8 +68,16 @@ const getCategoryIcon = (slug: string) => {
 export default function CategoryGrid({ initialCategories = [] }: CategoryGridProps) {
   const { t } = useLanguage(); // 🚨 ಭಾಷೆ ಬದಲಾಯಿಸಲು ಟಾಗಲ್
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const categories = initialCategories;
+
+  const handleCategoryClick = (e: React.MouseEvent, category: Category) => {
+    if (category.subcategories && category.subcategories.length > 0) {
+      e.preventDefault();
+      setSelectedCategory(category);
+    }
+  };
 
   return (
     <div className="w-full relative z-10 pt-1 bg-white dark:bg-[#050b14]">
@@ -79,6 +95,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 {showOnMobile && (
                   <Link
                     href={`/listings?category=${category.slug}`}
+                    onClick={(e) => handleCategoryClick(e, category)}
                     className="flex md:hidden group flex-col items-center justify-start no-underline w-full gap-2"
                   >
                     <div className="relative flex items-center justify-center h-10 w-10">
@@ -98,6 +115,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 {/* 💻 DESKTOP VERSION: Similar minimal layout + Dynamic Text */}
                 <Link
                   href={`/listings?category=${category.slug}`}
+                  onClick={(e) => handleCategoryClick(e, category)}
                   className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1 transition-transform duration-300"
                 >
                   <div className="relative flex items-center justify-center h-14 w-14 rounded-xl bg-white dark:bg-slate-800/50 group-hover:shadow-sm transition-all duration-300 border border-gray-200 dark:border-transparent group-hover:border-gray-300 dark:group-hover:border-sky-900/50">
@@ -131,6 +149,57 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
             </button>
           )}
         </div>
+
+        {/* 🚨 SUBCATEGORY MODAL POPUP */}
+        {selectedCategory && (
+          <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4 transition-opacity" onClick={() => setSelectedCategory(null)}>
+            <div 
+              className="bg-white dark:bg-slate-900 rounded-t-2xl md:rounded-2xl w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl flex flex-col transform transition-transform"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center">
+                    {getCategoryIcon(selectedCategory.slug).icon}
+                  </div>
+                  <h3 className="font-bold text-lg text-slate-800 dark:text-white m-0">
+                    {t(selectedCategory.name_kn, selectedCategory.name)}
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedCategory(null)} 
+                  className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-slate-800 text-gray-500 hover:text-red-500 rounded-full transition-colors border-none cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
+                <Link 
+                  href={`/listings?category=${selectedCategory.slug}`} 
+                  onClick={() => setSelectedCategory(null)}
+                  className="block w-full p-4 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 font-semibold rounded-xl text-center mb-4 border border-sky-100 dark:border-sky-800/30 no-underline transition-colors hover:bg-sky-100 dark:hover:bg-sky-900/40"
+                >
+                  {t("ಎಲ್ಲಾ ತೋರಿಸು - " + selectedCategory.name_kn, "View All - " + selectedCategory.name)}
+                </Link>
+                
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">{t('ಸಬ್-ಕ್ಯಾಟಗರಿಗಳು', 'Sub Categories')}</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {selectedCategory.subcategories?.map(sub => (
+                    <Link 
+                      key={sub.id} 
+                      href={`/listings?category=${selectedCategory.slug}&sub_category=${sub.slug}`} 
+                      onClick={() => setSelectedCategory(null)}
+                      className="p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-center text-[13px] font-medium text-slate-700 dark:text-slate-300 hover:border-sky-300 dark:hover:border-sky-600 hover:shadow-sm no-underline transition-all hover:-translate-y-0.5"
+                    >
+                      {t(sub.name_kn, sub.name)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
