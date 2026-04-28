@@ -139,7 +139,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [formStatus, setFormStatus] = useState<"idle" | "loading" | "success">("idle");
-  const [enquiryData, setEnquiryData] = useState({ name: user?.first_name || "", phone: user?.mobile || "" });
+  const [enquiryData, setEnquiryData] = useState({ name: user?.first_name || "", phone: user?.mobile || "", honeypot: "" });
   const [phoneError, setPhoneError] = useState("");
   const [suggestData, setSuggestData] = useState({ name: "", phone: "", field: "", details: "" });
   const [suggestStatus, setSuggestStatus] = useState<"idle" | "loading" | "success">("idle");
@@ -356,6 +356,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (enquiryData.honeypot) return; // 🚨 Bot Spam Protection
     const digits = enquiryData.phone.replace(/\D/g, '');
     if (digits.length !== 10) { setPhoneError(t("10 ಅಂಕೆಗಳ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ", "Enter a valid 10-digit number")); return; }
     setPhoneError(""); setFormStatus("loading");
@@ -805,6 +806,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl">
               <h3 className="text-base font-bold text-white mb-5 leading-tight">{t("ಇವರ ವಿವರ ಪಡೆಯಿರಿ", "Get Details for")} <span className="text-red-600 dark:text-sky-500">{title as string}</span></h3>
               <form onSubmit={submitForm} className="flex flex-col gap-4">
+                <input type="text" name="honeypot" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" value={enquiryData.honeypot} onChange={e => setEnquiryData({...enquiryData, honeypot: e.target.value})} />
                 <input type="text" value={enquiryData.name} onChange={e => setEnquiryData({...enquiryData, name: e.target.value})} placeholder={t("ನಿಮ್ಮ ಹೆಸರು", "Your Name")} className="w-full bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-red-600 dark:focus:border-sky-500" required />
                 <div>
                   <input type="tel" value={enquiryData.phone} onChange={e => { setEnquiryData({...enquiryData, phone: e.target.value}); if (phoneError) setPhoneError(""); }} placeholder={t("ಮೋಬೈಲ್ ಸಂಖ್ಯೆ", "Mobile Number")} className={`w-full bg-slate-950 border text-white px-4 py-3 rounded-lg text-sm outline-none focus:border-red-600 dark:focus:border-sky-500 ${phoneError ? 'border-rose-500' : 'border-slate-700'}`} required />
