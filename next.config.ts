@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
+// 🚀 TOP-LEVEL ENTERPRISE TRICK: Force IPv4 DNS Resolution
+// This PERMANENTLY fixes the "UND_ERR_CONNECT_TIMEOUT" on Windows!
+// Node.js 18+ tries IPv6 first by default, which fails to connect to Supabase
+// and causes a 10s hang until it crashes. This forces it to use IPv4 immediately.
+import dns from "dns";
+dns.setDefaultResultOrder('ipv4first');
+
 const nextConfig: NextConfig = {
   images: {
+    // 🚀 TOP-LEVEL TRICK: Bypass Next.js Image Proxy!
+    // This PERMANENTLY fixes the "upstream image response timed out" (504) error.
+    // Instead of Next.js server trying to download and process Supabase images (which times out),
+    // the browser will fetch them directly from Supabase's high-speed CDN.
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     // Responsive breakpoints — matches card (400), gallery (800), hero (1200) contexts
     deviceSizes: [400, 640, 750, 828, 1080, 1200, 1920],

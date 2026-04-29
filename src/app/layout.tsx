@@ -82,16 +82,25 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         
-        {/* PWA Service Worker Registration */}
+        {/* PWA Service Worker Registration - FIXED FOR LOCAL DEV */}
         <Script id="sw-register" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                  console.log('SW registration successful with scope: ', registration.scope);
-                }, function(err) {
-                  console.log('SW registration failed: ', err);
-                });
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                  // 🚨 CRITICAL FIX: UNREGISTER Service Worker in local dev to prevent 404 cache chunk errors!
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                      registration.unregister();
+                      console.log('ServiceWorker unregistered for local development');
+                    }
+                  });
+                } else {
+                  // Register normally in production
+                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('SW registration failed: ', err);
+                  });
+                }
               });
             }
           `}

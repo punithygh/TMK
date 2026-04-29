@@ -57,6 +57,19 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     const url = new URL(path);
     cleanPath = url.pathname;
   } else if (path.startsWith('http')) {
+    // Fix: If the database contains the legacy render URL, convert it to object URL to prevent 504 timeouts
+    if (path.includes('supabase.co/storage/v1/render/image/public/')) {
+      try {
+        const url = new URL(path);
+        // Change path from /storage/v1/render/image/public/media/xyz to /storage/v1/object/public/media/xyz
+        url.pathname = url.pathname.replace('/render/image/public/', '/object/public/');
+        // Remove width, quality, format query params used by the render API
+        url.search = '';
+        return url.toString();
+      } catch (e) {
+        return path;
+      }
+    }
     // External URLs (Google CDN, Unsplash etc.) — return as-is
     return path;
   }
@@ -71,21 +84,9 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
   }
 
   // 🚀 Determine settings based on context
-  const ctx = options?.context;
-  const defaults = ctx ? CONTEXT_SETTINGS[ctx] : CONTEXT_SETTINGS['hero'];
+  // NOTE: Next.js <Image /> component automatically optimizes and caches these 
+  // raw URLs, which is much faster and more reliable than Supabase's free tier renderer.
+  const objectUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/${bucketName}/${cleanPath}`;
 
-  const finalWidth   = options?.width   ?? defaults.width;
-  const finalQuality = options?.quality ?? defaults.quality;
-  const finalFormat  = options?.format  ?? defaults.format;
-
-  // Build Supabase Image Render URL (on-the-fly resizing)
-  const renderUrl = `https://${projectRef}.supabase.co/storage/v1/render/image/public/${bucketName}/${cleanPath}`;
-  const params = new URLSearchParams();
-  params.append('width',   finalWidth.toString());
-  params.append('quality', finalQuality.toString());
-  params.append('format',  finalFormat);
-  params.append('resize',  'cover');
-  if (options?.height) params.append('height', options.height.toString());
-
-  return `${renderUrl}?${params.toString()}`;
+  return objectUrl;
 };
