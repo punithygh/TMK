@@ -20,17 +20,17 @@ export default async function Home() {
   
   // Batch 1: Critical UI Data
   const [trendingBusinesses, banners, categories] = await Promise.all([
-    getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 }),
-    getSupabaseBanners(),
-    getSupabaseCategories()
+    getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 }).catch(() => []),
+    getSupabaseBanners().catch(() => []),
+    getSupabaseCategories().catch(() => [])
   ]);
 
   // Batch 2: Secondary Content
   const [movieReviews, newsArticles, socialPosts, recentReviews] = await Promise.all([
-    getSupabaseArticles('MOVIE'),
-    getSupabaseArticles('NEWS'),
-    getSupabaseSocialPosts(),
-    getSupabaseRecentReviews()
+    getSupabaseArticles('MOVIE').catch(() => []),
+    getSupabaseArticles('NEWS').catch(() => []),
+    getSupabaseSocialPosts().catch(() => []),
+    getSupabaseRecentReviews().catch(() => [])
   ]);
 
   return (

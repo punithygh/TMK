@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/product-card";
-import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { getSupabaseBusinessesRaw } from "@/services/supabaseData";
 import MiniMap from "@/components/MiniMap";
 
 type ListingsClientProps = {
@@ -75,7 +75,7 @@ export default function ListingsClient({
       const limit = 10;
       const offset = (pageNum - 1) * limit;
 
-      const data = await getSupabaseBusinesses({
+      const data = await getSupabaseBusinessesRaw({
         search: initialQ,
         category: initialCategory,
         star_rating: currentFilters.star_rating,
@@ -94,7 +94,7 @@ export default function ListingsClient({
         setBusinesses(prev => [...prev, ...data]);
       }
 
-      setTotalCount(data.length); // Supabase range doesn't return total count easily without extra query, but let's use length for now or add count to service
+      setTotalCount(prev => isNewFilter ? data.length : prev + data.length);
       setHasMore(data.length === limit);
     } catch (error) {
       console.error("Error fetching businesses:", error);

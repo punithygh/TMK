@@ -14,6 +14,9 @@
   --color-text-muted: #94a3b8;
   --color-border-color: #334155;
   --color-danger: #ef4444;
+
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-plus-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* 🚨 Premium Feature: Smooth Scrolling & Base Typography 🚨 */

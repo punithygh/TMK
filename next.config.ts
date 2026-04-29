@@ -5,6 +5,7 @@ import type { NextConfig } from "next";
 // Node.js 18+ tries IPv6 first by default, which fails to connect to Supabase
 // and causes a 10s hang until it crashes. This forces it to use IPv4 immediately.
 import dns from "dns";
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']); // Bypass Jio/Airtel DNS blocking in India
 dns.setDefaultResultOrder('ipv4first');
 
 const nextConfig: NextConfig = {

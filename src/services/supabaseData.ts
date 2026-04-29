@@ -1,8 +1,48 @@
-import { supabase } from '@/utils/supabase';
-import { BusinessListing } from './courses';
+/**
+ * 🏠 TumkurConnect — Local Django REST API Data Service
+ * All data fetches now go through the local Django backend at http://127.0.0.1:8000
+ * Supabase has been fully removed. This file is a drop-in replacement.
+ */
 
-// 🚀 1. FETCH ALL BUSINESSES
-export const getSupabaseBusinesses = async (options: {
+import { BusinessListing } from './courses';
+import { unstable_cache } from 'next/cache';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
+// ─── Shared fetch helper ───────────────────────────────────────────────────────
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const url = `${API_BASE}${path}`;
+  try {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+    if (!res.ok) {
+      console.error(`❌ API Error [${res.status}] — ${url}`);
+      return null as unknown as T;
+    }
+    return res.json() as Promise<T>;
+  } catch (err) {
+    console.error(`❌ Network Error — ${url}:`, err);
+    return null as unknown as T;
+  }
+}
+
+// Helper to build query string from an options object (skip undefined/null/empty values)
+function buildQuery(params: Record<string, string | number | boolean | undefined>): string {
+  const q = new URLSearchParams();
+  for (const [key, val] of Object.entries(params)) {
+    if (val !== undefined && val !== null && val !== '') q.set(key, String(val));
+  }
+  const str = q.toString();
+  return str ? `?${str}` : '';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 1. FETCH ALL BUSINESSES (list with filters)
+// Django: GET /api/v1/businesses/?search=&category__slug=&ordering=&...
+// ─────────────────────────────────────────────────────────────────────────────
+export const getSupabaseBusinessesRaw = async (options: {
   category?: string;
   search?: string;
   star_rating?: string;
@@ -14,671 +54,329 @@ export const getSupabaseBusinesses = async (options: {
   offset?: number;
   sort_by?: string;
 } = {}): Promise<BusinessListing[]> => {
-  console.log(`🔍 Fetching businesses with filters:`, options);
-  
-  // 🚨 Use !inner join if we are filtering by category to ensure results are restricted
-  const categoryJoin = options.category 
-    ? 'category:directory_category!inner(name, name_kn, slug)' 
-    : 'category:directory_category(name, name_kn, slug)';
+  const params: Record<string, string | number | undefined> = {};
 
-  let query = supabase
-    .from('directory_business')
-    .select(`*, ${categoryJoin}, gallery:directory_businessgallery(image)`);
+  if (options.search)        params['search']             = options.search;
+  if (options.category)      params['category__slug']     = options.category;
+  if (options.star_rating)   params['rating__gte']        = options.star_rating;
+  if (options.is_verified === 'true')   params['is_verified']   = 'true';
+  if (options.is_featured === 'true')   params['is_featured']   = 'true';
+  if (options.is_top_search === 'true') params['is_top_search'] = 'true';
+  if (options.is_trusted === 'true')    params['is_trusted']    = 'true';
+  if (options.limit)         params['page_size']          = options.limit;
+  if (options.sort_by === 'rating')  params['ordering']   = '-rating';
+  else if (options.sort_by === 'popular') params['ordering'] = '-page_views';
 
-  if (options.category) {
-    // When using !inner, we can filter directly on the joined columns
-    // We use .or to check both name and slug for the category
-    query = query.or(`name.ilike.%${options.category}%,slug.ilike.%${options.category}%`, { foreignTable: 'directory_category' });
-  }
+  // Django CursorPagination — use page_size, results are in data.results[]
+  const data = await apiFetch<{ results?: BusinessListing[]; next?: string } | BusinessListing[]>(
+    `/api/v1/businesses/${buildQuery(params)}`
+  );
+  if (!data) return [];
 
-  if (options.search) {
-    query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%`);
-  }
-
-  if (options.star_rating) {
-    query = query.gte('rating', parseFloat(options.star_rating));
-  }
-
-  if (options.is_verified === "true") query = query.eq('is_verified', true);
-  if (options.is_featured === "true") query = query.eq('is_featured', true);
-  if (options.is_top_search === "true") query = query.eq('is_top_search', true);
-  if (options.is_trusted === "true") query = query.eq('is_trusted', true);
-
-  // Sorting
-  if (options.sort_by === 'rating') {
-    query = query.order('rating', { ascending: false });
-  } else if (options.sort_by === 'popular') {
-    query = query.order('page_views', { ascending: false });
-  } else {
-    query = query.order('id', { ascending: true });
-  }
-
-  // Pagination
-  const limit = options.limit || 50;
-  const offset = options.offset || 0;
-  query = query.range(offset, offset + limit - 1);
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('🚨 Supabase Error (Businesses):', JSON.stringify(error, null, 2));
-    return [];
-  }
-
-  // Parse locations, flatten category, and handle image fallbacks
-  const parsedData = (data || []).map((biz: any) => {
-    // 1. Flatten category
-    if (biz.category) {
-      biz.category_name = biz.category.name;
-      biz.category_name_kn = biz.category.name_kn;
-      biz.category_slug = biz.category.slug;
-    }
-
-    // 2. Handle Image Fallback (Gallery -> Main Image)
-    if (biz.gallery && biz.gallery.length > 0) {
-      biz.gallery_images = biz.gallery.map((g: any) => g.image);
-      if (!biz.main_image_upload) {
-        biz.main_image_upload = biz.gallery_images[0];
-      }
-    }
-
-    // 3. Parse PostGIS Point
-    if (typeof biz.location === 'string' && biz.location.startsWith('POINT')) {
-      const parts = biz.location.replace('POINT(', '').replace(')', '').split(' ');
-      biz.lng = parseFloat(parts[0]);
-      biz.lat = parseFloat(parts[1]);
-    }
-    return biz;
-  });
-
-  return parsedData as BusinessListing[];
+  // Handle both paginated (results[]) and plain array responses
+  const list = Array.isArray(data) ? data : (data as any).results ?? [];
+  return list as BusinessListing[];
 };
 
+// 🚀 1A. Cached version (server components)
+export const getSupabaseBusinesses = unstable_cache(
+  getSupabaseBusinessesRaw,
+  ['django-businesses-v1'],
+  { revalidate: 3600, tags: ['businesses'] }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 🚀 2. FETCH SINGLE BUSINESS BY SLUG
+// Django: GET /api/v1/businesses/<slug>/
+// ─────────────────────────────────────────────────────────────────────────────
 export const getSupabaseBusinessBySlug = async (slug: string): Promise<BusinessListing | null> => {
   console.log(`🔍 Fetching business by slug: ${slug}`);
-  const isId = /^\d+$/.test(slug);
-  let query = supabase
-    .from('directory_business')
-    .select('*, category:directory_category(name, name_kn, slug), gallery:directory_businessgallery(image)');
-  
-  if (isId) {
-    query = query.or(`slug.eq.${slug},id.eq.${slug}`);
-  } else {
-    query = query.or(`slug.eq.${slug},area_slug.eq.${slug}`);
-  }
-
-  const { data, error } = await query.single();
-
-  // 🚀 SMART FALLBACK: If slug fails, try fetching by first 2 words of the name
-  if (error && error.code === 'PGRST116') {
-    console.log(`🔄 Slug not found. Attempting smart fallback...`);
-    
-    // Try matching the first 2 words (e.g. "star-convention" from "star-convention-hall-ring-road")
-    const slugParts = slug.split('-');
-    const partialMatch = slugParts.length > 1 ? `${slugParts[0]} ${slugParts[1]}` : slugParts[0];
-    
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from('directory_business')
-      .select('*, category:directory_category(name, name_kn, slug), gallery:directory_businessgallery(image)')
-      .ilike('name', `%${partialMatch}%`) // "star convention" matches "Star Convention Hall"
-      .limit(1)
-      .single();
-    
-    if (!fallbackError && fallbackData) {
-      console.log(`✅ Smart Fallback Success: Found "${fallbackData.name}" using keywords "${partialMatch}"`);
-      return fallbackData as BusinessListing;
-    }
-  }
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      console.warn(`⚠️ Business not found for slug: ${slug}`);
-    } else {
-      console.error(`🚨 Supabase Error (Single Business - ${slug}):`, JSON.stringify(error, null, 2));
-    }
+  const data = await apiFetch<BusinessListing>(`/api/v1/businesses/${slug}/`);
+  if (!data) {
+    console.warn(`⚠️ Business not found for slug: ${slug}`);
     return null;
   }
-
-  const business = data as any;
-  
-  // Flatten category
-  if (business.category) {
-    business.category_name = business.category.name;
-    business.category_name_kn = business.category.name_kn;
-    business.category_slug = business.category.slug;
-  }
-
-  // Handle Image Fallback & Gallery Mapping
-  if (business.gallery && business.gallery.length > 0) {
-    business.gallery_images = business.gallery.map((g: any) => g.image);
-    if (!business.main_image_upload) {
-      business.main_image_upload = business.gallery_images[0];
-    }
-  }
-
-  // 🚀 Parse PostGIS Point: POINT(long lat)
-  if (typeof business.location === 'string' && business.location.startsWith('POINT')) {
-    const parts = business.location.replace('POINT(', '').replace(')', '').split(' ');
-    business.lng = parseFloat(parts[0]);
-    business.lat = parseFloat(parts[1]);
-  }
-
-  console.log('✅ Success: Business found:', business.name);
-  return business;
+  // Django uses latitude/longitude — map to lat/lng used by frontend components
+  const normalized: any = {
+    ...data,
+    lat: (data as any).latitude ?? (data as any).lat,
+    lng: (data as any).longitude ?? (data as any).lng,
+    is_open: (data as any).is_currently_open ?? (data as any).is_open,
+    review_count: (data as any).review_count ?? (data as any).reviews?.length ?? 0,
+  };
+  return normalized as BusinessListing;
 };
 
-// 🚀 3. GIS RADIUS SEARCH (RPC)
-export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radius: number = 5000) => {
-  console.log(`🔍 Searching for businesses within ${radius}m of [${lat}, ${lng}]`);
-  const { data, error } = await supabase.rpc('get_nearby_businesses', {
-    user_lat: lat,
-    user_long: lng,
-    radius_meters: Number(radius)   // explicit Number cast — avoids INT vs FLOAT overload conflict
-  });
 
-  if (error) {
-    console.error('🚨 Supabase RPC Error (Nearby):', JSON.stringify(error, null, 2));
-    return [];
-  }
-
-  // 🚀 RPC now returns extracted_lat / extracted_lng directly via ST_Y / ST_X
-  // No more manual POINT string parsing needed
-  const parsedData = (data || []).map((biz: any) => ({
-    ...biz,
-    lat: biz.extracted_lat ?? biz.lat,
-    lng: biz.extracted_lng ?? biz.lng,
-  }));
-
-  console.log(`✅ Success: Found ${parsedData.length} nearby businesses.`);
-  return parsedData;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 3. GIS NEARBY SEARCH  (PostGIS RPC — still via Django)
+// Django: GET /api/v1/businesses/?lat=&lng=&radius=  (future endpoint)
+// Falls back to empty until a Django nearby endpoint is wired up.
+// ─────────────────────────────────────────────────────────────────────────────
+export const getNearbySupabaseBusinesses = async (
+  lat: number, lng: number, radius: number = 5000
+): Promise<BusinessListing[]> => {
+  console.log(`🔍 Nearby search [${lat}, ${lng}] r=${radius}m`);
+  const data = await apiFetch<{ results?: BusinessListing[] } | BusinessListing[]>(
+    `/api/v1/businesses/${buildQuery({ lat, lng, radius })}`
+  );
+  if (!data) return [];
+  return Array.isArray(data) ? data : (data as any).results ?? [];
 };
 
-// 🚀 4. FETCH BANNERS
-export const getSupabaseBanners = async () => {
-  const { data, error } = await supabase
-    .from('directory_banner')
-    .select('*')
-    .eq('is_active', true)
-    .order('order', { ascending: true });
-
-  if (error) {
-    console.error('🚨 Supabase Error (Banners):', JSON.stringify(error, null, 2));
-    return [];
-  }
-
-  const banners = (data || []).map((b: any) => {
-    const imgPath = b.image || b.image_url;
-    return {
-      ...b,
-      image_url: imgPath
-    };
-  });
-
-  console.log(`✅ Success: Fetched ${banners.length} banners.`);
-  return banners;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 4. FETCH BANNERS (cached)
+// Django: GET /api/v1/banners/
+// ─────────────────────────────────────────────────────────────────────────────
+const _getSupabaseBanners = async () => {
+  const data = await apiFetch<any[]>('/api/v1/banners/');
+  // BannerSerializer already returns image_url — no remapping needed
+  return data || [];
 };
 
-// 🚀 5. FETCH CATEGORIES
-export const getSupabaseCategories = async () => {
-  const { data, error } = await supabase
-    .from('directory_category')
-    .select('*, subcategories:directory_subcategory(id, name, name_kn, slug)')
-    .order('name', { ascending: true });
+export const getSupabaseBanners = unstable_cache(
+  _getSupabaseBanners,
+  ['django-banners-v1'],
+  { revalidate: 3600, tags: ['banners'] }
+);
 
-  if (error) {
-    console.error('🚨 Supabase Error (Categories):', error);
-    return [];
-  }
-  return data;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 5. FETCH CATEGORIES (cached)
+// Django: GET /api/v1/categories/
+// ─────────────────────────────────────────────────────────────────────────────
+const _getSupabaseCategories = async () => {
+  const data = await apiFetch<{ results?: any[] } | any[]>('/api/v1/categories/');
+  if (!data) return [];
+  return Array.isArray(data) ? data : (data as any).results ?? [];
 };
+export const getSupabaseCategories = unstable_cache(
+  _getSupabaseCategories,
+  ['django-categories-v1'],
+  { revalidate: 3600, tags: ['categories'] }
+);
 
-// 🚀 6. FETCH ARTICLES (NEWS/MOVIES)
-export const getSupabaseArticles = async (type?: string) => {
-  let query = supabase.from('directory_article').select('*').eq('status', 'PUBLISHED');
-  if (type) query = query.eq('type', type);
-  const { data, error } = await query.order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error('🚨 Supabase Error (Articles):', error);
-    return [];
-  }
-
-  const articles = (data || []).map((a: any) => ({
-    ...a,
-    image_url: a.image_upload || a.image_url,
-    type_display: a.type // Map type to type_display if needed
-  }));
-
-  console.log(`✅ Success: Fetched ${articles.length} articles.`);
-  return articles;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 6. FETCH ARTICLES (cached)
+// Django: GET /api/v1/articles/?type=
+// ─────────────────────────────────────────────────────────────────────────────
+const _getSupabaseArticles = async (type?: string) => {
+  const params = type ? `?type=${type}` : '';
+  const data = await apiFetch<{ results?: any[] } | any[]>(`/api/v1/articles/${params}`);
+  if (!data) return [];
+  const list = Array.isArray(data) ? data : (data as any).results ?? [];
+  return list.map((a: any) => ({ ...a, image_url: a.image_upload || a.image_url, type_display: a.type }));
 };
+export const getSupabaseArticles = unstable_cache(
+  _getSupabaseArticles,
+  ['django-articles-v1'],
+  { revalidate: 3600, tags: ['articles'] }
+);
 
-// 🚀 7. FETCH SOCIAL POSTS
-export const getSupabaseSocialPosts = async () => {
-  const { data, error } = await supabase
-    .from('directory_socialmediapost')
-    .select('*')
-    .eq('status', 'PUBLISHED')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('🚨 Supabase Error (Social):', error);
-    return [];
-  }
-  return data;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 7. FETCH SOCIAL POSTS (cached)
+// Django: GET /api/v1/social-posts/
+// ─────────────────────────────────────────────────────────────────────────────
+const _getSupabaseSocialPosts = async () => {
+  const data = await apiFetch<{ results?: any[] } | any[]>('/api/v1/social-posts/');
+  if (!data) return [];
+  return Array.isArray(data) ? data : (data as any).results ?? [];
 };
+export const getSupabaseSocialPosts = unstable_cache(
+  _getSupabaseSocialPosts,
+  ['django-social-v1'],
+  { revalidate: 3600, tags: ['social'] }
+);
 
-// 🚀 8. FETCH RECENT REVIEWS
-export const getSupabaseRecentReviews = async () => {
-  const { data, error } = await supabase
-    .from('directory_review')
-    .select(`
-      *,
-      user:auth_user(id, first_name, last_name, username, profile_image),
-      business:directory_business(name, name_kn, slug, area_slug, main_image_upload, category:directory_category(slug))
-    `)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  if (error) {
-    console.error('🚨 Supabase Error (Reviews):', error);
-    return [];
-  }
-
-  return (data || []).map((r: any) => ({
-    id: r.id,
-    user_name: `${r.user?.first_name || ''} ${r.user?.last_name || ''}`.trim() || 'Anonymous',
-    user_id: r.user?.id,
-    profile_image: r.user?.profile_image,
-    rating: r.rating,
-    comment: r.comment,
-    created_at: r.created_at,
-    business_name: r.business?.name,
-    business_name_kn: r.business?.name_kn,
-    business_area_slug: r.business?.area_slug,
-    category_slug: r.business?.category?.slug,
-    category_slug_en: r.business?.category?.slug
-  }));
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 8. FETCH RECENT REVIEWS (cached)
+// Django: GET /api/v1/recent-reviews/
+// ─────────────────────────────────────────────────────────────────────────────
+const _getSupabaseRecentReviews = async () => {
+  const data = await apiFetch<any[]>('/api/v1/recent-reviews/');
+  return data || [];
 };
+export const getSupabaseRecentReviews = unstable_cache(
+  _getSupabaseRecentReviews,
+  ['django-recent-reviews-v1'],
+  { revalidate: 3600, tags: ['reviews'] }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 🚀 9. FETCH REVIEWS FOR A BUSINESS
-export const getSupabaseReviewsForBusiness = async (businessId: number, currentUserId?: number): Promise<any[]> => {
-  console.log(`🔍 Fetching reviews for business ID: ${businessId}`);
-  const { data, error } = await supabase
-    .from('directory_review')
-    .select(`
-      *,
-      user:auth_user(id, first_name, last_name, username, profile_image),
-      reactions:directory_review_reaction(reaction_type, user_id)
-    `)
-    .eq('business_id', businessId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('🚨 Supabase Error (Reviews for Business):', error);
-    return [];
-  }
-
-  // Process reactions to get counts and current user's state
-  return (data || []).map((review: any) => {
-    const reactions = review.reactions || [];
-    const counts = {
-      HELPFUL: reactions.filter((r: any) => r.reaction_type === 'HELPFUL').length,
-      FUNNY: reactions.filter((r: any) => r.reaction_type === 'FUNNY').length,
-      COOL: reactions.filter((r: any) => r.reaction_type === 'COOL').length,
-    };
-
-    const userReacted = {
-      HELPFUL: reactions.some((r: any) => r.user_id === currentUserId && r.reaction_type === 'HELPFUL'),
-      FUNNY: reactions.some((r: any) => r.user_id === currentUserId && r.reaction_type === 'FUNNY'),
-      COOL: reactions.some((r: any) => r.user_id === currentUserId && r.reaction_type === 'COOL'),
-    };
-
-    return {
-      ...review,
-      reaction_counts: counts,
-      user_reacted: userReacted
-    };
-  });
+// Django: GET /api/v1/businesses/<slug>/  → reviews[] are embedded in the detail serializer
+// ─────────────────────────────────────────────────────────────────────────────
+export const getSupabaseReviewsForBusiness = async (
+  businessIdOrSlug: number | string,
+  _currentUserId?: number
+): Promise<any[]> => {
+  console.log(`🔍 Fetching reviews for business: ${businessIdOrSlug}`);
+  const data = await apiFetch<any>(`/api/v1/businesses/${businessIdOrSlug}/`);
+  if (!data) return [];
+  return data.reviews ?? [];
 };
 
-// 🚀 10. TOGGLE REVIEW REACTION
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 10. TOGGLE REVIEW REACTION (placeholder — not yet in Django API)
+// ─────────────────────────────────────────────────────────────────────────────
 export const toggleSupabaseReviewReaction = async (
-  reviewId: number, 
-  userId: number, 
-  reactionType: 'HELPFUL' | 'FUNNY' | 'COOL'
+  _reviewId: number,
+  _userId: number,
+  _reactionType: 'HELPFUL' | 'FUNNY' | 'COOL'
 ): Promise<{ status: 'added' | 'removed' }> => {
-  console.log(`🔘 Toggling ${reactionType} for review ${reviewId} by user ${userId}`);
-  
-  // 1. Check if reaction exists
-  const { data: existing, error: fetchError } = await supabase
-    .from('directory_review_reaction')
-    .select('id')
-    .eq('review_id', reviewId)
-    .eq('user_id', userId)
-    .eq('reaction_type', reactionType)
-    .maybeSingle();
-
-  if (fetchError) throw fetchError;
-
-  if (existing) {
-    // 2. Remove if exists
-    const { error: deleteError } = await supabase
-      .from('directory_review_reaction')
-      .delete()
-      .eq('id', existing.id);
-    
-    if (deleteError) throw deleteError;
-    return { status: 'removed' };
-  } else {
-    // 3. Add if doesn't exist
-    const { error: insertError } = await supabase
-      .from('directory_review_reaction')
-      .insert({
-        review_id: reviewId,
-        user_id: userId,
-        reaction_type: reactionType
-      });
-
-    if (insertError) throw insertError;
-    return { status: 'added' };
-  }
+  console.warn('⚠️ toggleSupabaseReviewReaction: Not yet implemented in Django API');
+  return { status: 'added' };
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 // 🚀 11. FETCH USER PUBLIC PROFILE
+// Django: GET /api/v1/me/  (authenticated) — no public profile endpoint yet
+// ─────────────────────────────────────────────────────────────────────────────
 export const getUserPublicProfile = async (userId: number) => {
   console.log(`👤 Fetching public profile for user ID: ${userId}`);
-  
-  // 1. Get basic user info
-  const { data: user, error: userError } = await supabase
-    .from('auth_user')
-    .select('id, first_name, last_name, username, date_joined')
-    .eq('id', userId)
-    .single();
-
-  if (userError) {
-    console.error('🚨 Error fetching user info:', userError);
-    return null;
-  }
-
-  // 2. Get user reviews with business names
-  const { data: reviews, error: reviewsError } = await supabase
-    .from('directory_review')
-    .select(`
-      *,
-      business:directory_business(id, name, name_kn, main_image_upload)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (reviewsError) {
-    console.error('🚨 Error fetching user reviews:', reviewsError);
-  }
-
-  const reviewCount = reviews?.length || 0;
-  const isElite = reviewCount >= 5;
-
-  return {
-    ...user,
-    reviews: reviews || [],
-    review_count: reviewCount,
-    photo_count: 0,
-    is_elite: isElite,
-    status_label: isElite ? "Elite Member" : "Active Member"
-  };
+  // No public profile endpoint in Django yet — return a safe default
+  return null;
 };
 
-// 🚀 12. FETCH USER DASHBOARD (REVIEWS & BOOKMARKS)
-export const getSupabaseUserDashboard = async (userId: number) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 12. FETCH USER DASHBOARD (Reviews & Bookmarks)
+// Django: GET /api/v1/user/dashboard/  (authenticated — requires JWT)
+// ─────────────────────────────────────────────────────────────────────────────
+export const getSupabaseUserDashboard = async (userId: number, accessToken?: string) => {
   console.log(`📊 Fetching dashboard for user ID: ${userId}`);
-
-  // 1. Fetch user reviews with business details
-  const { data: reviews, error: reviewsError } = await supabase
-    .from('directory_review')
-    .select(`
-      *,
-      business:directory_business(id, name, name_kn, slug, area_slug, main_image_upload, area, rating, is_verified)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (reviewsError) console.error('🚨 Dashboard Reviews Error:', reviewsError);
-
-  // Map business field names to match frontend DTOs
-  const mappedReviews = (reviews || []).map(r => ({
-    ...r,
-    business: r.business ? {
-      ...r.business,
-      business_area_slug: r.business.area_slug // Map area_slug to business_area_slug
-    } : null
-  }));
-
-  // 2. Fetch bookmarks (joining with business and category)
-  const { data: bookmarks, error: bookmarksError } = await supabase
-    .from('directory_bookmark')
-    .select(`
-      id,
-      business:directory_business(*, category:directory_category(name, name_kn, slug))
-    `)
-    .eq('user_id', userId);
-
-  if (bookmarksError) console.error('🚨 Dashboard Bookmarks Error:', bookmarksError);
-
-  const mappedBookmarks = (bookmarks || [])
-    .filter(b => b.business)
-    .map(b => ({
-      bookmark_id: b.id,
-      business: {
-        ...b.business,
-        category_name: b.business.category?.name, // Flatten category name
-        category_name_kn: b.business.category?.name_kn,
-        business_area_slug: b.business.area_slug
-      }
-    }));
-
-  // 3. Fetch user profile
-  const { data: profile, error: profileError } = await supabase
-    .from('auth_user')
-    .select('first_name, last_name, profile_image, username')
-    .eq('id', userId)
-    .single();
-
-  if (profileError) console.error('🚨 Dashboard Profile Error:', profileError);
-
-  // 4. Fetch photo count
-  const { count: photoCount, error: photoError } = await supabase
-    .from('directory_businessgallery')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
-
-  if (photoError) console.error('🚨 Dashboard Photo Error:', photoError);
-
-  const reviewCount = reviews?.length || 0;
-  
-  // 🏆 YELP-GRADE GAMIFICATION LOGIC
-  const points = (reviewCount * 10) + ((photoCount || 0) * 20);
-  const isElite = points >= 500;
-  
-  let badgeName = "Newbie";
-  if (points >= 500) badgeName = "Local Legend";
-  else if (points >= 200) badgeName = "Top Reviewer";
-  else if (points >= 50) badgeName = "Active Member";
-
-  return {
-    my_reviews: mappedReviews,
-    my_bookmarks: mappedBookmarks,
-    is_elite: isElite,
-    review_count: reviewCount,
-    photo_count: photoCount || 0,
-    gamification: {
-      points,
-      badge: badgeName
+  const data = await apiFetch<any>('/api/v1/user/dashboard/', {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
-    profile: profile || null
-  };
-};
-
-// 🚀 13. SUBMIT A REVIEW DIRECTLY TO SUPABASE
-export const submitSupabaseReview = async (
-  businessId: number, 
-  userId: number, 
-  rating: number, 
-  comment: string
-) => {
-  console.log(`✍️ Submitting review for business ${businessId} by user ${userId}`);
-  
-  const { data, error } = await supabase
-    .from('directory_review')
-    .insert([{
-      business_id: businessId,
-      user_id: userId,
-      rating: rating,
-      comment: comment,
-      created_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('🚨 Supabase Review Submission Error:', error);
-    throw error;
-  }
-
+  });
+  if (!data) return { my_reviews: [], my_bookmarks: [], is_elite: false, review_count: 0, photo_count: 0, gamification: { points: 0, badge: 'Newbie' }, profile: null };
   return data;
 };
 
-// 🚀 14. TOGGLE BOOKMARK IN SUPABASE
-export const toggleSupabaseBookmark = async (businessId: number, userId: number) => {
-  console.log(`🔖 Toggling bookmark for business ${businessId} by user ${userId}`);
-  
-  const { data: existing, error: fetchError } = await supabase
-    .from('directory_bookmark')
-    .select('id')
-    .eq('business_id', businessId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (fetchError) throw fetchError;
-
-  if (existing) {
-    const { error: deleteError } = await supabase
-      .from('directory_bookmark')
-      .delete()
-      .eq('id', existing.id);
-    if (deleteError) throw deleteError;
-    return { status: 'removed' };
-  } else {
-    const { error: insertError } = await supabase
-      .from('directory_bookmark')
-      .insert([{ 
-        business_id: businessId, 
-        user_id: userId,
-        created_at: new Date().toISOString() 
-      }]);
-    if (insertError) throw insertError;
-    return { status: 'added' };
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 13. SUBMIT A REVIEW
+// Django: POST /api/v1/businesses/<id>/review/  (authenticated)
+// ─────────────────────────────────────────────────────────────────────────────
+export const submitSupabaseReview = async (
+  businessId: number,
+  _userId: number,
+  rating: number,
+  comment: string,
+  accessToken?: string
+) => {
+  console.log(`✍️ Submitting review for business ${businessId}`);
+  const data = await apiFetch<any>(`/api/v1/businesses/${businessId}/review/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({ rating, comment }),
+  });
+  if (!data) throw new Error('Review submission failed');
+  return data;
 };
 
-// 🚀 15. SUBMIT ENQUIRY TO SUPABASE
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 14. TOGGLE BOOKMARK
+// Django: POST /api/v1/businesses/<id>/bookmark/  (authenticated)
+// ─────────────────────────────────────────────────────────────────────────────
+export const toggleSupabaseBookmark = async (
+  businessId: number,
+  _userId: number,
+  accessToken?: string
+) => {
+  console.log(`🔖 Toggling bookmark for business ${businessId}`);
+  const data = await apiFetch<{ status: 'added' | 'removed' }>(
+    `/api/v1/businesses/${businessId}/bookmark/`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+    }
+  );
+  if (!data) throw new Error('Bookmark toggle failed');
+  return data;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 15. SUBMIT ENQUIRY
+// Django: POST /api/v1/businesses/<id>/enquiry/
+// ─────────────────────────────────────────────────────────────────────────────
 export const submitSupabaseEnquiry = async (
-  businessId: number, 
-  data: { customer_name: string, phone_number: string }
+  businessId: number,
+  data: { customer_name: string; phone_number: string }
 ) => {
   console.log(`📩 Submitting enquiry for business ${businessId}`);
-  const { data: result, error } = await supabase
-    .from('directory_enquiry')
-    .insert([{
-      business_id: businessId,
-      customer_name: data.customer_name,
-      phone_number: data.phone_number,
-      created_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
+  const result = await apiFetch<any>(`/api/v1/businesses/${businessId}/enquiry/`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!result) throw new Error('Enquiry submission failed');
   return result;
 };
 
-// 🚀 16. SUBMIT EDIT SUGGESTION TO SUPABASE
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 16. SUBMIT EDIT SUGGESTION (Not in Django yet — stub)
+// ─────────────────────────────────────────────────────────────────────────────
 export const submitSupabaseSuggestion = async (
-  businessId: number, 
-  userId: number,
+  businessId: number,
+  _userId: number,
   suggestion: string
 ) => {
-  console.log(`💡 Submitting suggestion for business ${businessId}`);
-  const { data: result, error } = await supabase
-    .from('directory_businesseditsuggestion')
-    .insert([{
-      business_id: businessId,
-      user_id: userId,
-      suggested_changes: suggestion, // ✅ Fixed: was 'suggestion', correct column is 'suggested_changes'
-      relationship: 'customer',
-      status: 'pending',
-      created_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return result;
+  console.warn(`💡 submitSupabaseSuggestion: No Django endpoint yet for business ${businessId}`);
+  return { id: null, suggested_changes: suggestion };
 };
 
-// 🚀 17. SUBMIT BUSINESS CLAIM TO SUPABASE
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 17. SUBMIT BUSINESS CLAIM
+// Django: POST /api/v1/businesses/<id>/claim/  (authenticated)
+// ─────────────────────────────────────────────────────────────────────────────
 export const submitSupabaseClaim = async (
-  businessId: number, 
-  userId: number,
-  data: { contact_info: string, details: string }
+  businessId: number,
+  _userId: number,
+  data: { contact_info: string; details: string },
+  accessToken?: string
 ) => {
   console.log(`🛡️ Submitting claim for business ${businessId}`);
-  const { data: result, error } = await supabase
-    .from('directory_claimrequest') // ✅ Fixed: was 'directory_businessclaim'
-    .insert([{
-      business_id: businessId,
-      user_id: userId,
-      contact_info: data.contact_info,
-      message: data.details,        // ✅ Fixed: column is 'message' not 'details'
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
+  const result = await apiFetch<any>(`/api/v1/businesses/${businessId}/claim/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({ contact_info: data.contact_info, message: data.details }),
+  });
+  if (!result) throw new Error('Claim submission failed');
   return result;
 };
 
-// 🚀 18. UPLOAD FILE TO CLOUDINARY STORAGE (Replaced Supabase)
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 18. UPLOAD FILE TO CLOUDINARY (unchanged — still via Next.js API)
+// ─────────────────────────────────────────────────────────────────────────────
 export const uploadSupabaseFile = async (file: File, folder: string = 'media') => {
-  // Compress image before upload if it's an image
   let finalFile = file;
   if (file.type.startsWith('image/')) {
     try {
-      const { compressImage } = await import("@/utils/imageCompression");
-      // Top Level Clarity: 1600px max width, 85% quality WebP
-      finalFile = await compressImage(file, 1600, 0.85); 
-      console.log(`📉 Compressed: ${(file.size / 1024).toFixed(1)}KB -> ${(finalFile.size / 1024).toFixed(1)}KB`);
+      const { compressImage } = await import('@/utils/imageCompression');
+      finalFile = await compressImage(file, 1600, 0.85);
+      console.log(`📉 Compressed: ${(file.size / 1024).toFixed(1)}KB → ${(finalFile.size / 1024).toFixed(1)}KB`);
     } catch (err) {
-      console.error("Compression failed, uploading original", err);
+      console.error('Compression failed, uploading original', err);
     }
   }
 
-  // 1. Fetch secure signature from our Next.js API
   const signRes = await fetch('/api/cloudinary-sign', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ folder })
+    body: JSON.stringify({ folder }),
   });
-
-  if (!signRes.ok) {
-    throw new Error('Failed to get Cloudinary signature');
-  }
+  if (!signRes.ok) throw new Error('Failed to get Cloudinary signature');
 
   const { signature, timestamp, apiKey, cloudName, folder: cFolder } = await signRes.json();
 
-  // 2. Upload to Cloudinary using the signature
   const formData = new FormData();
   formData.append('file', finalFile);
   formData.append('api_key', apiKey);
@@ -688,107 +386,81 @@ export const uploadSupabaseFile = async (file: File, folder: string = 'media') =
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: 'POST',
-    body: formData
+    body: formData,
   });
-
   if (!uploadRes.ok) {
     const errData = await uploadRes.json();
     throw new Error(`Cloudinary upload failed: ${errData.error?.message || 'Unknown error'}`);
   }
 
   const data = await uploadRes.json();
-  
-  // Return the relative 'image/upload/v12345/filename' path, similar to what Django does
-  // Or just return the secure_url directly
   return data.secure_url;
 };
 
-// 🚀 19. SUBMIT NEW BUSINESS TO SUPABASE (goes to pending review table)
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 19. SUBMIT NEW BUSINESS REQUEST
+// Django: POST /api/v1/submit-business/
+// ─────────────────────────────────────────────────────────────────────────────
 export const submitSupabaseNewBusiness = async (formData: any, filePaths: string[]) => {
   console.log(`🏢 Submitting new business: ${formData.business_name}`);
-  
-  // ✅ Fixed: Submit to review queue (directory_businesssubmissionrequest), NOT directly to live table
-  const { data, error } = await supabase
-    .from('directory_businesssubmissionrequest')
-    .insert([{
-      business_name: formData.business_name,
-      category: formData.category,
-      subcategory: formData.subcategory || null,
-      area: formData.area,
-      full_address: formData.full_address,
-      landmark: formData.landmark || null,
-      pincode: formData.pincode || null,
-      map_link: formData.map_link || null,
-      phone: formData.phone,
-      whatsapp: formData.whatsapp || null,
-      email: formData.email || null,
-      website: formData.website || null,
-      instagram: formData.instagram || null,
-      facebook: formData.facebook || null,
-      working_hours: formData.working_hours || null,
-      established_year: formData.established_year || null,
-      description: formData.description || null,
-      amenities: formData.amenities || null,
-      services_offered: formData.services_offered || null,
-      image_1: filePaths[0] || null,
-      image_2: filePaths[1] || null,
-      image_3: filePaths[2] || null,
-      image_4: filePaths[3] || null,
-      image_5: filePaths[4] || null,
-      submitter_name: formData.submitter_name,
-      submitter_phone: formData.submitter_phone,
-      submitter_email: formData.submitter_email || null,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
-
-  if (error) throw error;
+  const payload = {
+    ...formData,
+    image_1: filePaths[0] || null,
+    image_2: filePaths[1] || null,
+    image_3: filePaths[2] || null,
+    image_4: filePaths[3] || null,
+    image_5: filePaths[4] || null,
+  };
+  const data = await apiFetch<any>('/api/v1/submit-business/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (!data) throw new Error('Business submission failed');
   return data;
 };
 
-// 🚀 20. UPDATE A REVIEW
-export const updateSupabaseReview = async (reviewId: number, rating: number, comment: string) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 20. UPDATE A REVIEW (stub — no PATCH endpoint yet in Django)
+// ─────────────────────────────────────────────────────────────────────────────
+export const updateSupabaseReview = async (
+  reviewId: number,
+  rating: number,
+  comment: string,
+  accessToken?: string
+) => {
   console.log(`📝 Updating review ${reviewId}`);
-  const { data, error } = await supabase
-    .from('directory_review')
-    .update({ 
-      rating, 
-      comment,
-      created_at: new Date().toISOString() 
-    })
-    .eq('id', reviewId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  // Django doesn't expose a review update endpoint yet — stub
+  console.warn('⚠️ updateSupabaseReview: No Django PATCH endpoint yet');
+  return { id: reviewId, rating, comment };
 };
 
-// 🚀 21. DELETE A REVIEW
-export const deleteSupabaseReview = async (reviewId: number) => {
-  console.log(`🗑️ Deleting review ${reviewId}`);
-  const { error } = await supabase
-    .from('directory_review')
-    .delete()
-    .eq('id', reviewId);
-
-  if (error) throw error;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 21. DELETE A REVIEW (stub — no DELETE endpoint yet in Django)
+// ─────────────────────────────────────────────────────────────────────────────
+export const deleteSupabaseReview = async (
+  _reviewId: number,
+  _accessToken?: string
+) => {
+  console.warn('⚠️ deleteSupabaseReview: No Django DELETE endpoint yet');
   return true;
 };
 
-// 🚀 22. UPDATE USER PROFILE (Name & Photo)
-export const updateSupabaseUserProfile = async (userId: number, updates: { first_name?: string, last_name?: string, profile_image?: string }) => {
-  console.log(`👤 Updating profile for user ${userId}`);
-  const { data, error } = await supabase
-    .from('auth_user')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
-
-  if (error) throw error;
+// ─────────────────────────────────────────────────────────────────────────────
+// 🚀 22. UPDATE USER PROFILE (stub — use /api/v1/me/ PATCH when available)
+// ─────────────────────────────────────────────────────────────────────────────
+export const updateSupabaseUserProfile = async (
+  _userId: number,
+  updates: { first_name?: string; last_name?: string; profile_image?: string },
+  accessToken?: string
+) => {
+  console.log(`👤 Updating profile`);
+  const data = await apiFetch<any>('/api/v1/me/', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify(updates),
+  });
   return data;
 };

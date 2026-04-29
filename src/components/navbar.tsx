@@ -143,14 +143,17 @@ export default function Navbar() {
     }
     setLoadingSuggestions(true);
     try {
-      const { supabase } = await import('@/utils/supabase');
-      // 🚀 YELP-GRADE: Call Fuzzy Search RPC (Handles Typos & Spelling Mistakes)
-      const { data } = await supabase
-        .rpc('search_businesses_fuzzy', { search_query: query })
-        .limit(6);
-      setSuggestions(data || []);
+      // 🚀 Django REST API — Trigram fuzzy search (handles typos)
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const res = await fetch(
+        `${apiBase}/api/v1/businesses/?search=${encodeURIComponent(query)}&page_size=6`
+      );
+      if (!res.ok) throw new Error('Search failed');
+      const json = await res.json();
+      const results = Array.isArray(json) ? json : (json.results ?? []);
+      setSuggestions(results);
       setShowSuggestions(true);
-    } catch { setSuggestions([]); } 
+    } catch { setSuggestions([]); }
     finally { setLoadingSuggestions(false); }
   }, []);
 
@@ -179,50 +182,77 @@ export default function Navbar() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 gap-y-3 md:gap-y-0 max-w-[1400px] mx-auto">
         
         {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher/Search & Menu */}
-        <div className="flex md:hidden items-center justify-between w-full">
-          <Link href="/" className="flex items-center no-underline group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="font-black text-[26px] tracking-tighter whitespace-nowrap flex items-center">
-              <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
-              <div className="relative ml-[1px] flex flex-col justify-end">
-                <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
-                  connect
-                </span>
-                <div className="absolute bottom-[5px] left-0 w-full h-[2px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
-              </div>
-            </div>
-          </Link>
-          
-          <div className="flex items-center gap-2 shrink-0">
-            {isHomePage ? (
-              mounted ? (
-                <div 
-                  className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
-                  onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
-                >
-                  <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
-                  <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
-                  <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
+        <div className="flex md:hidden items-center justify-between w-full gap-2">
+          {isHomePage ? (
+            <>
+              <Link href="/" className="flex items-center no-underline group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="font-black text-[26px] tracking-tighter whitespace-nowrap flex items-center">
+                  <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
+                  <div className="relative ml-[1px] flex flex-col justify-end">
+                    <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                      connect
+                    </span>
+                    <div className="absolute bottom-[5px] left-0 w-full h-[2px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+                  </div>
                 </div>
-              ) : (
-                <div className="w-[60px] h-8 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse"></div>
-              )
-            ) : (
+              </Link>
+              
+              <div className="flex items-center gap-2 shrink-0">
+                {mounted ? (
+                  <div 
+                    className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
+                    onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
+                  >
+                    <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
+                    <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'kn' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>ಕ</span>
+                    <span className={`relative z-10 w-1/2 text-center text-[10px] font-bold transition-colors duration-300 ${lang === 'en' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}>EN</span>
+                  </div>
+                ) : (
+                  <div className="w-[60px] h-8 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse"></div>
+                )}
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors"
+                >
+                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+              </div>
+            </>
+          ) : (
+            /* 🚀 YELP-STYLE MOBILE SEARCH BAR (Listings & Business Pages) */
+            <div className="flex items-center w-full gap-2">
               <button 
-                onClick={() => setIsSearchOverlayOpen(true)}
-                className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] dark:shadow-[0_0_10px_rgba(14,165,233,0.3)] active:scale-95"
-                aria-label="Open Search"
+                onClick={() => router.back()}
+                className="p-1.5 rounded-full text-slate-700 dark:text-slate-300 active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
               >
-                <Search className="w-5 h-5 drop-shadow-md" />
+                <ArrowLeft className="w-6 h-6" />
               </button>
-            )}
-
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors"
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+              
+              <div 
+                onClick={() => setIsSearchOverlayOpen(true)}
+                className="flex-1 flex items-center bg-slate-100 dark:bg-slate-800 rounded-full px-4 h-10 border border-slate-200 dark:border-slate-700 shadow-inner cursor-text"
+              >
+                <span className="flex-1 text-sm text-slate-500 dark:text-slate-400 truncate">
+                  {searchQuery || (lang === "kn" ? "ಹುಡುಕಿ..." : "Search in Tumkur...")}
+                </span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Search className="w-4 h-4 text-slate-400" />
+                  <div className="h-5 w-[1px] bg-slate-300 dark:bg-slate-600"></div>
+                  <Link href="/radius-search" onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-red-600 dark:text-sky-400 font-bold text-xs hover:opacity-80">
+                    <MapPin className="w-4 h-4" />
+                    <span>Map</span>
+                  </Link>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors shrink-0"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 🖥️ DESKTOP LOGO */}

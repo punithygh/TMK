@@ -168,7 +168,9 @@ export default function Footer() {
       </div>
 
       {/* ====== 3. MOBILE BOTTOM NAVIGATION (100% Width) ====== */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-[9999]">
+      {/* 🚨 PREMIUM APP LOGIC: Hide on Business Detail page to let the Sticky CTA take over */}
+      {!pathname.startsWith('/business/') && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-[9999]">
         <div className="w-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-gray-200 dark:border-slate-800 flex justify-around items-center pt-3 pb-3 px-2 shadow-sm dark:shadow-[0_-5px_30px_rgba(0,0,0,0.5)] pb-safe-bottom">
           <Link href="/" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/' ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
             <Home className="w-[22px] h-[22px]" />
@@ -196,6 +198,7 @@ export default function Footer() {
           )}
         </div>
       </div>
+      )}
     </>
   );
 }

@@ -156,8 +156,16 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
   const fetchReviews = async () => {
     try {
-      const data = await getSupabaseReviewsForBusiness(business.id, user?.id);
-      setReviews(data);
+      // Use slug (not integer ID) — Django's URL router matches <str:slug>, not <int:pk>
+      const slug = business.slug || business.area_slug || String(business.id);
+      const raw = await getSupabaseReviewsForBusiness(slug, user?.id);
+      // Normalize: Django ReviewSerializer doesn't include reaction fields — inject safe defaults
+      const normalized = (raw || []).map((r: any) => ({
+        ...r,
+        user_reacted: r.user_reacted ?? { HELPFUL: false, FUNNY: false, COOL: false },
+        reaction_counts: r.reaction_counts ?? { HELPFUL: 0, FUNNY: 0, COOL: 0 },
+      }));
+      setReviews(normalized);
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
     } finally {
@@ -532,12 +540,6 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             <span className="text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">{category}</span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1.5 leading-relaxed"><MapPin size={13} className="text-red-600 dark:text-sky-500 shrink-0 mt-0.5" /> {business.address || `${location}, Tumkur`}</p>
-          <div className="flex gap-2 mt-4">
-            {business.phone ? <a href={`tel:${business.phone}`} className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><Phone size={16} /> {t("ಕರೆ","Call")}</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><Phone size={16} /></button>}
-            {business.phone ? <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ. ನಿಮ್ಮ ಸೇವೆಗಳ ಬಗ್ಗೆ ತಿಳಿಯಲು ಬಯಸುತ್ತೇನೆ.` : `Hello ${title}, I found your profile on Tumkurconnect. I am interested in your services. Can we talk?`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><MessageCircle size={16} /> WhatsApp</a> : <button disabled className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-sm"><MessageCircle size={16} /></button>}
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 py-2.5 rounded-xl font-bold text-sm shadow-sm"><MapPin size={16} className="text-red-600 dark:text-sky-500" /></a>
-            <Link href={`/radius-search?lat=${business.lat || 13.3392}&lng=${business.lng || 77.1140}&name=${encodeURIComponent(title as string)}`} className="flex-1 flex items-center justify-center gap-1.5 bg-red-600 dark:bg-sky-500 text-white py-2.5 rounded-xl font-bold text-sm shadow-md"><Search size={16} /> {t("ಹತ್ತಿರದ", "Nearby")}</Link>
-          </div>
         </div>
 
         {/* Desktop CTA */}
@@ -1022,10 +1024,33 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
       )}
 
       {toastMsg && (
-        <div className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
+        <div className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
           <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-xl shadow-2xl shadow-black/30 font-bold text-sm border border-slate-700 dark:border-slate-200 flex items-center gap-2">{toastMsg}</div>
         </div>
       )}
+
+      {/* 📱 🚀 YELP/JUSTDIAL STYLE MOBILE STICKY CTA */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] z-[90] flex items-center gap-2 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        {business.phone ? (
+          <a href={`tel:${business.phone}`} className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-xl font-extrabold text-[13px] shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+            <Phone size={18} className="animate-pulse" /> {t("ಕರೆ ಮಾಡಿ", "Call Now")}
+          </a>
+        ) : (
+          <button disabled className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-400 h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700">
+            <Phone size={18} /> {t("ಸಂಪರ್ಕ ಲಭ್ಯವಿಲ್ಲ", "No Contact")}
+          </button>
+        )}
+        
+        {business.phone && (
+          <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ. ನಿಮ್ಮ ಸೇವೆಗಳ ಬಗ್ಗೆ ತಿಳಿಯಲು ಬಯಸುತ್ತೇನೆ.` : `Hello ${title}, I found your profile on Tumkurconnect. I am interested in your services. Can we talk?`)}`} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white h-12 rounded-xl font-extrabold text-[13px] shadow-lg shadow-[#25D366]/30 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+            <MessageCircle size={18} /> WhatsApp
+          </a>
+        )}
+        
+        <button onClick={() => setIsEnquiryOpen(true)} className="flex-none px-4 bg-red-600 dark:bg-sky-500 hover:bg-red-700 dark:hover:bg-sky-600 text-white h-12 rounded-xl font-bold text-sm shadow-lg shadow-red-600/30 dark:shadow-sky-500/30 flex items-center justify-center gap-2 active:scale-95 transition-all" aria-label="Get Deal">
+           <Store size={20} />
+        </button>
+      </div>
     </div>
   );
 }

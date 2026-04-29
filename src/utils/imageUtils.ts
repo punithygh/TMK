@@ -61,25 +61,45 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     return `https://res.cloudinary.com/${cloudName}/${path}`;
   }
 
-  // 3. Clean up legacy Django local URLs (should not happen in prod, but just in case)
+  // 3. Clean up legacy Django local URLs (http://127.0.0.1:8000/media/...)
   if (path.startsWith('http://127.0.0.1:8000/') || path.startsWith('http://localhost:8000/')) {
     const url = new URL(path);
     cleanPath = url.pathname;
-    
-    // Normalize path — strip /media/ prefix
+
+    // Strip /media/ prefix → may be left with 'image/upload/v123.../...'
     if (cleanPath.startsWith('/media/')) {
-      cleanPath = cleanPath.substring(7);
+      cleanPath = cleanPath.substring(7); // → 'image/upload/v123.../...'
     } else if (cleanPath.startsWith('media/')) {
       cleanPath = cleanPath.substring(6);
     } else if (cleanPath.startsWith('/')) {
       cleanPath = cleanPath.substring(1);
     }
-    
-    // If it's still local, assume it was migrated and format as Cloudinary
+
+    // 🔑 KEY FIX: If cleanPath already starts with 'image/upload/', the Cloudinary
+    // base was stored in the DB path — build the URL directly, don't double-prefix.
+    if (cleanPath.startsWith('image/upload/')) {
+      return `https://res.cloudinary.com/${cloudName}/${cleanPath}`;
+    }
+
+    // Otherwise it's a plain relative path (e.g. 'businesses/photo.jpg')
     return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
   }
 
-  // 4. External URLs (Google CDN, Unsplash, etc.)
+
+  // 4. 🚨 CRITICAL FIX: Intercept legacy Supabase URLs and rewrite to Cloudinary
+  if (path.includes('yddhgsviyqmkxpnflpnu.supabase.co')) {
+    const url = new URL(path);
+    cleanPath = url.pathname;
+    // Extract everything after '/public/media/' or just '/media/'
+    if (cleanPath.includes('/public/media/')) {
+      cleanPath = cleanPath.split('/public/media/')[1];
+    } else if (cleanPath.includes('/media/')) {
+      cleanPath = cleanPath.split('/media/')[1];
+    }
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
+  }
+
+  // 5. External URLs (Google CDN, Unsplash, etc.)
   if (path.startsWith('http')) {
     return path;
   }
