@@ -7,17 +7,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('🚨 Supabase URL or Anon Key is missing in .env.local');
 }
 
-// 🚀 TOP-LEVEL TRICK: Enterprise Custom Fetch with Auto-Retries & 30s Timeout
+// 🚀 TOP-LEVEL TRICK: Enterprise Custom Fetch with Auto-Retries & 60s Timeout
 // This completely fixes the "UND_ERR_CONNECT_TIMEOUT" (10000ms) caused by Supabase Cold Starts
+// Timeout is set to 60 seconds because Next.js development compilation can take 20-30 seconds.
 const fetchWithRetry = async (url: RequestInfo | URL, options?: RequestInit, retries = 3): Promise<Response> => {
   try {
     const controller = new AbortController();
-    // 30 Seconds timeout (instead of Node's default 10s)
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    // 🌍 Generous 60s timeout to prevent 'AbortError' during heavy Next.js local compilations
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
     
     const response = await fetch(url, {
       ...options,
-      // @ts-ignore - signal typing mismatch in some Node environments
+      // @ts-ignore
       signal: controller.signal
     });
     

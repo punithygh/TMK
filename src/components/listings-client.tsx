@@ -391,7 +391,30 @@ export default function ListingsClient({
           
           {/* 📱 Mobile Mini Map Removed as requested */}
 
-          {businesses.length > 0 ? (
+          {isLoading && page === 1 ? (
+            <div className="flex flex-col gap-4 md:gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-3 flex flex-col sm:flex-row gap-4 animate-pulse shadow-sm">
+                  <div className="w-full sm:w-[240px] h-[200px] bg-slate-200 dark:bg-slate-800/80 rounded-2xl shrink-0"></div>
+                  <div className="flex-1 py-2 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="w-3/4 h-7 bg-slate-200 dark:bg-slate-800/80 rounded-lg"></div>
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800/80"></div>
+                      </div>
+                      <div className="w-1/3 h-4 bg-slate-200 dark:bg-slate-800/80 rounded mb-4"></div>
+                      <div className="w-full h-3 bg-slate-200 dark:bg-slate-800/80 rounded mb-2"></div>
+                      <div className="w-5/6 h-3 bg-slate-200 dark:bg-slate-800/80 rounded mb-4"></div>
+                    </div>
+                    <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex-1 h-11 bg-slate-200 dark:bg-slate-800/80 rounded-xl"></div>
+                      <div className="flex-1 h-11 bg-slate-200 dark:bg-slate-800/80 rounded-xl"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : businesses.length > 0 ? (
             <>
               <div className="flex flex-col gap-0">
                 {businesses.map((biz, index) => {

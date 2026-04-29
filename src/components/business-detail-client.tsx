@@ -447,7 +447,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
         {/* ✅ Desktop 3-Image Hero Gallery */}
         <div className="hidden md:flex gap-3 w-full h-[350px] lg:h-[400px] mb-8 group/hero-gallery">
           <div className="flex-[2] h-full bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-red-200 dark:border-slate-800/80 hover:shadow-md transition-shadow relative cursor-pointer group/main" onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}>
-            {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 66vw" className="object-cover group-hover/main:scale-[1.03] transition-transform duration-700" unoptimized={true} /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
+            {galleryImages[0] ? <Image src={galleryImages[0]} alt={title as string} fill priority={true} sizes="(max-width: 768px) 100vw, 66vw" className="object-cover group-hover/main:scale-[1.03] transition-transform duration-700" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-20 h-20 text-slate-300 dark:text-slate-700" /></div>}
           </div>
           <div className="flex-[1] h-full flex flex-col gap-3">
             {galleryImages.length > 1 ? (

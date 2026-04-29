@@ -6,18 +6,13 @@ import Link from "next/link";
 import { Calendar, User, Clock, Tag, ArrowRight, Image as ImageIcon } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { ArticleListing } from "@/services/courses";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 interface ArticleDetailClientProps {
   article: ArticleListing;
   relatedArticles: ArticleListing[];
 }
 
-const getValidImageUrl = (url?: string | null) => {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
-  return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-};
 
 export default function ArticleDetailClient({ article, relatedArticles }: ArticleDetailClientProps) {
   const { lang, t } = useLanguage();
@@ -30,7 +25,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
   const rawTags = lang === 'kn' && article.tags ? article.tags : article.tags; // Assuming backend has only one tags field or tags_kn isn't in API yet
   const tags = rawTags ? rawTags.split(',').slice(0, 5) : [];
 
-  const mainImageSrc = getValidImageUrl(article.image_upload || article.image_url);
+  const mainImageSrc = getSupabaseImageUrl(article.image_upload || article.image_url);
   const hasImage = mainImageSrc && !imgError;
 
   return (
@@ -65,7 +60,6 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
               sizes="(max-width: 1000px) 100vw, 1000px"
               className="object-cover group-hover:scale-105 transition-transform duration-700"
               onError={() => setImgError(true)}
-              unoptimized={mainImageSrc.includes('googleusercontent')}
             />
           ) : (
             <ImageIcon size={64} className="text-slate-700" />
@@ -100,7 +94,7 @@ export default function ArticleDetailClient({ article, relatedArticles }: Articl
             <h2 className="text-2xl font-bold text-white mb-8">{t("ಇನ್ನಷ್ಟು ಓದಿ", "Read More")}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedArticles.map((relArt) => {
-                const relImgSrc = getValidImageUrl(relArt.image_upload || relArt.image_url);
+                const relImgSrc = getSupabaseImageUrl(relArt.image_upload || relArt.image_url);
                 const relTitle = lang === 'kn' && relArt.title_kn ? relArt.title_kn : relArt.title;
                 return (
                   <Link key={relArt.id} href={`/article/${relArt.slug}`} className="group bg-[#0c1220] rounded-xl overflow-hidden border border-slate-800 hover:border-sky-500/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-500/10 flex flex-row md:flex-col h-28 md:h-auto">

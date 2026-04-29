@@ -47,30 +47,40 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     return null;
   }
 
-  const projectRef = "yddhgsviyqmkxpnflpnu";
-  const bucketName = "media";
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dsvh7may9";
 
   let cleanPath = path;
 
-  // Handle legacy Django local URLs
+  // 1. If it's already a full Cloudinary URL, return it directly
+  if (path.includes('res.cloudinary.com')) {
+    return path;
+  }
+
+  // 2. If it's a Cloudinary relative path (saved by Django as 'image/upload/v...')
+  if (path.startsWith('image/upload/')) {
+    return `https://res.cloudinary.com/${cloudName}/${path}`;
+  }
+
+  // 3. Clean up legacy Django local URLs (should not happen in prod, but just in case)
   if (path.startsWith('http://127.0.0.1:8000/') || path.startsWith('http://localhost:8000/')) {
     const url = new URL(path);
     cleanPath = url.pathname;
-  } else if (path.startsWith('http')) {
-    // Fix: If the database contains the legacy render URL, convert it to object URL to prevent 504 timeouts
-    if (path.includes('supabase.co/storage/v1/render/image/public/')) {
-      try {
-        const url = new URL(path);
-        // Change path from /storage/v1/render/image/public/media/xyz to /storage/v1/object/public/media/xyz
-        url.pathname = url.pathname.replace('/render/image/public/', '/object/public/');
-        // Remove width, quality, format query params used by the render API
-        url.search = '';
-        return url.toString();
-      } catch (e) {
-        return path;
-      }
+    
+    // Normalize path — strip /media/ prefix
+    if (cleanPath.startsWith('/media/')) {
+      cleanPath = cleanPath.substring(7);
+    } else if (cleanPath.startsWith('media/')) {
+      cleanPath = cleanPath.substring(6);
+    } else if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.substring(1);
     }
-    // External URLs (Google CDN, Unsplash etc.) — return as-is
+    
+    // If it's still local, assume it was migrated and format as Cloudinary
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
+  }
+
+  // 4. External URLs (Google CDN, Unsplash, etc.)
+  if (path.startsWith('http')) {
     return path;
   }
 
@@ -83,10 +93,8 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     cleanPath = cleanPath.substring(1);
   }
 
-  // 🚀 Determine settings based on context
-  // NOTE: Next.js <Image /> component automatically optimizes and caches these 
-  // raw URLs, which is much faster and more reliable than Supabase's free tier renderer.
-  const objectUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/${bucketName}/${cleanPath}`;
-
-  return objectUrl;
+  // 5. 🚀 100% CLOUDINARY MODE
+  // Since the migration is complete, any relative path like 'businesses/photo.jpg'
+  // is now hosted on Cloudinary under the same structure.
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
 };

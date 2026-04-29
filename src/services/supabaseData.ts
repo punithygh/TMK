@@ -650,8 +650,8 @@ export const submitSupabaseClaim = async (
   return result;
 };
 
-// 🚀 18. UPLOAD FILE TO SUPABASE STORAGE
-export const uploadSupabaseFile = async (file: File, bucket: string = 'media') => {
+// 🚀 18. UPLOAD FILE TO CLOUDINARY STORAGE (Replaced Supabase)
+export const uploadSupabaseFile = async (file: File, folder: string = 'media') => {
   // Compress image before upload if it's an image
   let finalFile = file;
   if (file.type.startsWith('image/')) {
@@ -665,16 +665,42 @@ export const uploadSupabaseFile = async (file: File, bucket: string = 'media') =
     }
   }
 
-  const fileName = `${Date.now()}_${finalFile.name.replace(/\s+/g, '_')}`;
-  const filePath = `uploads/${fileName}`;
+  // 1. Fetch secure signature from our Next.js API
+  const signRes = await fetch('/api/cloudinary-sign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folder })
+  });
 
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, finalFile);
+  if (!signRes.ok) {
+    throw new Error('Failed to get Cloudinary signature');
+  }
 
-  if (error) throw error;
+  const { signature, timestamp, apiKey, cloudName, folder: cFolder } = await signRes.json();
+
+  // 2. Upload to Cloudinary using the signature
+  const formData = new FormData();
+  formData.append('file', finalFile);
+  formData.append('api_key', apiKey);
+  formData.append('timestamp', timestamp.toString());
+  formData.append('signature', signature);
+  formData.append('folder', cFolder);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!uploadRes.ok) {
+    const errData = await uploadRes.json();
+    throw new Error(`Cloudinary upload failed: ${errData.error?.message || 'Unknown error'}`);
+  }
+
+  const data = await uploadRes.json();
   
-  return filePath;
+  // Return the relative 'image/upload/v12345/filename' path, similar to what Django does
+  // Or just return the secure_url directly
+  return data.secure_url;
 };
 
 // 🚀 19. SUBMIT NEW BUSINESS TO SUPABASE (goes to pending review table)

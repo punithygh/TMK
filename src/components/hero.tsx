@@ -89,7 +89,7 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
     <section className="relative w-full overflow-hidden aspect-video md:aspect-[21/9] max-h-[80vh] lg:max-h-[600px]">
       <div className="absolute inset-0 z-0" style={{ opacity: visible ? 1 : 0, transition: "opacity 500ms ease-in-out" }}>
         {getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) ? (
-          <Image key={activeBanner.id} src={getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) || ""} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center premium-img" unoptimized />
+          <Image key={activeBanner.id} src={getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) || ""} alt={activeBanner.title} fill priority sizes="100vw" className="object-cover object-center premium-img" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#050b14] via-[#0c1a35] to-[#071020]" />
         )}

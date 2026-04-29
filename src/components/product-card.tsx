@@ -93,7 +93,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
             sizes="(max-width: 640px) 100vw, 320px"
             className="object-cover transition-transform duration-700 group-hover:scale-110 premium-img"
             onError={() => setImgError(true)}
-            unoptimized={true}
           />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/50">

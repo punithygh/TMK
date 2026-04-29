@@ -9,17 +9,13 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { submitSupabaseClaim } from "@/services/supabaseData";
 import { Loader2 } from "lucide-react";
+import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 interface ClaimBusinessClientProps {
   business: BusinessListing;
 }
 
-const getValidImageUrl = (url?: string | null) => {
-  if (!url) return null;
-  if (url.startsWith('http')) return url;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
-  return `${backendUrl}${url.startsWith('/') ? '' : '/'}${url}`;
-};
+
 
 export default function ClaimBusinessClient({ business }: ClaimBusinessClientProps) {
   const { lang, t } = useLanguage();
@@ -33,7 +29,7 @@ export default function ClaimBusinessClient({ business }: ClaimBusinessClientPro
   const title = lang === 'kn' && business.name_kn ? business.name_kn : business.name;
   const category = lang === 'kn' && business.category_name_kn ? business.category_name_kn : business.category_name;
   const area = lang === 'kn' && business.area_kn ? business.area_kn : business.area;
-  const imgSrc = getValidImageUrl(business.main_image_upload || business.image_url);
+  const imgSrc = getSupabaseImageUrl(business.main_image_upload || business.image_url);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

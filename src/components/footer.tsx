@@ -15,11 +15,12 @@ import {
 } from "lucide-react";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Footer() {
   const pathname = usePathname();
   const { lang } = useLanguage();
-  const [isAuth, setIsAuth] = useState(false); // Auth ಸ್ಟೇಟ್ (ಡೆಮೊ)
+  const { isAuthenticated } = useAuth();
 
   // 🚨 1. SEO Links Data (For clean mapping)
   const categoryLinks = [
@@ -182,7 +183,7 @@ export default function Footer() {
             <span>{lang === "kn" ? "ಬ್ಯುಸಿನೆಸ್" : "Business"}</span>
           </Link>
           
-          {isAuth ? (
+          {isAuthenticated ? (
             <Link href="/dashboard" className={`flex flex-col items-center justify-center gap-1.5 text-[10px] font-bold w-16 transition-transform hover:scale-110 ${pathname === '/dashboard' ? 'text-sky-500 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]' : 'text-slate-500 dark:text-slate-400'}`}>
               <User className="w-[22px] h-[22px]" />
               <span>{lang === "kn" ? "ಪ್ರೊಫೈಲ್" : "Profile"}</span>

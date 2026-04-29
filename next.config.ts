@@ -9,17 +9,19 @@ dns.setDefaultResultOrder('ipv4first');
 
 const nextConfig: NextConfig = {
   images: {
-    // 🚀 TOP-LEVEL TRICK: Bypass Next.js Image Proxy!
-    // This PERMANENTLY fixes the "upstream image response timed out" (504) error.
-    // Instead of Next.js server trying to download and process Supabase images (which times out),
-    // the browser will fetch them directly from Supabase's high-speed CDN.
-    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     // Responsive breakpoints — matches card (400), gallery (800), hero (1200) contexts
     deviceSizes: [400, 640, 750, 828, 1080, 1200, 1920],
     imageSizes:  [16, 32, 48, 64, 96, 128, 256, 400],
     // 🚨 100% BULLETPROOF EXTERNAL IMAGE WHITELISTING 🚨
     remotePatterns: [
+      // ✅ 0. Cloudinary Storage (Enterprise Image Hosting)
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
       // ✅ 1. Supabase Public Storage (Direct)
       {
         protocol: "https",

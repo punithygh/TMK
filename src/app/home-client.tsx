@@ -91,7 +91,7 @@ export default function HomeClient({
                 <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass}`}>
                   <div className={unifiedImageClass}>
                     {imgSrc ? (
-                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out premium-img" unoptimized={true} />
+                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out premium-img" />
                     ) : (
                       <Store size={40} className="text-slate-300 dark:text-slate-700" />
                     )}
@@ -219,7 +219,7 @@ export default function HomeClient({
               return (
               <Link key={`social-${post.id}`} href={post.link || "#"} target="_blank" className={`${unifiedCardClass}`}>
                 <div className={unifiedImageClass}>
-                   {imgSrc && <Image src={imgSrc} alt={post.title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-40 transition-opacity duration-500" unoptimized={true} />}
+                   {imgSrc && <Image src={imgSrc} alt={post.title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 dark:group-hover:opacity-40 transition-opacity duration-500" />}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] via-white/40 dark:via-[#0a1120]/40 to-transparent opacity-90" />
                    
                    {post.platform === "YOUTUBE" && <Youtube size={56} className="text-red-500 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.3)] z-10" />}

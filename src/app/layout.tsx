@@ -6,6 +6,7 @@ import "./globals.css";
 // Components
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import PWAInstallPrompt from "@/components/pwa-install-prompt";
 
 // 🚨 ಅತಿ ಮುಖ್ಯ: LanguageProvider ಇಂಪೋರ್ಟ್ ಮಾಡುವುದು ಕಡ್ಡಾಯ 🚨
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -77,6 +78,7 @@ export default function RootLayout({
               </main>
               
               <Footer />
+              <PWAInstallPrompt />
               
             </LanguageProvider>
           </AuthProvider>
