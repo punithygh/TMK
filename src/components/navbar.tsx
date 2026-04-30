@@ -36,6 +36,7 @@ export default function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null); // 🚀 ಹೊಸ Ref (Navಗಾಗಿ)
 
   // 🔒 YELP-STYLE SCROLL LOCK
   useEffect(() => {
@@ -47,23 +48,46 @@ export default function Navbar() {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isMobileMenuOpen, isSearchOverlayOpen]);
 
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  // 🚀 PRO-LEVEL SMOOTH SCROLL (No React Re-renders, Direct DOM Update)
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY < 50 || currentScrollY < lastScrollY) {
-        setIsVisible(true);
-      } else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
-        setIsVisible(false);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (!navRef.current) return;
+
+          const currentScrollY = window.scrollY;
+          const scrollDifference = currentScrollY - lastScrollY.current;
+
+          // 💡 ಮೈಕ್ರೋ-ಸ್ಕ್ರೋಲ್ ಶೇಕ್ ತಪ್ಪಿಸಲು ಕನಿಷ್ಠ 10px ಸ್ಕ್ರೋಲ್ ಆದಾಗ ಮಾತ್ರ ಕೆಲಸ ಮಾಡುತ್ತದೆ
+          if (Math.abs(scrollDifference) < 10 && currentScrollY > 50) {
+            ticking = false;
+            return;
+          }
+
+          if (currentScrollY < 50 || currentScrollY < lastScrollY.current) {
+            // ಮೇಲಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿದಾಗ -> SHOW
+            navRef.current.classList.remove("-translate-y-full");
+            navRef.current.classList.add("translate-y-0");
+          } else if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+            // ಕೆಳಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿದಾಗ -> HIDE
+            navRef.current.classList.remove("translate-y-0");
+            navRef.current.classList.add("-translate-y-full");
+          }
+
+          lastScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
       }
-      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   useEffect(() => {
     const phrases =
@@ -154,7 +178,6 @@ export default function Navbar() {
     }
     setLoadingSuggestions(true);
     try {
-      // ಸುಪಬೇಸ್ RPC ಬದಲು ನಮ್ಮ ಡಿಜಾಂಗೋ API ಇಂದ ಸರ್ಚ್ ರಿಸಲ್ಟ್ ತರುತ್ತಿದ್ದೇವೆ
       const data = await getSupabaseBusinesses({
         search: query,
         limit: 6
@@ -191,7 +214,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
+    <nav ref={navRef} className="fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out translate-y-0">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 gap-y-3 md:gap-y-0 max-w-[1400px] mx-auto">
 
         {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher/Search & Menu */}
@@ -260,7 +283,7 @@ export default function Navbar() {
         </div>
 
         {/* 🔍 SEARCH BAR (Desktop Only) — Yelp-Style with Autocomplete */}
-        <div ref={searchRef} className="hidden md:flex w-full md:absolute md:left-1/2 md:-translate-x-1/2 md:max-w-[400px] flex-col">
+        <div ref={searchRef} className="hidden md:flex w-full md:max-w-[450px] flex-col md:mr-auto md:ml-12 lg:ml-20 xl:ml-28">
           <form onSubmit={handleSearchSubmit} className="w-full relative flex items-center">
             <Search className="absolute left-4 w-4 h-4 text-red-600 dark:text-sky-400 drop-shadow-[0_0_8px_rgba(14,165,233,0.4)]" />
             <input
@@ -331,14 +354,15 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-4 shrink-0">
           {mounted ? (
             <>
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="p-2 rounded-full bg-white border border-gray-200 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
-              >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
+              {/* 1. Theme */}
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="p-2 rounded-full bg-white border border-gray-200 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                >
+                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
+              )}
 
               {/* Add Business Link (Replaced Free Listing) */}
               <Link href="/add-business" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-slate-700 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-red-600 dark:hover:border-sky-400 hover:text-red-600 dark:hover:text-sky-400">
@@ -459,13 +483,15 @@ export default function Navbar() {
         <div className="flex flex-col p-4 gap-2 flex-1">
 
           {/* 1. Theme */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors"
-          >
-            {theme === 'dark' ? <Sun className="w-6 h-6 text-slate-500" /> : <Moon className="w-6 h-6 text-slate-500" />}
-            <span>{theme === 'dark' ? t("ಲೈಟ್ ಮೋಡ್", "Light Mode") : t("ಡಾರ್ಕ್ ಮೋಡ್", "Dark Mode")}</span>
-          </button>
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-6 h-6 text-slate-500" /> : <Moon className="w-6 h-6 text-slate-500" />}
+              <span>{theme === 'dark' ? t("ಲೈಟ್ ಮೋಡ್", "Light Mode") : t("ಡಾರ್ಕ್ ಮೋಡ್", "Dark Mode")}</span>
+            </button>
+          )}
 
           {/* 2. Sign Up */}
           <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors">
