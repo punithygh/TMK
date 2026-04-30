@@ -1,11 +1,11 @@
+import { getSupabaseBusinesses } from '@/services/supabaseData';
 import { 
-  getSupabaseBusinesses, 
-  getSupabaseBanners,
-  getSupabaseArticles,
-  getSupabaseSocialPosts,
-  getSupabaseCategories,
-  getSupabaseRecentReviews
-} from '@/services/supabaseData';
+  getBanners, 
+  getArticles, 
+  getSocialPosts, 
+  getCategories, 
+  getRecentReviews 
+} from '@/services/courses';
 import HomeClient from './home-client';
 
 // 🚀 TOP-LEVEL TRICK 1: Aggressive Page Caching (Yelp Grade Speed)
@@ -21,16 +21,16 @@ export default async function Home() {
   // Batch 1: Critical UI Data
   const [trendingBusinesses, banners, categories] = await Promise.all([
     getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 }).catch(() => []),
-    getSupabaseBanners().catch(() => []),
-    getSupabaseCategories().catch(() => [])
+    getBanners().catch(() => []),
+    getCategories().catch(() => [])
   ]);
 
   // Batch 2: Secondary Content
   const [movieReviews, newsArticles, socialPosts, recentReviews] = await Promise.all([
-    getSupabaseArticles('MOVIE').catch(() => []),
-    getSupabaseArticles('NEWS').catch(() => []),
-    getSupabaseSocialPosts().catch(() => []),
-    getSupabaseRecentReviews().catch(() => [])
+    getArticles('MOVIE').catch(() => []),
+    getArticles('NEWS').catch(() => []),
+    getSocialPosts().catch(() => []),
+    getRecentReviews().catch(() => [])
   ]);
 
   return (

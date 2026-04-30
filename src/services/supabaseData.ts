@@ -37,73 +37,7 @@ export const getSupabaseBusinesses = async (options: any = {}): Promise<Business
   }
 };
 
-export const getSupabaseBusinessBySlug = async (slug: string): Promise<BusinessListing | null> => {
-  try {
-    const res = await api.get(`/businesses/${slug}/`);
-    const biz = res.data;
-    if (biz) {
-      biz.main_image_upload = getFullUrl(biz.main_image_upload);
-      if (biz.gallery_images) {
-        biz.gallery_images = biz.gallery_images.map((img: any) => getFullUrl(img.image || img));
-      }
-    }
-    return biz;
-  } catch (error) {
-    return null;
-  }
-};
 
-export const getSupabaseCategories = async () => {
-  try {
-    const res = await api.get('/categories/');
-    return res.data?.results || res.data || [];
-  } catch (error) {
-    return [];
-  }
-};
-
-export const getSupabaseBanners = async () => {
-  try {
-    const res = await api.get('/banners/');
-    const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
-    return data.map((b: any) => ({ ...b, image_url: getFullUrl(b.image_url) }));
-  } catch (error) {
-    return [];
-  }
-};
-
-export const getSupabaseArticles = async (type?: string) => {
-  try {
-    const res = await api.get('/articles/', { params: { type } });
-    const results = res.data?.results || res.data || [];
-    return results.map((a: any) => ({ ...a, image_url: getFullUrl(a.image_upload || a.image_url) }));
-  } catch (error) {
-    return [];
-  }
-};
-
-// 🚀 ಫಿಕ್ಸ್: ಈ ಫಂಕ್ಷನ್ ಮಿಸ್ ಆಗಿದ್ದಕ್ಕೆ "Not a function" ಎರ್‍ರರ್ ಬರುತ್ತಿತ್ತು
-export const getSupabaseSocialPosts = async () => {
-  try {
-    const res = await api.get('/social-posts/');
-    const results = res.data?.results || res.data || [];
-    return results.map((post: any) => ({
-      ...post,
-      image_url: getFullUrl(post.image_upload || post.image_url || post.thumbnail_url)
-    }));
-  } catch (error) {
-    return [];
-  }
-};
-
-export const getSupabaseRecentReviews = async () => {
-  try {
-    const res = await api.get('/recent-reviews/');
-    return res.data?.results || res.data || [];
-  } catch (error) {
-    return [];
-  }
-};
 
 export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radius: number = 5000) => {
   return await getSupabaseBusinesses({ lat, lng, radius });
@@ -149,8 +83,14 @@ export const submitSupabaseSuggestion = async (businessId: number, userId: strin
   return true;
 };
 
-export const submitSupabaseNewBusiness = async (data: any) => {
-  return await api.post('/submit-business/', data);
+
+
+export const submitSupabaseClaim = async (businessId: number, data: any) => {
+  return await api.post(`/businesses/${businessId}/claim/`, data);
+};
+
+export const submitSupabaseNewBusiness = async (data: any, uploadedPaths?: string[]) => {
+  return await api.post('/submit-business/', { ...data, images: uploadedPaths });
 };
 
 export const updateSupabaseReview = async (reviewId: number, data: any) => {
@@ -176,8 +116,4 @@ export const updateSupabaseUserProfile = async (userId: string, data: any) => {
 export const getUserPublicProfile = async (userId: string) => {
   console.log('Get user public profile logic');
   return { id: userId, username: 'User' };
-};
-
-export const submitSupabaseClaim = async (businessId: number, data: any) => {
-  return await api.post(`/businesses/${businessId}/claim/`, data);
 };

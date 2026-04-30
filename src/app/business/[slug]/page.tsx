@@ -1,8 +1,8 @@
 import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
-import { getSupabaseBusinessBySlug, getSupabaseBusinesses } from "@/services/supabaseData";
-import { BusinessListing } from "@/services/courses";
+import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { BusinessListing, getOneCourse, getAllCourses } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
 export const revalidate = 60; // 🚨 ISR: Revalidate every 60 seconds (Top-Level Free Tier Speed Optimization)
@@ -19,7 +19,7 @@ export async function generateMetadata(
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
 
-  const business = await getSupabaseBusinessBySlug(slug);
+  const business = await getOneCourse(slug);
 
   if (!business) {
     return {
@@ -73,7 +73,7 @@ export default async function BusinessDetailPageServer({ params }: Props) {
   const slug = resolvedParams.slug;
 
   // 🚀 Fetch data securely on the SERVER from SUPABASE
-  const business = await getSupabaseBusinessBySlug(slug);
+  const business = await getOneCourse(slug);
 
   // If 404, trigger Next.js built-in notFound page
   if (!business) {
@@ -83,7 +83,7 @@ export default async function BusinessDetailPageServer({ params }: Props) {
   // 🚀 3. Fetch similar businesses (same category, different ID) from SUPABASE
   let similarBusinesses: BusinessListing[] = [];
   try {
-    const allBiz = await getSupabaseBusinesses();
+    const allBiz = await getAllCourses();
     similarBusinesses = allBiz
       .filter(b => b.category_name === business.category_name && b.id !== business.id)
       .slice(0, 6);
