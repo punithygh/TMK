@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 // 🚀 TOP-LEVEL ENTERPRISE TRICK: Force IPv4 DNS Resolution
 // This PERMANENTLY fixes the "UND_ERR_CONNECT_TIMEOUT" on Windows!
-// Node.js 18+ tries IPv6 first by default, which fails to connect to Supabase
-// and causes a 10s hang until it crashes. This forces it to use IPv4 immediately.
+// Node.js 18+ tries IPv6 first by default, which can cause issues.
+// This forces it to use IPv4 immediately.
 import dns from "dns";
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']); // Bypass Jio/Airtel DNS blocking in India
 dns.setDefaultResultOrder('ipv4first');
@@ -20,34 +20,6 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
-        port: "",
-        pathname: "/**",
-      },
-      // ✅ 1. Supabase Public Storage (Direct)
-      {
-        protocol: "https",
-        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
-        port: "",
-        pathname: "/storage/v1/object/public/**",
-      },
-      // ✅ 2. Supabase Image Render API (WebP Optimization) — was MISSING, caused errors
-      {
-        protocol: "https",
-        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
-        port: "",
-        pathname: "/storage/v1/render/image/public/**",
-      },
-      // 🚀 Supabase Storage — S3-compatible endpoint
-      {
-        protocol: "https",
-        hostname: "yddhgsviyqmkxpnflpnu.supabase.co",
-        port: "",
-        pathname: "/storage/v1/s3/**",
-      },
-      // 🚀 Supabase Storage — Legacy storage endpoint
-      {
-        protocol: "https",
-        hostname: "yddhgsviyqmkxpnflpnu.storage.supabase.co",
         port: "",
         pathname: "/**",
       },

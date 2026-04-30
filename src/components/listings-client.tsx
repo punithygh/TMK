@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/product-card";
-import { getSupabaseBusinessesRaw } from "@/services/supabaseData";
+import { getSupabaseBusinesses } from "@/services/supabaseData";
 import MiniMap from "@/components/MiniMap";
 
 type ListingsClientProps = {
@@ -75,7 +75,7 @@ export default function ListingsClient({
       const limit = 10;
       const offset = (pageNum - 1) * limit;
 
-      const data = await getSupabaseBusinessesRaw({
+      const data = await getSupabaseBusinesses({
         search: initialQ,
         category: initialCategory,
         star_rating: currentFilters.star_rating,

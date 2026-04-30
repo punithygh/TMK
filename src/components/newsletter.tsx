@@ -1,9 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { Mail, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import api from '@/services/api';
 import { useLanguage } from '@/context/LanguageContext';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
@@ -18,33 +17,23 @@ const Newsletter = () => {
     setErrorMsg('');
 
     try {
-      // ✅ Submit to Django contact endpoint (newsletter table not yet in Django — routed via contact)
-      const res = await fetch(`${API_BASE}/api/v1/contact/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: 'Newsletter Subscriber',
-          email: email.trim().toLowerCase(),
-          message: 'Newsletter subscription request',
-        }),
+      // ✅ Call the Django API endpoint
+      await api.post('/newsletter/subscribe/', {
+        email: email.trim().toLowerCase()
       });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        if (res.status === 409 || (err as any)?.email) {
-          setErrorMsg(t('ಈ ಇಮೇಲ್ ಈಗಾಗಲೇ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಆಗಿದೆ.', 'This email is already subscribed.'));
-          setStatus('error');
-        } else {
-          throw new Error('Subscription failed');
-        }
-      } else {
-        setStatus('success');
-        setEmail('');
-      }
-    } catch (err) {
+      
+      setStatus('success');
+      setEmail('');
+    } catch (err: any) {
       console.error('Newsletter subscribe error:', err);
-      setErrorMsg(t('ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.', 'Something went wrong. Please try again.'));
-      setStatus('error');
+      // Handle duplicate email gracefully (Django typically returns 400 for unique constraints)
+      if (err.response?.status === 400 || err.response?.data?.email) {
+        setErrorMsg(t('ಈ ಇಮೇಲ್ ಈಗಾಗಲೇ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಆಗಿದೆ.', 'This email is already subscribed.'));
+        setStatus('error');
+      } else {
+        setErrorMsg(t('ಏನೋ ತಪ್ಪಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.', 'Something went wrong. Please try again.'));
+        setStatus('error');
+      }
     }
   };
 
@@ -75,7 +64,7 @@ const Newsletter = () => {
               <CheckCircle2 className="text-emerald-500" size={36} />
             </div>
             <p className="text-emerald-400 font-bold text-lg">
-              {t('ಧನ್ಯವಾದ! ನೀವು ಸಫಲವಾಗಿ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಆಗಿದ್ದೀರಿ.', "Thank you! You've successfully subscribed.")}
+              {t('ಧನ್ಯವಾದ! ನೀವು ಸಫಲವಾಗಿ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಆಗಿದ್ದೀರಿ.', 'Thank you! You\'ve successfully subscribed.')}
             </p>
             <p className="text-slate-400 text-sm">{t('ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮ ಇಮೇಲ್‌ಗೆ ಅಪ್‌ಡೇಟ್‌ಗಳು ಬರಲಿದ್ದಾವೆ.', 'Updates will arrive in your inbox soon.')}</p>
           </div>
