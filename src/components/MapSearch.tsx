@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-import { getNearbySupabaseBusinesses } from '@/services/supabaseData';
+import { getNearbySupabaseBusinesses } from '@/services/legacyStubs';
 import { useLanguage } from '@/context/LanguageContext';
 import { Search, MapPin, Navigation, Slider, Star, Phone, Info } from 'lucide-react';
 import { getSupabaseImageUrl } from '@/utils/imageUtils';

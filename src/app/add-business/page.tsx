@@ -4,7 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Building2, MapPin, Phone, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft, Loader2, ShieldCheck, Upload, X } from "lucide-react";
 import api from "@/services/api";
 import { geocodeAddress } from "@/services/geocoding";
-import { uploadSupabaseFile, submitSupabaseNewBusiness } from "@/services/supabaseData";
+import { uploadSupabaseFile, submitSupabaseNewBusiness } from "@/services/legacyStubs";
 
 const STEPS = ["Business Info", "Location", "Contact & Hours", "Photos & Details"];
 

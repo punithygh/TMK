@@ -1,7 +1,7 @@
 import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
-import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { getSupabaseBusinesses } from "@/services/legacyStubs";
 import { BusinessListing, getOneCourse, getAllCourses } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 

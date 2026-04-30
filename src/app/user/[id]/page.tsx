@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getUserPublicProfile } from "@/services/supabaseData";
+import { getUserPublicProfile } from "@/services/legacyStubs";
 import { useLanguage } from "@/context/LanguageContext";
 import { 
   Star, 

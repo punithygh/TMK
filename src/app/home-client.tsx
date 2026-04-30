@@ -24,7 +24,7 @@ export default function HomeClient({
   const { lang, t } = useLanguage();
 
   const SectionHeader = ({ title, icon: Icon, colorClass, gradient }: { title: string, icon: any, colorClass: string, gradient: string }) => (
-    <header className="flex items-center justify-between mb-5 md:mb-6 border-b border-slate-200 dark:border-slate-800/80 pb-4">
+    <header className="flex items-center justify-between mb-8 md:mb-10 border-b border-slate-200 dark:border-slate-800/80 pb-5">
       <h2 className="text-xl md:text-2xl font-extrabold flex items-center gap-3 text-slate-900 dark:text-white tracking-wide">
         <div className={`p-2 rounded-xl ${gradient} shadow-lg shadow-black/10 dark:shadow-black/40`}>
           <Icon className={colorClass} size={22} />
@@ -64,7 +64,7 @@ export default function HomeClient({
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-50px" }}
-        className="flex flex-col gap-14 md:gap-20 w-full max-w-[1300px] mx-auto px-4 sm:px-6"
+        className="flex flex-col gap-20 md:gap-32 w-full max-w-[1300px] mx-auto px-4 sm:px-6 mt-6 md:mt-10"
       >
         
         {/* 2. EXPLORE SERVICES */}

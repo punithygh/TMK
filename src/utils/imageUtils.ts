@@ -32,7 +32,7 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     return null;
   }
 
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dsvh7may9";
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
 
   // 1. If it's already a full Cloudinary URL, return it directly
   if (path.includes('res.cloudinary.com')) {
@@ -42,7 +42,7 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
   // Check if it's a Cloudinary path (contains image/upload)
   if (path.includes('image/upload')) {
     let cleanPath = path;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
     if (cleanPath.startsWith(baseUrl)) cleanPath = cleanPath.slice(baseUrl.length);
     else if (cleanPath.startsWith('http://localhost:8000')) cleanPath = cleanPath.slice('http://localhost:8000'.length);
 
@@ -53,10 +53,19 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
   // It's a local media file
   if (path.startsWith('http')) return path;
   
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  if (typeof window !== 'undefined') {
+    try {
+      const url = new URL(baseUrl);
+      if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') {
+        baseUrl = ''; // Use relative path, Next.js rewrite proxy will handle it
+      }
+    } catch (e) {}
+  }
+
   const cleanPath = path.replace(/^\//, '');
   if (cleanPath.startsWith('media/')) {
-    return `${baseUrl}/${cleanPath}`;
+    return baseUrl ? `${baseUrl}/${cleanPath}` : `/${cleanPath}`;
   }
-  return `${baseUrl}/media/${cleanPath}`;
+  return baseUrl ? `${baseUrl}/media/${cleanPath}` : `/media/${cleanPath}`;
 };

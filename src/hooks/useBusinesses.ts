@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { getSupabaseBusinesses } from "@/services/legacyStubs";
 
 /**
  * 🚀 YELP-GRADE SWR Caching Hook

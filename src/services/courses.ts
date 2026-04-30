@@ -158,7 +158,12 @@ export const getAllCourses = async (): Promise<BusinessListing[]> => {
 // 🚀 2. ಸಿಂಗಲ್ ಬ್ಯುಸಿನೆಸ್ ಫೆಚ್ ಮಾಡುವುದು (Business Detail Page ಗಾಗಿ) 🚨 ಹೊಸದು 🚨
 export const getOneCourse = async (slug: string): Promise<BusinessListing | null> => {
   try {
-    const data = await serverFetch(`/businesses/${encodeURIComponent(slug)}/`);
+    // 🚨 ANTI-DOUBLE-ENCODE FIX: Next.js App Router params are already URL encoded.
+    // If we encode it again, Kannada characters get double-encoded (%25E0), causing a 404 in Django.
+    // We decode it first to be safe, then encode it exactly once.
+    const safeSlug = encodeURIComponent(decodeURIComponent(slug));
+    
+    const data = await serverFetch(`/businesses/${safeSlug}/`);
     return data as BusinessListing;
   } catch (error: any) {
     console.error(`🚨 API Error (getOneCourse - ${slug}):`, error);
@@ -183,7 +188,8 @@ export const getOneArticle = async (slug: string): Promise<ArticleListing | null
   try {
     // 🚨 Workaround: API doesn't have a direct /articles/<slug> endpoint, so we fetch and filter
     const articles = await getArticles();
-    return articles.find(article => article.slug === slug) || null;
+    const decodedSlug = decodeURIComponent(slug);
+    return articles.find(article => article.slug === decodedSlug || article.slug === slug) || null;
   } catch (error) {
     console.error(`🚨 API Error (getOneArticle - ${slug}):`, error);
     return null;

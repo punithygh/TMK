@@ -24,7 +24,7 @@ import {
   getSupabaseUserDashboard,
   submitSupabaseEnquiry,
   submitSupabaseSuggestion
-} from "@/services/supabaseData";
+} from "@/services/legacyStubs";
 import { ThumbsUp, Laugh } from "lucide-react";
 
 const iconMap: Record<string, React.ReactNode> = {

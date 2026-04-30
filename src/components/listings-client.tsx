@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/product-card";
-import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { getSupabaseBusinesses } from "@/services/legacyStubs";
 import MiniMap from "@/components/MiniMap";
 
 type ListingsClientProps = {
@@ -550,6 +550,16 @@ export default function ListingsClient({
           </div>
         </div>
       )}
+
+      {/* ====== FLOATING MAP VIEW BUTTON (MOBILE YELP STYLE) ====== */}
+      <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] md:bottom-[calc(2rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-[999] xl:hidden pointer-events-auto w-auto flex justify-center">
+        <Link 
+          href="/radius-search" 
+          className="flex items-center justify-center gap-2 bg-slate-900 dark:bg-sky-600 text-white px-7 py-3.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.4)] dark:shadow-[0_8px_30px_rgba(14,165,233,0.3)] font-extrabold text-[15px] tracking-wide border border-white/10 dark:border-sky-500/50 backdrop-blur-xl hover:scale-105 active:scale-95 transition-all duration-300 whitespace-nowrap"
+        >
+          <Map size={18} className="animate-pulse drop-shadow-md" /> {t("ಮ್ಯಾಪ್ ವ್ಯೂ", "Map View")}
+        </Link>
+      </div>
 
     </div>
   );

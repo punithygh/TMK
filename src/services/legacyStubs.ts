@@ -2,22 +2,23 @@ import api from './api';
 import { BusinessListing } from './courses';
 
 const getFullUrl = (path: string | undefined | null) => {
-  if (!path) return "/placeholder-image.webp";
+  if (!path) return null;
   if (path.includes('res.cloudinary.com')) return path;
 
   if (path.includes('image/upload')) {
     let cleanPath = path;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
     if (cleanPath.startsWith(baseUrl)) cleanPath = cleanPath.slice(baseUrl.length);
     else if (cleanPath.startsWith('http://localhost:8000')) cleanPath = cleanPath.slice('http://localhost:8000'.length);
 
     cleanPath = cleanPath.replace('/media/', '').replace('image/upload/', '').replace(/^\//, '');
-    return `https://res.cloudinary.com/dsvh7may9/image/upload/${cleanPath}`;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
   }
 
   if (path.startsWith('http')) return path;
   
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   const cleanPath = path.replace(/^\//, '');
   if (cleanPath.startsWith('media/')) return `${baseUrl}/${cleanPath}`;
   return `${baseUrl}/media/${cleanPath}`;
@@ -55,7 +56,7 @@ export const getSupabaseReviewsForBusiness = async (slugOrId: string, userId?: s
 };
 
 export const toggleSupabaseReviewReaction = async (reviewId: number, userId: string, reactionType: string) => {
-  // Mocking reaction for now, or you can create a Django endpoint for it
+  // Placeholder reaction for now, or you can create a Django endpoint for it
   console.log('toggle reaction', reviewId, reactionType);
   return true;
 };
@@ -78,7 +79,7 @@ export const submitSupabaseEnquiry = async (businessId: number, data: any) => {
 };
 
 export const submitSupabaseSuggestion = async (businessId: number, userId: string, details: string) => {
-  // If no endpoint, just mock success
+  // If no endpoint, just simulate success
   console.log('suggested edit', businessId, details);
   return true;
 };
@@ -105,7 +106,7 @@ export const deleteSupabaseReview = async (reviewId: number) => {
 
 export const uploadSupabaseFile = async (file: File) => {
   console.log('Upload file logic via API instead of direct supabase');
-  return 'dummy_url';
+  return '';
 };
 
 export const updateSupabaseUserProfile = async (userId: string, data: any) => {

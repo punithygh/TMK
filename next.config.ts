@@ -75,6 +75,20 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/django-api/:path*',
+          destination: 'http://127.0.0.1:8000/api/v1/:path*/', // Proxy API to Django directly with trailing slash appended
+        },
+        {
+          source: '/media/:path*',
+          destination: 'http://127.0.0.1:8000/media/:path*', // Proxy Media files to Django
+        }
+      ]
+    };
+  },
 };
 
 export default nextConfig;

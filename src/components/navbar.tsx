@@ -8,7 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
-import { getSupabaseBusinesses } from "@/services/supabaseData";
+import { getSupabaseBusinesses } from "@/services/legacyStubs";
 
 export default function Navbar() {
   const router = useRouter();

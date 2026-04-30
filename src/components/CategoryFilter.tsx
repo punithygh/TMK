@@ -43,10 +43,10 @@ export default function CategoryFilter({ initialCategories }: { initialCategorie
   return (
     <div className="w-full my-8">
       {/* Category Tabs */}
-      <div className="flex overflow-x-auto gap-4 mb-6 pb-2">
+      <div className="flex overflow-x-auto scrollbar-hide gap-3 mb-8 pb-3 relative z-10 snap-x">
         <button 
           onClick={() => setActiveCategory('')}
-          className={`px-4 py-2 rounded-full whitespace-nowrap border ${activeCategory === '' ? 'bg-blue-600 text-white' : 'bg-white'}`}
+          className={`px-5 py-2.5 rounded-full text-sm font-semibold border transition-all shadow-sm snap-start shrink-0 flex items-center gap-2 ${activeCategory === '' ? 'bg-red-50 dark:bg-sky-500/10 border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
         >
           All
         </button>
@@ -54,7 +54,7 @@ export default function CategoryFilter({ initialCategories }: { initialCategorie
           <button 
             key={cat.id} 
             onClick={() => setActiveCategory(cat.slug)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap border ${activeCategory === cat.slug ? 'bg-blue-600 text-white' : 'bg-white'}`}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold border transition-all shadow-sm snap-start shrink-0 flex items-center gap-2 ${activeCategory === cat.slug ? 'bg-red-50 dark:bg-sky-500/10 border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
           >
             {cat.name}
           </button>

@@ -100,8 +100,8 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
         <div className="w-[85%] md:w-full max-w-md mx-auto pointer-events-auto mt-4">
           <form
             onSubmit={handleSearchSubmit}
-            /* 🌟 Design Updates: BLUE Glass, Background showing through & Thick Blue Border 🌟 */
-            className="flex items-center w-full bg-white/10 dark:bg-white/5 backdrop-blur-xl rounded-full p-1.5 border-[3px] border-red-600 dark:border-blue-500 shadow-2xl focus-within:border-red-500 dark:focus-within:border-blue-400 focus-within:bg-white/20 dark:focus-within:bg-white/10 transition-all duration-300"
+            /* 🌟 Design Updates: Soft Yelp-style shadow instead of thick border 🌟 */
+            className="flex items-center w-full bg-white/95 dark:bg-[#0a1120]/90 backdrop-blur-xl rounded-full p-2 border border-white/20 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] focus-within:shadow-[0_8px_40px_rgba(220,38,38,0.2)] dark:focus-within:shadow-[0_8px_40px_rgba(14,165,233,0.2)] transition-all duration-300"
           >
             <input
               type="text"

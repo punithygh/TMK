@@ -7,7 +7,7 @@ import { BusinessListing } from "@/services/courses";
 import { ShieldCheck, Store, CheckCircle2, Send, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { submitSupabaseClaim } from "@/services/supabaseData";
+import { submitSupabaseClaim } from "@/services/legacyStubs";
 import { Loader2 } from "lucide-react";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 

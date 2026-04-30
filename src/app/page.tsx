@@ -1,4 +1,4 @@
-import { getSupabaseBusinesses } from '@/services/supabaseData';
+import { getSupabaseBusinesses } from '@/services/legacyStubs';
 import { 
   getBanners, 
   getArticles, 

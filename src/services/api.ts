@@ -1,7 +1,23 @@
 import axios from 'axios';
 
-// 🚀 1. ಮ್ಯಾಜಿಕ್ ಲಿಂಕ್: NEXT_PUBLIC_API_URL ಇಲ್ಲದಿದ್ದರೆ ನೇರವಾಗಿ ಲೋಕಲ್ ಬ್ಯಾಕೆಂಡ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗುತ್ತದೆ
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000') + '/api/v1';
+let BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+let IS_PROXY = false;
+
+// 📱 MOBILE FIX 4.0: Bulletproof Next.js Proxy Architecture
+// If running in browser and API is localhost, use the Next.js Rewrite proxy `/django-api`.
+if (typeof window !== 'undefined' && BASE_URL) {
+  try {
+    const url = new URL(BASE_URL);
+    if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') {
+      BASE_URL = '/django-api';
+      IS_PROXY = true;
+    }
+  } catch (e) {
+    // Ignore URL parsing errors
+  }
+}
+
+const API_BASE_URL = IS_PROXY ? BASE_URL : BASE_URL + '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -29,13 +45,24 @@ api.interceptors.request.use((config) => {
     }
   }
 
-  // 🚨 Trailing Slash Enforcer (Django ಗೆ ಇದು ಅತಿ ಮುಖ್ಯ)
+  // 🚨 Trailing Slash Logic (Next.js vs Django conflict fix)
   if (config.url) {
     const [path, queryString] = config.url.split('?');
     let safePath = path;
-    if (!safePath.endsWith('/')) {
-      safePath = `${safePath}/`;
+    
+    if (IS_PROXY) {
+      // 1. In Browser (Proxy): Strip trailing slash to prevent Next.js 308 Redirect.
+      // The Next.js rewrite rule will append the trailing slash before hitting Django.
+      if (safePath.endsWith('/')) {
+        safePath = safePath.slice(0, -1);
+      }
+    } else {
+      // 2. On Server (Direct): Enforce trailing slash to prevent Django 301 Redirect.
+      if (!safePath.endsWith('/')) {
+        safePath = `${safePath}/`;
+      }
     }
+    
     config.url = queryString ? `${safePath}?${queryString}` : safePath;
   }
   return config;
