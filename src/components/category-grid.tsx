@@ -112,17 +112,17 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                   </Link>
                 )}
 
-                {/* 💻 DESKTOP VERSION: Similar minimal layout + Dynamic Text */}
+                {/* 💻 DESKTOP VERSION: Bento Glow Layout + Dynamic Text */}
                 <Link
                   href={`/listings?category=${category.slug}`}
                   onClick={(e) => handleCategoryClick(e, category)}
-                  className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1 transition-transform duration-300"
+                  className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1.5 transition-transform duration-300"
                 >
-                  <div className="relative flex items-center justify-center h-14 w-14 rounded-xl bg-white dark:bg-slate-800/50 group-hover:shadow-sm transition-all duration-300 border border-gray-200 dark:border-transparent group-hover:border-gray-300 dark:group-hover:border-sky-900/50">
+                  <div className="relative flex items-center justify-center h-16 w-16 rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 group-hover:border-red-200 dark:group-hover:border-sky-500/50 group-hover:bg-red-50/50 dark:group-hover:bg-sky-500/10 transition-all duration-300 group-hover:shadow-[0_10px_25px_rgba(220,38,38,0.15)] dark:group-hover:shadow-[0_10px_25px_rgba(14,165,233,0.15)]">
                     {getSupabaseImageUrl(category.icon_url) ? (
-                      <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={32} height={32} className="object-contain transition-transform duration-300 group-hover:scale-110" />
+                      <Image src={getSupabaseImageUrl(category.icon_url) || ""} alt={category.name} width={34} height={34} className="object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-sm" />
                     ) : (
-                      <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
+                      <div className="transition-transform duration-300 group-hover:scale-110 drop-shadow-sm">{icon}</div>
                     )}
                   </div>
                   {/* 🚨 ಹೆಡರ್‌ನಲ್ಲಿ ಆರಿಸಿದ ಭಾಷೆಗೆ ತಕ್ಕಂತೆ ಬದಲಾಗುತ್ತದೆ */}

@@ -47,8 +47,8 @@ export default function HomeClient({
   // ✅ PERFECT SMOOTH SCROLL CONTAINER (Fixes "Stuck" issue on mobile)
   const scrollContainerClass = "flex gap-4 md:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scroll-pl-4 sm:scroll-pl-0 after:content-[''] after:w-1 after:shrink-0";
   
-  // ✅ UNIFORM CARD SIZE (Movie Review Size for all cards)
-  const unifiedCardClass = "group min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] shrink-0 snap-start bg-white dark:bg-[#0a1120] border border-red-200 dark:border-slate-800/80 rounded-xl overflow-hidden transition-all duration-300 flex flex-col relative hover:shadow-md hover:border-red-300 dark:hover:border-slate-700";
+  // ✅ UNIFORM CARD SIZE & ADVANCED MICRO-INTERACTIONS
+  const unifiedCardClass = "group min-w-[280px] w-[280px] md:min-w-[320px] md:w-[320px] shrink-0 snap-start bg-white dark:bg-[#0a1120] border border-gray-200/80 dark:border-slate-800/80 rounded-[1.25rem] overflow-hidden transition-all duration-500 ease-out flex flex-col relative hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(220,38,38,0.08)] dark:hover:shadow-[0_20px_40px_rgba(14,165,233,0.08)] hover:border-red-300 dark:hover:border-sky-500/50";
   
   // ✅ UNIFORM IMAGE HEIGHT
   const unifiedImageClass = "h-[160px] md:h-[180px] bg-slate-100 dark:bg-slate-900 relative flex items-center justify-center overflow-hidden shrink-0";
@@ -159,6 +159,27 @@ export default function HomeClient({
                 {t("ವಿಮರ್ಶೆಗಳು ಲಭ್ಯವಿಲ್ಲ", "No reviews available")}
               </div>
             )}
+          </div>
+        </motion.section>
+
+        {/* 🌟 NEW: FEATURED SPOTLIGHT BANNER (Break Monotony) */}
+        <motion.section variants={itemVariants} className="my-2 md:my-6">
+          <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-r from-red-600 to-red-800 dark:from-sky-700 dark:to-[#0a1120] shadow-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-red-400/30 dark:border-sky-500/20 group">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 dark:opacity-10 pointer-events-none mix-blend-overlay"></div>
+            <div className="absolute -top-32 -right-32 w-80 h-80 bg-white/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-white/30 transition-all duration-700"></div>
+            
+            <div className="relative z-10 flex flex-col gap-3 md:max-w-xl text-center md:text-left">
+              <h2 className="text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">
+                {t("ತುಮಕೂರಿನಲ್ಲಿ ಬ್ಯುಸಿನೆಸ್ ಇದೆಯೇ?", "Own a Business in Tumkur?")}
+              </h2>
+              <p className="text-white/90 text-sm md:text-base font-medium leading-relaxed drop-shadow-sm">
+                {t("ಇಂದೇ ನಿಮ್ಮ ಉಚಿತ ಲಿಸ್ಟಿಂಗ್ ಪಡೆಯಿರಿ. ನಿಮ್ಮ ಸೇವೆಗಳಿಗಾಗಿ ಹುಡುಕುತ್ತಿರುವ ಸಾವಿರಾರು ಗ್ರಾಹಕರನ್ನು ಸುಲಭವಾಗಿ ತಲುಪಿ.", "Claim your free listing today. Reach thousands of local customers actively searching for your services.")}
+              </p>
+            </div>
+            
+            <Link href="/add-business" className="relative z-10 px-8 py-4 bg-white dark:bg-sky-50 text-red-600 dark:text-sky-700 font-extrabold rounded-full hover:scale-105 active:scale-95 transition-all duration-300 shadow-[0_10px_25px_rgba(0,0,0,0.2)] whitespace-nowrap border-[3px] border-white/50 bg-clip-padding">
+              {t("ಉಚಿತವಾಗಿ ಸೇರಿಸಿ", "Get Listed for Free")}
+            </Link>
           </div>
         </motion.section>
 

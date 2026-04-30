@@ -14,8 +14,8 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  
-  const { lang, setLang, t } = useLanguage(); 
+
+  const { lang, setLang, t } = useLanguage();
   const { user, isAuthenticated, isOwner, isAdmin, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -32,10 +32,20 @@ export default function Navbar() {
   const [isListening, setIsListening] = useState(false);
 
   // 🚀 YELP-STYLE AUTOCOMPLETE
-  const [suggestions, setSuggestions] = useState<{id: number, name: string, name_kn?: string, slug?: string, area_slug?: string}[]>([]);
+  const [suggestions, setSuggestions] = useState<{ id: number, name: string, name_kn?: string, slug?: string, area_slug?: string }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // 🔒 YELP-STYLE SCROLL LOCK
+  useEffect(() => {
+    if (isMobileMenuOpen || isSearchOverlayOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isMobileMenuOpen, isSearchOverlayOpen]);
 
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -100,7 +110,7 @@ export default function Navbar() {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
-      
+
       recognition.lang = lang === "kn" ? "kn-IN" : "en-IN";
       recognition.interimResults = false;
 
@@ -145,18 +155,18 @@ export default function Navbar() {
     setLoadingSuggestions(true);
     try {
       // ಸುಪಬೇಸ್ RPC ಬದಲು ನಮ್ಮ ಡಿಜಾಂಗೋ API ಇಂದ ಸರ್ಚ್ ರಿಸಲ್ಟ್ ತರುತ್ತಿದ್ದೇವೆ
-      const data = await getSupabaseBusinesses({ 
-        search: query, 
-        limit: 6 
+      const data = await getSupabaseBusinesses({
+        search: query,
+        limit: 6
       });
-      
+
       setSuggestions(data);
       setShowSuggestions(true);
-    } catch (error) { 
+    } catch (error) {
       console.error("Search Error:", error);
-      setSuggestions([]); 
-    } finally { 
-      setLoadingSuggestions(false); 
+      setSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
     }
   }, []);
 
@@ -183,7 +193,7 @@ export default function Navbar() {
   return (
     <nav className={`fixed top-0 left-0 right-0 w-full z-[9999] bg-white/95 dark:bg-[#050b14]/95 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm dark:shadow-lg pt-safe-top transition-transform duration-500 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"}`}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 gap-y-3 md:gap-y-0 max-w-[1400px] mx-auto">
-        
+
         {/* 🌟 MOBILE ROW 1: Logo & Lang Switcher/Search & Menu */}
         <div className="flex md:hidden items-center justify-between w-full">
           <Link href="/" className="flex items-center no-underline group shrink-0" onClick={() => setIsMobileMenuOpen(false)}>
@@ -197,12 +207,12 @@ export default function Navbar() {
               </div>
             </div>
           </Link>
-          
+
           <div className="flex items-center gap-2 shrink-0">
             {isHomePage ? (
               mounted ? (
-                <div 
-                  className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0" 
+                <div
+                  className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[60px] h-8 cursor-pointer shrink-0"
                   onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
                 >
                   <div className={`absolute top-1 bottom-1 w-[24px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[32px]'}`} />
@@ -213,7 +223,7 @@ export default function Navbar() {
                 <div className="w-[60px] h-8 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse"></div>
               )
             ) : (
-              <button 
+              <button
                 onClick={() => setIsSearchOverlayOpen(true)}
                 className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] dark:shadow-[0_0_10px_rgba(14,165,233,0.3)] active:scale-95"
                 aria-label="Open Search"
@@ -222,7 +232,7 @@ export default function Navbar() {
               </button>
             )}
 
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors"
             >
@@ -329,17 +339,17 @@ export default function Navbar() {
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
 
-              
+
               {/* Add Business Link (Replaced Free Listing) */}
               <Link href="/add-business" className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold text-sm transition-all bg-transparent text-slate-700 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-red-600 dark:hover:border-sky-400 hover:text-red-600 dark:hover:text-sky-400">
                 <Megaphone className="w-4 h-4" />
                 <span>{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
               </Link>
-              
+
               {/* Auth User Profile / Login */}
               {isAuthenticated && user ? (
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-400 dark:hover:border-sky-400 text-slate-700 dark:text-white"
                   >
@@ -359,11 +369,10 @@ export default function Navbar() {
                         <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
                         <p className="text-sm font-bold truncate">{user.mobile}</p>
                         {/* Role Badge */}
-                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          isAdmin ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400' :
+                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${isAdmin ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400' :
                           isOwner ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400' :
-                          'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                        }`}>
+                            'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                          }`}>
                           {isAdmin ? '⚡ Super Admin' : isOwner ? '🏪 Business Owner' : '👤 User'}
                         </span>
                       </div>
@@ -389,10 +398,10 @@ export default function Navbar() {
                   <span>{t("ಲಾಗಿನ್", "Login")}</span>
                 </Link>
               )}
-              
+
               {/* Language Switcher */}
-              <div 
-                className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[76px] h-10 cursor-pointer shrink-0" 
+              <div
+                className="relative flex items-center bg-slate-100 dark:bg-slate-800/80 rounded-full p-1 border border-slate-200 dark:border-slate-700/50 shadow-inner w-[76px] h-10 cursor-pointer shrink-0"
                 onClick={() => setLang(lang === 'kn' ? 'en' : 'kn')}
               >
                 <div className={`absolute top-1 bottom-1 w-[32px] bg-gradient-to-r from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.3)] dark:shadow-[0_0_10px_rgba(14,165,233,0.5)] transition-all duration-300 ease-in-out ${lang === 'kn' ? 'left-1' : 'left-[39px]'}`} />
@@ -412,65 +421,92 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 📱 MOBILE OFFCANVAS MENU */}
-      <div className={`md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#050b14] border-b border-slate-200 dark:border-slate-800 shadow-xl transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-[400px] py-4 opacity-100' : 'max-h-0 py-0 border-none opacity-0 pointer-events-none'}`}>
-        <div className="flex flex-col px-4 gap-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{t("ಥೀಮ್ ಬದಲಾಯಿಸಿ", "Change Theme")}</span>
-            {mounted && (
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="py-1.5 px-3 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-colors hover:bg-slate-300 dark:hover:bg-slate-600"
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                <span className="text-xs font-bold">{theme === 'dark' ? 'Day Mode' : 'Night Mode'}</span>
-              </button>
-            )}
+      {/* =========================================================
+          📱 🚨 YELP-STYLE MOBILE SIDE DRAWER (EXACT 5 BUTTONS) 🚨 
+      ========================================================= */}
+
+      {/* 1. Dark Background Overlay */}
+      <div
+        className={`md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99998] transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* 2. Sliding Drawer */}
+      <div className={`md:hidden fixed top-0 right-0 h-[100dvh] w-[85vw] max-w-[320px] bg-white dark:bg-[#050b14] z-[99999] shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+        {/* Drawer Header (Exact Same Logo) */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+          <div className="font-black text-[26px] tracking-tighter whitespace-nowrap flex items-center">
+            <span className="text-slate-900 dark:text-white drop-shadow-sm">Tumkur</span>
+            <div className="relative ml-[1px] flex flex-col justify-end">
+              <span className="text-red-600 dark:text-sky-400 italic -skew-x-7 drop-shadow-[0_0_12px_rgba(220,38,38,0.4)] dark:drop-shadow-[0_0_12px_rgba(14,165,233,0.8)]">
+                connect
+              </span>
+              <div className="absolute bottom-[5px] left-0 w-full h-[2px] rounded-full bg-red-600 dark:bg-sky-400 shadow-[0_0_15px_rgba(220,38,38,0.5)] dark:shadow-[0_0_15px_rgba(14,165,233,1)]"></div>
+            </div>
           </div>
-          <Link href="/add-business" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
-            <Megaphone className="w-5 h-5 text-red-600 dark:text-sky-500" />
-            <span className="text-sm font-bold">{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
+
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+          >
+            <X className="w-8 h-8" />
+          </button>
+        </div>
+
+        {/* EXACT 5 BUTTONS IN ORDER */}
+        <div className="flex flex-col p-4 gap-2 flex-1">
+
+          {/* 1. Theme */}
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors"
+          >
+            {theme === 'dark' ? <Sun className="w-6 h-6 text-slate-500" /> : <Moon className="w-6 h-6 text-slate-500" />}
+            <span>{theme === 'dark' ? t("ಲೈಟ್ ಮೋಡ್", "Light Mode") : t("ಡಾರ್ಕ್ ಮೋಡ್", "Dark Mode")}</span>
+          </button>
+
+          {/* 2. Sign Up */}
+          <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors">
+            <Hexagon className="w-6 h-6 text-slate-500" />
+            <span>{t("ಸೈನ್ ಅಪ್", "Sign Up")}</span>
           </Link>
-          <Link href="/#categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-sky-400">
-            <Layers className="w-5 h-5 text-red-600 dark:text-sky-500" />
-            <span className="text-sm font-bold">{t("ವರ್ಗಗಳು", "Categories")}</span>
+
+          {/* 3. Log In */}
+          <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors">
+            <UserCircle className="w-6 h-6 text-slate-500" />
+            <span>{t("ಲಾಗಿನ್", "Log In")}</span>
           </Link>
-          {mounted && isAuthenticated && user ? (
-            <>
-              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 text-red-600 dark:text-sky-400">
-                <LayoutDashboard className="w-5 h-5" />
-                <span className="text-sm font-bold">{t("ಡ್ಯಾಶ್ಬೋರ್ಡ್", "My Dashboard")}</span>
-              </Link>
-              {/* Business Dashboard — only for OWNER & ADMIN */}
-              {(isOwner || isAdmin) && (
-                <Link href="/business-dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400">
-                  <Store className="w-5 h-5" />
-                  <span className="text-sm font-bold">{t("ಬ್ಯುಸಿನೆಸ್ ಡ್ಯಾಶ್ಬೋರ್ಡ್", "Business Dashboard")}</span>
-                </Link>
-              )}
-            </>
-          ) : mounted ? (
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 p-3 rounded-xl bg-red-600 dark:bg-gradient-to-r dark:from-sky-500 dark:to-blue-600 text-white shadow-lg shadow-red-600/30 dark:shadow-sky-500/30">
-              <UserCircle className="w-5 h-5" />
-              <span className="text-sm font-bold">{t("ಲಾಗಿನ್", "Login")}</span>
-            </Link>
-          ) : null}
+
+          {/* 4. Categories */}
+          <Link href="/#categories" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors">
+            <Layers className="w-6 h-6 text-slate-500" />
+            <span>{t("ಕ್ಯಾಟಗೆರಿಸ್", "Categories")}</span>
+          </Link>
+
+          {/* 5. Add Business */}
+          <Link href="/add-business" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60 font-semibold text-lg w-full text-left transition-colors">
+            <Megaphone className="w-6 h-6 text-slate-500" />
+            <span>{t("ಬ್ಯುಸಿನೆಸ್ ಸೇರಿಸಿ", "Add Business")}</span>
+          </Link>
+
         </div>
       </div>
 
       {/* 📱 🚨 MOBILE FULL-SCREEN SEARCH OVERLAY (YELP STYLE) 🚨 */}
       <div className={`md:hidden fixed inset-0 z-[100000] bg-white dark:bg-[#050b14] transition-transform duration-300 ease-in-out flex flex-col ${isSearchOverlayOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="flex items-center gap-3 p-4 bg-white dark:bg-[#050b14] border-b border-slate-200 dark:border-slate-800 shadow-sm pt-safe-top">
-          <button 
+          <button
             type="button"
             onClick={() => setIsSearchOverlayOpen(false)}
             className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          
-          <form 
-            onSubmit={handleSearchSubmit} 
+
+          <form
+            onSubmit={handleSearchSubmit}
             className="flex-1 relative flex items-center"
           >
             <input

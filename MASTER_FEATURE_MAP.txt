@@ -1,0 +1,132 @@
+========================================================================
+             TUMKURCONNECT (TMK) - MASTER FEATURE ARCHITECTURE MAP
+========================================================================
+Generated: 2026-04-30
+Project: TMK (Frontend) & TC (Backend)
+Format: Feature-to-File Structure (Suitable for Notepad .txt)
+------------------------------------------------------------------------
+
+1. CORE LAYOUT (NAVBAR & FOOTER)
+---------------------------------------------------------
+File Paths:
+- Frontend: src/components/navbar.tsx
+- Frontend: src/components/footer.tsx
+- Frontend: src/app/layout.tsx
+- Frontend: src/context/LanguageContext.tsx
+- Frontend: src/context/AuthContext.tsx
+
+Functional Use:
+(Kannada): ಇಡೀ ವೆಬ್‌ಸೈಟ್‌ನ ಮೇಲ್ಭಾಗದ ನ್ಯಾವಿಗೇಶನ್ (Navbar), ಕೆಳಭಾಗದ ಫೂಟರ್ (Footer) ಮತ್ತು ಭಾಷೆ (Kannada/English) ಬದಲಾವಣೆಯ ಕಾರ್ಯವನ್ನು ಇದು ನಿರ್ವಹಿಸುತ್ತದೆ.
+(English): Manages the global layout, sticky navigation, language switching logic, and footer links across the entire application.
+
+
+2. HERO SECTION & SEARCH LOGIC
+---------------------------------------------------------
+File Paths:
+- Frontend: src/components/hero.tsx
+- Frontend: src/components/navbar.tsx (Autocomplete logic)
+- Frontend: src/app/home-client.tsx
+- Backend: TC/directory/api_views.py (Search filter methods)
+- Backend: TC/directory/api_urls.py
+
+Functional Use:
+(Kannada): ಮುಖಪುಟದ ಬ್ಯಾನರ್, ಸರ್ಚ್ ಬಾರ್ ಮತ್ತು ಟ್ರೆಂಡಿಂಗ್ ಟ್ಯಾಗ್‌ಗಳ ವಿನ್ಯಾಸ ಹಾಗೂ ಆಟೋ-ಕಂಪ್ಲೀಟ್ ಸರ್ಚ್ ಕಾರ್ಯವೈಖರಿಯನ್ನು ಇದು ನೋಡಿಕೊಳ್ಳುತ್ತದೆ.
+(English): Handles the landing page hero slider, search input animations, trending quick-tags, and backend fuzzy search logic for business queries.
+
+
+3. BUSINESS LISTINGS & DETAIL PAGES
+---------------------------------------------------------
+File Paths:
+- Frontend: src/components/listings-client.tsx
+- Frontend: src/app/business/[slug]/page.tsx
+- Frontend: src/app/listings/page.tsx
+- Backend: TC/directory/models.py (Business, Review models)
+- Backend: TC/directory/serializers.py (BusinessSerializer)
+- Backend: TC/directory/api_views.py (Listing views)
+
+Functional Use:
+(Kannada): ತುಮಕೂರಿನ ಎಲ್ಲಾ ಬ್ಯುಸಿನೆಸ್‌ಗಳ ಪಟ್ಟಿ, ಅವುಗಳ ರೇಟಿಂಗ್, ವಿಳಾಸ ಮತ್ತು ಫೋನ್ ನಂಬರ್ ಪ್ರದರ್ಶಿಸುವ ಪುಟಗಳನ್ನು ಇದು ನಿರ್ವಹಿಸುತ್ತದೆ.
+(English): Displays the vertical list of businesses, interactive maps, and the dynamic individual business details page with "Call Now" and "Review" features.
+
+
+4. CATEGORY & FILTERING SYSTEM
+---------------------------------------------------------
+File Paths:
+- Frontend: src/components/category-grid.tsx
+- Frontend: src/components/CategoryFilter.tsx
+- Frontend: src/app/home-client.tsx
+- Backend: TC/directory/models.py (Category model)
+- Backend: TC/directory/api_views.py (Category list view)
+
+Functional Use:
+(Kannada): ಬ್ಯುಸಿನೆಸ್‌ಗಳನ್ನು ವಿವಿಧ ವರ್ಗಗಳಾಗಿ (ಹೋಟೆಲ್, ಆಸ್ಪತ್ರೆ, ಇತ್ಯಾದಿ) ವಿಂಗಡಿಸಲು ಮತ್ತು ಆಧುನಿಕ "Pill" ಶೈಲಿಯ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬಳಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.
+(English): Manages the category grid on the homepage and the modern horizontal pill filtering system on the listings page for easy discovery.
+
+
+5. API & SERVICE LAYER (DJANGO CONNECTION)
+---------------------------------------------------------
+File Paths:
+- Frontend: src/services/api.ts (Axios Interceptors)
+- Frontend: src/services/courses.ts (Fetch wrappers)
+- Frontend: next.config.ts (Next.js Proxy/Rewrites)
+- Backend: TC/core/settings.py (CORS & API settings)
+- Backend: TC/core/urls.py (Master URL config)
+
+Functional Use:
+(Kannada): ಫ್ರಂಟ್-ಎಂಡ್ ಮತ್ತು ಬ್ಯಾಕ್-ಎಂಡ್ ನಡುವೆ ಕನೆಕ್ಷನ್ ಏರ್ಪಡಿಸಿ, ಸರ್ವರ್‌ನಿಂದ ಡೇಟಾ ತರುವ ಮತ್ತು ಕಳುಹಿಸುವ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಇದು ಮಾಡುತ್ತದೆ.
+(English): Establises the bridge between Next.js and Django, handling trailing slash issues, proxy rewrites, and secure data transmission.
+
+
+6. IMAGE UTILITIES & CLOUDINARY FIXES
+---------------------------------------------------------
+File Paths:
+- Frontend: src/utils/imageUtils.ts
+- Frontend: src/services/api.ts
+- Backend: TC/core/settings.py (Cloudinary/Media config)
+
+Functional Use:
+(Kannada): ಬ್ಯುಸಿನೆಸ್‌ಗಳ ಫೋಟೋಗಳನ್ನು ಕ್ಲೌಡಿನರಿ ಮೂಲಕ ವೇಗವಾಗಿ ಲೋಡ್ ಮಾಡಲು ಮತ್ತು ಇಮೇಜ್ 404 ಎರರ್‌ಗಳನ್ನು ತಪ್ಪಿಸಲು ಈ ಫೈಲ್‌ಗಳನ್ನು ಬಳಸಲಾಗುತ್ತದೆ.
+(English): Resolves image URL paths, handles local vs production media storage, and ensures responsive image rendering for high performance.
+
+
+7. NEWSLETTER & FORM SUBMISSIONS
+---------------------------------------------------------
+File Paths:
+- Frontend: src/components/footer.tsx (Newsletter form)
+- Frontend: src/components/listings-client.tsx (Lead forms)
+- Backend: TC/directory/models.py (Newsletter, Lead models)
+- Backend: TC/directory/api_views.py (POST methods)
+
+Functional Use:
+(Kannada): ಗ್ರಾಹಕರು ಇಮೇಲ್ ಚಂದಾದಾರಿಕೆ (Newsletter) ಪಡೆಯಲು ಮತ್ತು ಬ್ಯುಸಿನೆಸ್ ಮಾಲೀಕರಿಗೆ ವಿಚಾರಣೆ (Leads) ಕಳುಹಿಸಲು ಈ ಫೈಲ್‌ಗಳು ಸಹಾಯ ಮಾಡುತ್ತವೆ.
+(English): Captures user contact information for business inquiries and stores email subscriptions for marketing updates.
+
+
+8. USER AUTH & DASHBOARD
+---------------------------------------------------------
+File Paths:
+- Frontend: src/context/AuthContext.tsx
+- Frontend: src/app/login/page.tsx
+- Frontend: src/app/dashboard/page.tsx
+- Backend: TC/directory/api_views.py (Auth endpoints)
+
+Functional Use:
+(Kannada): ಬಳಕೆದಾರರ ಲಾಗಿನ್, ಪ್ರೊಫೈಲ್ ಮ್ಯಾನೇಜ್‌ಮೆಂಟ್ ಮತ್ತು ಅವರ ವೈಯಕ್ತಿಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಮಾಹಿತಿಯನ್ನು ಇದು ನಿರ್ವಹಿಸುತ್ತದೆ.
+(English): Manages user sessions, authentication tokens, profile updates, and personalized user dashboard views.
+
+
+9. DEPLOYMENT & SEO CONFIGS
+---------------------------------------------------------
+File Paths:
+- Frontend: next-sitemap.config.js
+- Frontend: next.config.ts
+- Frontend: public/robots.txt
+- Frontend: public/manifest.json (PWA)
+
+Functional Use:
+(Kannada): ಗೂಗಲ್ ಸರ್ಚ್‌ನಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಚೆನ್ನಾಗಿ ಕಾಣಿಸಿಕೊಳ್ಳಲು (SEO) ಮತ್ತು ಮೊಬೈಲ್‌ನಲ್ಲಿ ಆಪ್ ರೀತಿಯಲ್ಲಿ ಕೆಲಸ ಮಾಡಲು (PWA) ಬೇಕಾದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಇದು ಹೊಂದಿದೆ.
+(English): Configures the site for production deployment, handles SEO metadata, sitemaps, and Progressive Web App (PWA) manifest settings.
+
+------------------------------------------------------------------------
+END OF FEATURE MAP - Save this as a .txt for future reference.
+------------------------------------------------------------------------
