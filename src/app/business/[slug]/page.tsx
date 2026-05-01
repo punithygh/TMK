@@ -1,7 +1,7 @@
 import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/business-detail-client";
-import { getSupabaseBusinesses } from "@/services/legacyStubs";
+import { getSupabaseBusinesses, getSupabaseReviewsForBusiness } from "@/services/legacyStubs";
 import { BusinessListing, getOneCourse, getAllCourses } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
@@ -91,6 +91,15 @@ export default async function BusinessDetailPageServer({ params }: Props) {
     console.error("Failed to fetch similar businesses from Supabase:", error); 
   }
 
+  // 🚀 Fetch Top Reviews for Schema
+  let schemaReviews: any[] = [];
+  try {
+    const rawReviews = await getSupabaseReviewsForBusiness(slug);
+    schemaReviews = rawReviews.filter((r: any) => r.rating >= 4).slice(0, 3);
+  } catch (error) {
+    console.error("Failed to fetch reviews for schema:", error);
+  }
+
   const canonicalUrl = `https://tumakuruconnect.com/business/${slug}`;
 
   // 🚀 4. YELP-GRADE JSON-LD Structured Data for Google SEO
@@ -128,6 +137,21 @@ export default async function BusinessDetailPageServer({ params }: Props) {
         "bestRating": "5",
         "ratingCount": business.review_count || 1
       }
+    }),
+    ...(schemaReviews.length > 0 && {
+      "review": schemaReviews.map((r: any) => ({
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": r.rating,
+          "bestRating": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": r.user_name || "Tumkurconnect User"
+        },
+        "reviewBody": r.comment || ""
+      }))
     })
   };
 

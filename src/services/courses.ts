@@ -21,9 +21,14 @@ export interface BusinessListing {
   rating: number;
   review_count?: number | null;
   is_verified: boolean;
+  is_claimed?: boolean;
   is_open?: boolean | null;
   pure_veg?: boolean;
   emergency_24x7?: boolean;
+  is_featured?: boolean;
+  is_top_search?: boolean;
+  is_trusted?: boolean;
+  high_call_rate?: boolean;
   working_hours?: string | null; // Backend sends plain string e.g. "9:00 AM - 9:00 PM"
   // Detail page extra fields
   description?: string;
