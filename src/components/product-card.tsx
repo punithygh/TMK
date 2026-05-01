@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart } from "lucide-react";
+import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
@@ -34,6 +34,7 @@ export interface BusinessListDTO {
   is_trusted?: boolean;
   is_currently_open?: boolean;
   dynamic_badges?: string[];
+  gallery?: string[];
 }
 
 interface ProductCardProps {
@@ -42,6 +43,8 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [imgError, setImgError] = useState(false);
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { lang, t } = useLanguage();
 
   if (!product) return null;
@@ -67,6 +70,25 @@ const ProductCard = ({ product }: ProductCardProps) => {
   // 🚀 context:'card' = 400px WebP — saves ~70% bandwidth vs full 1600px hero images
   const finalImgSrc = useMemo(() => getSupabaseImageUrl(imageUrl, { context: 'card', fallbackCategory: product.category_name }), [imageUrl, product.category_name]);
 
+  const galleryImages = useMemo(() => {
+    let imgs: string[] = [];
+    if (finalImgSrc && !imgError) imgs.push(finalImgSrc as string);
+    if (product.gallery && Array.isArray(product.gallery)) {
+      imgs = [...imgs, ...product.gallery.map(img => getSupabaseImageUrl(img, { context: 'card' }) as string)];
+    }
+    return Array.from(new Set(imgs)).filter(Boolean);
+  }, [finalImgSrc, product.gallery, imgError]);
+
+  const scrollPrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+  };
+
+  const scrollNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (scrollContainerRef.current) scrollContainerRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+  };
+
   const hasValidImage = finalImgSrc && finalImgSrc.trim() !== "" && !imgError;
   const displayPhone = product.phone || ""; 
 
@@ -84,25 +106,66 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <div className="group bg-white dark:bg-[#0a1120] rounded-xl sm:rounded-2xl md:rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-800/80 hover:border-gray-300 dark:hover:border-slate-700 hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row relative mb-3 sm:mb-6">
       
       {/* 1. Image Section - Mobile: Top, Desktop: Left */}
-      <div className="relative h-44 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-gray-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-slate-800/80">
-        {hasValidImage ? (
-          <Image
-            src={finalImgSrc as string}
-            alt={title as string}
-            fill
-            sizes="(max-width: 640px) 100vw, 320px"
-            className="object-cover transition-transform duration-700 group-hover:scale-110 premium-img"
-            onError={() => setImgError(true)}
-          />
+      <div className="relative h-44 sm:h-auto sm:w-[280px] md:w-[320px] overflow-hidden bg-gray-100 dark:bg-slate-900 shrink-0 border-b sm:border-b-0 sm:border-r border-gray-200 dark:border-slate-800/80 group/carousel">
+        {galleryImages.length > 0 ? (
+          <div 
+            ref={scrollContainerRef}
+            className="flex h-full w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth relative z-0"
+            onScroll={(e) => {
+              const scrollLeft = e.currentTarget.scrollLeft;
+              const width = e.currentTarget.clientWidth;
+              setCurrentImgIndex(Math.round(scrollLeft / width));
+            }}
+          >
+            {galleryImages.map((img, idx) => (
+              <div key={idx} className="h-full w-full shrink-0 snap-center relative">
+                <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
+                <Image
+                  src={img}
+                  alt={`${title} - image ${idx + 1}`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 320px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110 premium-img"
+                  onError={() => setImgError(true)}
+                />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/50">
+            <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
             <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-2">
               <span className="text-2xl font-bold text-slate-400 dark:text-slate-600">{title?.toString().charAt(0)}</span>
             </div>
           </div>
         )}
-        {/* Clickable Image Overlay */}
-        <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
+
+        {/* Carousel Controls (Zomato Style) */}
+        {galleryImages.length > 1 && (
+          <>
+            <button 
+              onClick={scrollPrev}
+              className={`absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white z-20 transition-opacity ${currentImgIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-0 sm:group-hover/carousel:opacity-100'}`}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button 
+              onClick={scrollNext}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white z-20 transition-opacity ${currentImgIndex === galleryImages.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-0 sm:group-hover/carousel:opacity-100'}`}
+            >
+              <ChevronRight size={18} />
+            </button>
+
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+              {galleryImages.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${currentImgIndex === idx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
         
         {/* Gradient Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none"></div>

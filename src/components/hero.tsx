@@ -131,10 +131,10 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
           </div>
 
           <div className="flex flex-nowrap items-center justify-center gap-2.5 pointer-events-auto overflow-x-auto w-full max-w-2xl scrollbar-hide pb-2">
-            <Link href="/listings?category=hotel" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🏨 Hotels</Link>
-            <Link href="/listings?category=hospital" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🏥 Hospitals</Link>
-            <Link href="/listings?category=restaurant" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🍔 Food</Link>
-            <Link href="/listings?category=plumber" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🛠️ Plumbers</Link>
+            <Link href="/hotel-in-tumkur" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🏨 Hotels</Link>
+            <Link href="/hospital-in-tumkur" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🏥 Hospitals</Link>
+            <Link href="/restaurant-in-tumkur" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🍔 Food</Link>
+            <Link href="/plumber-in-tumkur" className="shrink-0 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-[12px] font-bold transition-all hover:-translate-y-0.5 shadow-lg flex items-center gap-1.5">🛠️ Plumbers</Link>
           </div>
         </div>
       </section>
@@ -169,10 +169,10 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
 
           {/* Mobile Quick Tags */}
           <div className="flex flex-nowrap overflow-x-auto scrollbar-hide gap-2 px-1">
-            <Link href="/listings?category=hotel" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🏨 Hotels</Link>
-            <Link href="/listings?category=hospital" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🏥 Hospitals</Link>
-            <Link href="/listings?category=restaurant" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🍔 Food</Link>
-            <Link href="/listings?category=pg" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🛏️ PGs</Link>
+            <Link href="/hotel-in-tumkur" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🏨 Hotels</Link>
+            <Link href="/hospital-in-tumkur" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🏥 Hospitals</Link>
+            <Link href="/restaurant-in-tumkur" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🍔 Food</Link>
+            <Link href="/pg-in-tumkur" className="shrink-0 px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-full text-slate-700 dark:text-slate-300 text-[11px] font-extrabold shadow-sm flex items-center gap-1.5">🛏️ PGs</Link>
           </div>
         </div>
 

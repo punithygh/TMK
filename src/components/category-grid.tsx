@@ -94,7 +94,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
               {/* 📱 MOBILE VERSION: Yelp Style - Direct Icon + Dynamic Text */}
               {showOnMobile && (
                 <Link
-                  href={`/listings?category=${category.slug}`}
+                  href={`/${category.slug.toLowerCase().replace(/\s+/g, '-')}-in-tumkur`}
                   onClick={(e) => handleCategoryClick(e, category)}
                   className="flex md:hidden group flex-col items-center justify-start no-underline w-full gap-2"
                 >
@@ -114,7 +114,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
 
               {/* 💻 DESKTOP VERSION: Bento Glow Layout + Dynamic Text */}
               <Link
-                href={`/listings?category=${category.slug}`}
+                href={`/${category.slug.toLowerCase().replace(/\s+/g, '-')}-in-tumkur`}
                 onClick={(e) => handleCategoryClick(e, category)}
                 className="hidden md:flex group flex-col items-center justify-start no-underline w-full gap-3 hover:-translate-y-1.5 transition-transform duration-300"
               >
@@ -176,7 +176,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
 
             <div className="p-4 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
               <Link
-                href={`/listings?category=${selectedCategory.slug}`}
+                href={`/${selectedCategory.slug.toLowerCase().replace(/\s+/g, '-')}-in-tumkur`}
                 onClick={() => setSelectedCategory(null)}
                 className="block w-full p-4 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 font-semibold rounded-xl text-center mb-4 border border-sky-100 dark:border-sky-800/30 no-underline transition-colors hover:bg-sky-100 dark:hover:bg-sky-900/40"
               >
@@ -188,7 +188,7 @@ export default function CategoryGrid({ initialCategories = [] }: CategoryGridPro
                 {selectedCategory.subcategories?.map(sub => (
                   <Link
                     key={sub.id}
-                    href={`/listings?category=${selectedCategory.slug}&sub_category=${sub.slug}`}
+                    href={`/${selectedCategory.slug.toLowerCase().replace(/\s+/g, '-')}-in-tumkur?q=${sub.name}`}
                     onClick={() => setSelectedCategory(null)}
                     className="p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-center text-[13px] font-medium text-slate-700 dark:text-slate-300 hover:border-sky-300 dark:hover:border-sky-600 hover:shadow-sm no-underline transition-all hover:-translate-y-0.5"
                   >

@@ -440,7 +440,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
         {/* Breadcrumbs */}
         <div className="hidden md:flex items-center gap-2 text-[13px] text-red-600 dark:text-slate-400 mb-5 font-semibold whitespace-nowrap overflow-x-auto scrollbar-hide">
           <Link href="/" className="hover:text-red-700 dark:hover:text-sky-500 transition-colors">{t("ತುಮಕೂರು", "Tumkur")}</Link> <ChevronRight size={14} className="text-red-400 dark:text-slate-500" />
-          <Link href={`/listings?category=${business.category_name}`} className="hover:text-red-700 dark:hover:text-sky-500 transition-colors">{category}</Link> <ChevronRight size={14} className="text-red-400 dark:text-slate-500" />
+          <Link href={`/${business.category_name.toLowerCase().replace(/\s+/g, '-')}-in-tumkur`} className="hover:text-red-700 dark:hover:text-sky-500 transition-colors">{category}</Link> <ChevronRight size={14} className="text-red-400 dark:text-slate-500" />
           <span className="font-bold text-red-700 dark:text-white truncate">{title as string}</span>
         </div>
 

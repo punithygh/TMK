@@ -38,10 +38,28 @@ export const getSupabaseBusinesses = async (options: any = {}): Promise<Business
   }
 };
 
+export const getSupabaseBusinessesWithCount = async (options: any = {}): Promise<{ results: BusinessListing[], count: number }> => {
+  try {
+    const res = await api.get('/businesses/', { params: options });
+    const results = res.data?.results || res.data || [];
+    const count = res.data?.count ?? results.length;
+    
+    const mappedResults = results.map((biz: any) => ({
+      ...biz,
+      main_image_upload: getFullUrl(biz.main_image_upload)
+    }));
+    
+    return { results: mappedResults, count };
+  } catch (error) {
+    console.error('Error fetching businesses with count:', error);
+    return { results: [], count: 0 };
+  }
+};
 
 
-export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radius: number = 5000) => {
-  return await getSupabaseBusinesses({ lat, lng, radius });
+
+export const getNearbySupabaseBusinesses = async (lat: number, lng: number, radius: number = 5000, search?: string, category?: string) => {
+  return await getSupabaseBusinesses({ lat, lng, radius, search, category });
 };
 // --- BACKWARD COMPATIBILITY / MIGRATION FIXES ---
 export const getSupabaseReviewsForBusiness = async (slugOrId: string, userId?: string) => {

@@ -276,16 +276,23 @@ export default function HomeClient({
           />
           <div className={scrollContainerClass}>
             {recentReviews?.length > 0 ? recentReviews.map((review: any) => {
-              const bizImgSrc = getSupabaseImageUrl(review.business?.main_image_upload || review.business?.image_url);
-              const bizName = lang === 'kn' ? (review.business?.name_kn || review.business?.name) : review.business?.name;
-              const userAvatar = getSupabaseImageUrl(review.user?.profile_picture); 
-              const userName = review.user?.first_name || review.customer_name || "User";
-              const rating = Number(review.rating) || 5;
+              // ✅ business_image may be /media/... (local) or https://res.cloudinary.com/... 
+              // getSupabaseImageUrl converts /media/... to the proxy URL correctly on all devices
+              const bizImgSrc = getSupabaseImageUrl(review.business_image);
+              const bizName   = lang === 'kn'
+                ? (review.business_name_kn || review.business_name)
+                : review.business_name;
+              // ✅ user_profile_picture is also already an absolute URL from the backend
+              const userAvatar = review.user_profile_picture || null;
+              const userName   = review.user_first_name || review.user_name || "User";
+              const rating     = Number(review.rating) || 5;
+              // ✅ use flat business_area_slug (not the missing review.business?.slug)
+              const bizSlug    = review.business_area_slug || '#';
 
               return (
-                <Link 
-                  key={`review-${review.id}`} 
-                  href={`/business/${review.business?.slug || '#'}`} 
+                <Link
+                  key={`review-${review.id}`}
+                  href={`/business/${bizSlug}`}
                   className={`${unifiedCardClass}`}
                 >
                   <div className={unifiedImageClass}>

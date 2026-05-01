@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     const categoryUrls = categories.map((c) => ({
-      url: `${baseUrl}/listings?category=${encodeURIComponent(c.name)}`,
+      url: `${baseUrl}/${c.name.toLowerCase().replace(/\s+/g, '-')}-in-tumkur`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,

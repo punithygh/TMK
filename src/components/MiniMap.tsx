@@ -15,9 +15,10 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ss
 interface MiniMapProps {
   businesses: any[];
   center?: [number, number];
+  hoveredBusinessId?: number | null;
 }
 
-export default function MiniMap({ businesses, center = [13.3392, 77.1140] }: MiniMapProps) {
+export default function MiniMap({ businesses, center = [13.3392, 77.1140], hoveredBusinessId }: MiniMapProps) {
   const [isClient, setIsClient] = useState(false);
   const [L, setL] = useState<any>(null);
 
@@ -30,11 +31,11 @@ export default function MiniMap({ businesses, center = [13.3392, 77.1140] }: Min
     initLeaflet();
   }, []);
 
-  const createCustomIcon = (idx: number) => {
+  const createCustomIcon = (idx: number, isHovered: boolean) => {
     if (!L) return null;
     return L.divIcon({
       className: 'custom-yelp-icon',
-      html: `<div class="yelp-pin shadow-lg"><span>${idx + 1}</span></div>`,
+      html: `<div class="yelp-pin shadow-lg ${isHovered ? 'scale-125 !bg-sky-500 !border-sky-300 z-50 transition-all' : 'transition-all'}"><span>${idx + 1}</span></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 28],
       popupAnchor: [0, -28]
@@ -79,8 +80,9 @@ export default function MiniMap({ businesses, center = [13.3392, 77.1140] }: Min
               <Marker 
                 key={biz.id} 
                 position={coords}
+                zIndexOffset={biz.id === hoveredBusinessId ? 1000 : 0}
                 // @ts-ignore
-                icon={createCustomIcon(idx)}
+                icon={createCustomIcon(idx, biz.id === hoveredBusinessId)}
               >
                 <Popup className="compact-popup">
                   <div className="p-1 font-bold text-[10px] text-red-600 flex items-center gap-1">

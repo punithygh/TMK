@@ -31,7 +31,12 @@ interface Business {
   dist_meters?: number;
 }
 
-export default function MapSearch() {
+interface MapSearchProps {
+  initialQ?: string;
+  initialCategory?: string;
+}
+
+export default function MapSearch({ initialQ, initialCategory }: MapSearchProps) {
   const { t } = useLanguage();
   const [userLocation, setUserLocation] = useState<[number, number]>([13.3392, 77.1140]); // Default: Tumkur Center
   const [radius, setRadius] = useState(5000); // 5km default
@@ -54,10 +59,10 @@ export default function MapSearch() {
     initLeaflet();
   }, []);
 
-  const fetchNearby = async (lat: number, lng: number, rad: number) => {
+  const fetchNearby = async (lat: number, lng: number, rad: number, q?: string, cat?: string) => {
     setLoading(true);
     try {
-      const data = await getNearbySupabaseBusinesses(lat, lng, rad);
+      const data = await getNearbySupabaseBusinesses(lat, lng, rad, q, cat);
       setBusinesses(data || []);
     } catch (err) {
       console.error('🚨 fetchNearby Error:', err);
@@ -67,8 +72,8 @@ export default function MapSearch() {
   };
 
   useEffect(() => {
-    fetchNearby(userLocation[0], userLocation[1], radius);
-  }, [userLocation, radius]);
+    fetchNearby(userLocation[0], userLocation[1], radius, initialQ, initialCategory);
+  }, [userLocation, radius, initialQ, initialCategory]);
 
   const handleGetCurrentLocation = () => {
     if ("geolocation" in navigator) {
@@ -82,7 +87,7 @@ export default function MapSearch() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)] md:h-[700px] w-full bg-white dark:bg-[#0c1220] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-2xl transition-all relative">
+    <div className="flex flex-col lg:flex-row h-full w-full bg-white dark:bg-[#0c1220] overflow-hidden relative">
       
       {/* 📱 Mobile Toggle (Yelp Style) */}
       <div className="lg:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[100] flex bg-white dark:bg-slate-900 rounded-full shadow-2xl border border-slate-200 dark:border-slate-700 p-1">
@@ -185,7 +190,7 @@ export default function MapSearch() {
       </div>
 
       {/* 🗺️ Map Display */}
-      <div className={`flex-1 relative ${viewMode === 'list' ? 'hidden lg:block' : 'block h-full'}`}>
+      <div className={`flex-1 relative ${viewMode === 'list' ? 'hidden lg:block' : 'block'} h-full`}>
         <MapContainer 
           // @ts-ignore
           center={userLocation} 
@@ -210,14 +215,18 @@ export default function MapSearch() {
           </Marker>
 
           {businesses.map((biz, idx) => {
-            // PostGIS location parsing
             let coords: [number, number] = [0, 0];
             if (typeof biz.location === 'string' && biz.location.startsWith('POINT')) {
                 const parts = biz.location.replace('POINT(', '').replace(')', '').split(' ');
                 coords = [parseFloat(parts[1]), parseFloat(parts[0])]; // [lat, long]
+            } else if (biz.location && typeof biz.location === 'object' && biz.location.coordinates) {
+                // GeoJSON format: { type: 'Point', coordinates: [lng, lat] }
+                coords = [biz.location.coordinates[1], biz.location.coordinates[0]];
+            } else if ((biz as any).lat && (biz as any).lng) {
+                coords = [parseFloat((biz as any).lat), parseFloat((biz as any).lng)];
             }
 
-            if (coords[0] === 0) return null;
+            if (coords[0] === 0 || isNaN(coords[0])) return null;
 
             return (
               <Marker key={biz.id} position={coords}>

@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2 } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2, Clock } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/product-card";
-import { getSupabaseBusinesses } from "@/services/legacyStubs";
+import { getSupabaseBusinesses, getSupabaseBusinessesWithCount } from "@/services/legacyStubs";
 import MiniMap from "@/components/MiniMap";
+import api from "@/services/api";
 
 type ListingsClientProps = {
   initialQ: string;
@@ -16,6 +17,8 @@ type ListingsClientProps = {
   initialStarRating: string;
   initialBudget: string;
   initialArea: string;
+  displayCategory?: string;
+  seoMode?: boolean;
 };
 
 export default function ListingsClient({
@@ -24,7 +27,9 @@ export default function ListingsClient({
   initialSortBy,
   initialStarRating,
   initialBudget,
-  initialArea
+  initialArea,
+  displayCategory,
+  seoMode = false
 }: ListingsClientProps) {
   const router = useRouter();
   const { lang, t } = useLanguage();
@@ -39,6 +44,41 @@ export default function ListingsClient({
   // States for filter dropdowns
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMoreFiltersOpen, setIsMoreFiltersOpen] = useState(false);
+  
+  // Interactive Map State
+  const [hoveredBusinessId, setHoveredBusinessId] = useState<number | null>(null);
+
+  const [dynamicAreas, setDynamicAreas] = useState<string[]>(["S.S. Puram", "Siddaganga Extension", "Batawadi"]);
+
+  useEffect(() => {
+    // Fetch areas dynamically from backend
+    api.get('/areas/').then(res => {
+      if (res.data && Array.isArray(res.data)) {
+        // Handle various return formats [ { name: "Area" }, "Area" ]
+        const fetchedAreas = res.data.map((a: any) => a.name || a.area_name || a.area || a).filter(Boolean);
+        if (fetchedAreas.length > 0) {
+          setDynamicAreas(fetchedAreas);
+        }
+      }
+    }).catch(err => console.log('Areas endpoint not found or failed, using fallback S.S. Puram, etc.'));
+  }, []);
+
+  // Dynamic Subcategories
+  const [dynamicSubcategories, setDynamicSubcategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Fetch Subcategories dynamically based on initialCategory
+    if (initialCategory) {
+      api.get('/subcategories/', { params: { category: initialCategory } }).then(res => {
+        if (res.data && Array.isArray(res.data)) {
+          const fetchedSubcats = res.data.map((s: any) => s.name || s.subcategory_name || s).filter(Boolean);
+          if (fetchedSubcats.length > 0) {
+            setDynamicSubcategories(fetchedSubcats);
+          }
+        }
+      }).catch(err => console.log('Subcategories endpoint not found or failed'));
+    }
+  }, [initialCategory]);
 
   const [filters, setFilters] = useState({
     sort_by: initialSortBy,
@@ -50,7 +90,10 @@ export default function ListingsClient({
     is_verified: "",
     is_top_search: "",
     is_trusted: "",
-    is_featured: ""
+    is_featured: "",
+    is_open_now: "",
+    lat: "",
+    lng: ""
   });
 
   const [leadStatus, setLeadStatus] = useState<"idle" | "loading" | "success">("idle");
@@ -68,34 +111,39 @@ export default function ListingsClient({
   }, [isLoading, hasMore]);
 
   const fetchBusinesses = async (pageNum: number, currentFilters: any, isNewFilter: boolean = false) => {
-    if (isNewFilter) setIsFiltering(true);
-    else setIsLoading(true);
+    if (isNewFilter) {
+      setBusinesses([]);
+    }
+    setIsLoading(true);
 
     try {
       const limit = 10;
       const offset = (pageNum - 1) * limit;
 
-      const data = await getSupabaseBusinesses({
+      const { results, count } = await getSupabaseBusinessesWithCount({
         search: initialQ,
         category: initialCategory,
         star_rating: currentFilters.star_rating,
         is_verified: currentFilters.is_verified,
         is_featured: currentFilters.is_featured,
+        is_open_now: currentFilters.is_open_now,
         is_top_search: currentFilters.is_top_search,
         is_trusted: currentFilters.is_trusted,
+        lat: currentFilters.lat,
+        lng: currentFilters.lng,
         sort_by: currentFilters.sort_by,
         limit,
         offset
       });
 
       if (isNewFilter) {
-        setBusinesses(data);
+        setBusinesses(results);
+        setTotalCount(count);
       } else {
-        setBusinesses(prev => [...prev, ...data]);
+        setBusinesses(prev => [...prev, ...results]);
       }
 
-      setTotalCount(prev => isNewFilter ? data.length : prev + data.length);
-      setHasMore(data.length === limit);
+      setHasMore(results.length === limit);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     } finally {
@@ -108,14 +156,30 @@ export default function ListingsClient({
     setPage(1);
     fetchBusinesses(1, filters, true);
     
-    const newParams = new URLSearchParams();
-    if (initialQ) newParams.set("q", initialQ);
-    if (initialCategory) newParams.set("category", initialCategory);
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) newParams.set(key, value);
-    });
-    router.replace(`/listings?${newParams.toString()}`, { scroll: false });
-  }, [filters, initialQ, initialCategory]);
+    if (seoMode && initialCategory) {
+      const formattedCat = initialCategory.toLowerCase().replace(/\s+/g, '-');
+      const formattedArea = filters.area ? filters.area.toLowerCase().replace(/\s+/g, '-') : '';
+      const seoPath = `/${formattedCat}-in-${formattedArea ? formattedArea + '-' : ''}tumkur`;
+      
+      const newParams = new URLSearchParams();
+      if (initialQ) newParams.set("q", initialQ);
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (key !== 'area' && value) newParams.set(key, value as string);
+      });
+      
+      const qs = newParams.toString();
+      router.replace(`${seoPath}${qs ? `?${qs}` : ''}`, { scroll: false });
+    } else {
+      const newParams = new URLSearchParams();
+      if (initialQ) newParams.set("q", initialQ);
+      if (initialCategory) newParams.set("category", initialCategory);
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) newParams.set(key, value as string);
+      });
+      router.replace(`/listings?${newParams.toString()}`, { scroll: false });
+    }
+  }, [filters, initialQ, initialCategory, seoMode]);
 
   useEffect(() => {
     if (page > 1) {
@@ -124,17 +188,46 @@ export default function ListingsClient({
   }, [page]);
 
   const handleFilterChange = (key: string, value: string) => {
+    if (key === "sort_by" && value === "distance") {
+      if (navigator.geolocation) {
+        setIsLoading(true);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setFilters({ ...filters, [key]: value, lat: pos.coords.latitude.toString(), lng: pos.coords.longitude.toString() });
+            setActiveDropdown(null);
+          },
+          (err) => {
+            alert(t("ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪಡೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ", "Unable to get your location"));
+            setIsLoading(false);
+          }
+        );
+      } else {
+        alert(t("ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಸ್ಥಳವನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ", "Geolocation not supported in this browser"));
+      }
+      return;
+    }
     setFilters({ ...filters, [key]: value });
     setActiveDropdown(null); // Close dropdown on select
   };
 
-  const handleLeadSubmit = (e: React.FormEvent) => {
+  const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLeadStatus("loading");
-    setTimeout(() => {
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const data = {
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        context: displayTitle || 'general'
+      };
+      await api.post('/enquiry/', data);
+      
       setLeadStatus("success");
       setTimeout(() => setLeadStatus("idle"), 3000);
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      setLeadStatus("idle");
+    }
   };
 
   const renderLeadForm = () => (
@@ -147,11 +240,11 @@ export default function ListingsClient({
       <form onSubmit={handleLeadSubmit} className="flex flex-col gap-4 relative z-10">
         <div className="flex items-center bg-gray-50 dark:bg-slate-950/80 border border-gray-200 dark:border-slate-700/80 rounded-xl overflow-hidden focus-within:border-red-500 dark:focus-within:border-sky-500 transition-all h-12 shadow-inner">
           <span className="px-4 text-gray-400 dark:text-slate-500 flex items-center h-full"><User size={16} /></span>
-          <input type="text" className="w-full bg-transparent text-gray-900 dark:text-white px-2 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-slate-600" placeholder="Your Name" required />
+          <input type="text" name="name" className="w-full bg-transparent text-gray-900 dark:text-white px-2 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-slate-600" placeholder="Your Name" required />
         </div>
         <div className="flex items-center bg-gray-50 dark:bg-slate-950/80 border border-gray-200 dark:border-slate-700/80 rounded-xl overflow-hidden focus-within:border-red-500 dark:focus-within:border-sky-500 transition-all h-12 shadow-inner">
           <span className="px-4 text-gray-400 dark:text-slate-500 flex items-center h-full"><Smartphone size={16} /></span>
-          <input type="tel" className="w-full bg-transparent text-gray-900 dark:text-white px-2 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-slate-600" placeholder="Mobile Number" required pattern="[0-9]{10}" />
+          <input type="tel" name="phone" className="w-full bg-transparent text-gray-900 dark:text-white px-2 text-sm outline-none placeholder:text-gray-400 dark:placeholder:text-slate-600" placeholder="Mobile Number" required pattern="[0-9]{10}" />
         </div>
         <button 
           type="submit" 
@@ -191,7 +284,7 @@ export default function ListingsClient({
 
   const dynamicFiltersList = getDynamicFilters(initialCategory);
 
-  const displayTitle = initialCategory || initialQ || t("ಎಲ್ಲಾ ಬ್ಯುಸಿನೆಸ್‌ಗಳು", "All Businesses");
+  const displayTitle = displayCategory || initialCategory || initialQ || t("ಎಲ್ಲಾ ಬ್ಯುಸಿನೆಸ್‌ಗಳು", "All Businesses");
 
   // Filter Dropdown Component
   const FilterDropdown = ({ name, label, options, currentValue }: { name: string, label: string, options: {value: string, label: string}[], currentValue: string }) => {
@@ -261,12 +354,6 @@ export default function ListingsClient({
           {t(`Best ${displayTitle} in Tumkur`, `Best ${displayTitle} in Tumkur`)}
         </h1>
         <div className="flex items-center gap-2">
-          <Link 
-            href="/radius-search"
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-full text-xs md:text-sm font-semibold transition-all shadow-md hover:shadow-lg active:scale-95"
-          >
-            <Map size={14} className="animate-pulse" /> <span>{t("ಮ್ಯಾಪ್", "Nearby Map")}</span>
-          </Link>
           <button 
             onClick={() => {
               if (navigator.share) navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
@@ -319,6 +406,14 @@ export default function ListingsClient({
         </div>
 
         {/* Quick Tag Pills */}
+        <div className="shrink-0 snap-start">
+          <button 
+            onClick={() => handleFilterChange("is_open_now", filters.is_open_now === "true" ? "" : "true")}
+            className={`px-4 py-2.5 rounded-full text-sm font-semibold border transition-colors shadow-sm flex items-center gap-1.5 ${filters.is_open_now === "true" ? 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/50 text-green-600 dark:text-green-400' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+          >
+            <Clock size={14} /> {t("ಈಗ ತೆರೆದಿದೆ", "Open Now")}
+          </button>
+        </div>
         <div className="shrink-0 snap-start">
           <button 
             onClick={() => handleFilterChange("is_top_search", filters.is_top_search === "true" ? "" : "true")}
@@ -380,20 +475,41 @@ export default function ListingsClient({
 
       </div>
 
-
+      {/* ====== SUB-CATEGORY CHIPS ====== */}
+      {dynamicSubcategories.length > 0 && (
+        <div className="flex overflow-x-auto scrollbar-hide items-center gap-2 mb-6 w-full snap-x pb-2">
+          {dynamicSubcategories.map((sub, idx) => {
+            let subUrl = `/listings?category=${initialCategory}&q=${sub}`;
+            if (seoMode && initialCategory) {
+              const formattedCat = initialCategory.toLowerCase().replace(/\s+/g, '-');
+              const formattedArea = filters.area ? filters.area.toLowerCase().replace(/\s+/g, '-') : '';
+              subUrl = `/${formattedCat}-in-${formattedArea ? formattedArea + '-' : ''}tumkur?q=${sub}`;
+            }
+            return (
+              <button 
+                key={idx}
+                onClick={() => router.push(subUrl)}
+                className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border border-gray-200 dark:border-slate-700 hover:border-red-500 dark:hover:border-sky-500 hover:text-red-600 dark:hover:text-sky-400 transition-colors whitespace-nowrap bg-white dark:bg-slate-900 shadow-sm text-gray-700 dark:text-slate-300"
+              >
+                {sub}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
 
       {/* ====== MAIN LAYOUT GRID ====== */}
       <div className="flex flex-col xl:flex-row w-full gap-8 relative items-start">
         
         {/* Main List */}
-        <div className={`flex-1 min-w-0 transition-opacity duration-300 w-full ${isFiltering ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+        <div className="flex-1 min-w-0 w-full transition-opacity duration-300">
           
           {/* 📱 Mobile Mini Map Removed as requested */}
 
           {isLoading && page === 1 ? (
             <div className="flex flex-col gap-4 md:gap-6">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3, 4, 5, 6].map(i => (
                 <div key={i} className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-3 flex flex-col sm:flex-row gap-4 animate-pulse shadow-sm">
                   <div className="w-full sm:w-[240px] h-[200px] bg-slate-200 dark:bg-slate-800/80 rounded-2xl shrink-0"></div>
                   <div className="flex-1 py-2 flex flex-col justify-between">
@@ -421,7 +537,11 @@ export default function ListingsClient({
                   const isLast = index === businesses.length - 1;
                   return (
                     <React.Fragment key={`biz-${biz.id}-${index}`}>
-                      <div ref={isLast ? lastElementRef : null}>
+                      <div 
+                        ref={isLast ? lastElementRef : null}
+                        onMouseEnter={() => setHoveredBusinessId(biz.id)}
+                        onMouseLeave={() => setHoveredBusinessId(null)}
+                      >
                         <ProductCard product={biz} />
                       </div>
                       
@@ -438,8 +558,27 @@ export default function ListingsClient({
 
               {/* Loader for Infinite Scroll */}
               {isLoading && page > 1 && (
-                <div className="w-full flex justify-center py-10">
-                  <Loader2 className="animate-spin text-red-600 dark:text-sky-500 w-8 h-8" />
+                <div className="flex flex-col gap-4 md:gap-6 mt-4 md:mt-6">
+                  {[1, 2].map(i => (
+                    <div key={`infinite-skeleton-${i}`} className="w-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-3xl p-3 flex flex-col sm:flex-row gap-4 animate-pulse shadow-sm">
+                      <div className="w-full sm:w-[240px] h-[200px] bg-slate-200 dark:bg-slate-800/80 rounded-2xl shrink-0"></div>
+                      <div className="flex-1 py-2 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="w-3/4 h-7 bg-slate-200 dark:bg-slate-800/80 rounded-lg"></div>
+                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800/80"></div>
+                          </div>
+                          <div className="w-1/3 h-4 bg-slate-200 dark:bg-slate-800/80 rounded mb-4"></div>
+                          <div className="w-full h-3 bg-slate-200 dark:bg-slate-800/80 rounded mb-2"></div>
+                          <div className="w-5/6 h-3 bg-slate-200 dark:bg-slate-800/80 rounded mb-4"></div>
+                        </div>
+                        <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex-1 h-11 bg-slate-200 dark:bg-slate-800/80 rounded-xl"></div>
+                          <div className="flex-1 h-11 bg-slate-200 dark:bg-slate-800/80 rounded-xl"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </>
@@ -449,7 +588,7 @@ export default function ListingsClient({
                 <Search className="w-16 h-16 text-gray-300 dark:text-slate-600 mx-auto mb-6" />
                 <h3 className="text-xl font-extrabold text-gray-900 dark:text-white mb-3">{t("ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ", "No results found")}</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-sm md:text-base mb-8 max-w-md mx-auto">{t("ನಿಮ್ಮ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ ಪ್ರಯತ್ನಿಸಿ. ನಮಗೆ ಈ ವಿಭಾಗದಲ್ಲಿ ಸದ್ಯಕ್ಕೆ ಯಾವುದೇ ಮಾಹಿತಿ ಸಿಕ್ಕಿಲ್ಲ.", "We couldn't find any businesses matching your current filters. Try adjusting them for more results.")}</p>
-                <button onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "" })} className="px-8 py-3 bg-red-50 dark:bg-sky-500/10 border border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400 rounded-xl hover:bg-red-600 dark:hover:bg-sky-500 hover:text-white transition-colors font-bold text-sm shadow-sm">
+                <button onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "" })} className="px-8 py-3 bg-red-50 dark:bg-sky-500/10 border border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400 rounded-xl hover:bg-red-600 dark:hover:bg-sky-500 hover:text-white transition-colors font-bold text-sm shadow-sm">
                   {t("ಫಿಲ್ಟರ್ ತೆರವುಗೊಳಿಸಿ", "Clear All Filters")}
                 </button>
               </div>
@@ -459,7 +598,7 @@ export default function ListingsClient({
 
         {/* Right Sidebar: Lead Gen (Desktop Only) */}
         <div className="hidden xl:flex w-[360px] shrink-0 sticky top-[100px] max-h-[calc(100vh-120px)] overflow-y-auto self-start flex-col gap-6 pr-2 custom-scrollbar">
-          <MiniMap businesses={businesses} />
+          <MiniMap businesses={businesses} hoveredBusinessId={hoveredBusinessId} />
           {renderLeadForm()}
         </div>
 
@@ -482,7 +621,7 @@ export default function ListingsClient({
               <div className="flex flex-col gap-3">
                 <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">{t("ಸ್ಥಳ", "Area / Location")}</label>
                 <div className="flex flex-wrap gap-2">
-                  {["S.S. Puram", "Siddaganga Extension", "Batawadi"].map(area => (
+                  {dynamicAreas.map((area: string) => (
                     <button 
                       key={area}
                       onClick={() => handleFilterChange("area", filters.area === area ? "" : area)}
@@ -535,7 +674,7 @@ export default function ListingsClient({
             
             <div className="p-4 pb-12 sm:pb-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] shadow-[0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_20px_rgba(0,0,0,0.2)] flex gap-4 shrink-0">
               <button 
-                onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "" })}
+                onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "" })}
                 className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm transition-colors"
               >
                 Clear All

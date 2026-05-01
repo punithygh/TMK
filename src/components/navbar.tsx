@@ -22,10 +22,16 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
+  const [mapHref, setMapHref] = useState("/radius-search");
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (typeof window !== 'undefined') {
+      const search = window.location.search;
+      if (search) setMapHref(`/radius-search${search}`);
+      else setMapHref("/radius-search");
+    }
+  }, [pathname]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [placeholder, setPlaceholder] = useState("");
@@ -246,13 +252,22 @@ export default function Navbar() {
                 <div className="w-[60px] h-8 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse"></div>
               )
             ) : (
-              <button
-                onClick={() => setIsSearchOverlayOpen(true)}
-                className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] dark:shadow-[0_0_10px_rgba(14,165,233,0.3)] active:scale-95"
-                aria-label="Open Search"
-              >
-                <Search className="w-5 h-5 drop-shadow-md" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                <Link 
+                  href={mapHref}
+                  className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-sm active:scale-95"
+                  aria-label="Map View"
+                >
+                  <MapPin className="w-5 h-5 drop-shadow-md" />
+                </Link>
+                <button
+                  onClick={() => setIsSearchOverlayOpen(true)}
+                  className="p-1.5 rounded-full bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 transition-all shadow-[0_0_10px_rgba(220,38,38,0.2)] dark:shadow-[0_0_10px_rgba(14,165,233,0.3)] active:scale-95"
+                  aria-label="Open Search"
+                >
+                  <Search className="w-5 h-5 drop-shadow-md" />
+                </button>
+              </div>
             )}
 
             <button
@@ -351,7 +366,16 @@ export default function Navbar() {
         </div>
 
         {/* 🖥️ DESKTOP RIGHT ACTIONS */}
-        <div className="hidden md:flex items-center gap-4 shrink-0">
+        <div className="hidden md:flex items-center gap-3 shrink-0">
+          {!isHomePage && (
+            <Link 
+              href={mapHref}
+              className="hidden lg:flex items-center gap-1.5 py-2 px-3 rounded-lg font-bold text-sm transition-all bg-red-50 dark:bg-sky-500/10 text-red-600 dark:text-sky-400 border border-red-200 dark:border-sky-500/30 hover:bg-red-100 dark:hover:bg-sky-500/20 shadow-sm"
+            >
+              <MapPin className="w-4 h-4 drop-shadow-md" />
+              <span>Map</span>
+            </Link>
+          )}
           {mounted ? (
             <>
               {/* 1. Theme */}

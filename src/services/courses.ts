@@ -219,9 +219,11 @@ export const getRecentReviews = async (): Promise<RecentReview[]> => {
 };
 
 // 🚀 6. ಕ್ಯಾಟಗರಿ ಫೆಚ್ ಮಾಡುವುದು (Home Page)
-export const getCategories = async (): Promise<CategoryListing[]> => {
+// onlyWithBusinesses=true → ಬ್ಯಾಕೆಂಡ್‌ನಲ್ಲಿ ಬ್ಯುಸಿನೆಸ್ ಇರುವ ಕ್ಯಾಟಗರಿಗಳನ್ನು ಮಾತ್ರ ತರುತ್ತದೆ
+export const getCategories = async (onlyWithBusinesses = true): Promise<CategoryListing[]> => {
   try {
-    const data = await serverFetch('/categories/');
+    const query = onlyWithBusinesses ? '/categories/?has_businesses=true' : '/categories/';
+    const data = await serverFetch(query);
     return data as CategoryListing[];
   } catch (error) {
     console.error('🚨 API Error (Categories):', error);

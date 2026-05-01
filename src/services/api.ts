@@ -94,11 +94,12 @@ api.interceptors.response.use(
             return api(originalRequest);
           }
         }
+        throw new Error('Refresh failed or no refresh token');
       } catch (refreshError) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          // window.location.href = '/login'; // ಇದನ್ನು ಸದ್ಯಕ್ಕೆ ಕಾಮೆಂಟ್ ಮಾಡಿಡಿ, ಆರಾಮಾಗಿ ಲಾಗಿನ್ ಪೇಜ್ ಆಮೇಲೆ ನೋಡೋಣ
+          window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       }
