@@ -533,6 +533,9 @@ export default function Navbar() {
           >
             <input
               type="text"
+              id="mobile-search"
+              name="mobile_search"
+              autoComplete="off"
               autoFocus={isSearchOverlayOpen}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

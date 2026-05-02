@@ -39,9 +39,10 @@ export interface BusinessListDTO {
 
 interface ProductCardProps {
   product: BusinessListDTO;
+  priority?: boolean;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, priority = false }: ProductCardProps) => {
   const [imgError, setImgError] = useState(false);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -76,7 +77,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
     if (product.gallery && Array.isArray(product.gallery)) {
       imgs = [...imgs, ...product.gallery.map(img => getSupabaseImageUrl(img, { context: 'card' }) as string)];
     }
-    return Array.from(new Set(imgs)).filter(Boolean);
+    // 🚀 Performance: Limit to max 3 images to prevent React overhead and excessive intersection observers
+    return Array.from(new Set(imgs)).filter(Boolean).slice(0, 3);
   }, [finalImgSrc, product.gallery, imgError]);
 
   const scrollPrev = (e: React.MouseEvent) => {
@@ -96,10 +98,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const badges = [];
   if (product.is_top_search) badges.push({ text: "Top Rated", color: "bg-amber-500 text-white border-amber-400" });
   if (product.is_featured) badges.push({ text: "Featured", color: "bg-rose-500 text-white border-rose-400" });
-  if (isVerified) badges.push({ text: "Verified", color: "bg-emerald-500 text-white border-emerald-400" });
-  if (product.is_trusted) badges.push({ text: "Trusted", color: "bg-red-600 dark:bg-sky-500 text-white border-red-500 dark:border-sky-400" });
+  if (isVerified) badges.push({ text: "Verified", color: "bg-emerald-700 text-white border-emerald-600" });
+  if (product.is_trusted) badges.push({ text: "Trusted", color: "bg-red-600 dark:bg-sky-700 text-white border-red-500 dark:border-sky-600" });
   if (product.dynamic_badges) {
-    product.dynamic_badges.forEach(b => badges.push({ text: b, color: "bg-purple-500 text-white border-purple-400" }));
+    product.dynamic_badges.forEach(b => badges.push({ text: b, color: "bg-purple-600 text-white border-purple-500" }));
   }
 
   return (
@@ -119,12 +121,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
           >
             {galleryImages.map((img, idx) => (
               <div key={idx} className="h-full w-full shrink-0 snap-center relative">
-                <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
+                <Link href={`/business/${finalRouteSlug}`} prefetch={false} className="absolute inset-0 z-10" aria-label={`View details for ${title}`}></Link>
                 <Image
                   src={img}
                   alt={`${title} - image ${idx + 1}`}
                   fill
-                  sizes="(max-width: 640px) 100vw, 320px"
+                  sizes="(max-width: 768px) 100vw, 568px"
+                  priority={priority && idx === 0}
+                  fetchPriority={priority && idx === 0 ? "high" : "auto"}
+                  loading={priority && idx === 0 ? undefined : "lazy"}
+                  quality={75}
                   className="object-cover transition-transform duration-700 group-hover:scale-110 premium-img"
                   onError={() => setImgError(true)}
                 />
@@ -133,7 +139,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/50">
-            <Link href={`/business/${finalRouteSlug}`} className="absolute inset-0 z-10"></Link>
+            <Link href={`/business/${finalRouteSlug}`} prefetch={false} className="absolute inset-0 z-10" aria-label={`View details for ${title}`}></Link>
             <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-2">
               <span className="text-2xl font-bold text-slate-400 dark:text-slate-600">{title?.toString().charAt(0)}</span>
             </div>
@@ -145,12 +151,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <>
             <button 
               onClick={scrollPrev}
+              aria-label="Previous image"
               className={`absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white z-20 transition-opacity ${currentImgIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-0 sm:group-hover/carousel:opacity-100'}`}
             >
               <ChevronLeft size={18} />
             </button>
             <button 
               onClick={scrollNext}
+              aria-label="Next image"
               className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white z-20 transition-opacity ${currentImgIndex === galleryImages.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-0 sm:group-hover/carousel:opacity-100'}`}
             >
               <ChevronRight size={18} />
@@ -180,7 +188,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Favorite Button (Heart) */}
-        <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-rose-500 hover:border-rose-500 transition-colors shadow-lg">
+        <button aria-label="Save to favorites" className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-rose-500 hover:border-rose-500 transition-colors shadow-lg">
           <Heart size={16} />
         </button>
 
@@ -188,8 +196,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="absolute bottom-3 left-3 z-20">
           <span className={`text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg border backdrop-blur-md ${
             isOpen 
-            ? 'bg-emerald-500/90 text-white border-emerald-400/50' 
-            : 'bg-red-500/90 text-white border-red-400/50'
+            ? 'bg-emerald-600/90 text-white border-emerald-400/50' 
+            : 'bg-red-600/90 text-white border-red-400/50'
           }`}>
             {isOpen ? t("ಈಗ ತೆರೆದಿದೆ", "Open Now") : t("ಮುಚ್ಚಲಾಗಿದೆ", "Closed")}
           </span>
@@ -202,10 +210,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div>
 
           {/* Business Name */}
-          <Link href={`/business/${finalRouteSlug}`} className="block group/title mb-2">
-            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-red-600 dark:group-hover/title:text-sky-500 transition-colors line-clamp-2">
+          <Link href={`/business/${finalRouteSlug}`} prefetch={false} className="block group/title mb-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-tight group-hover/title:text-red-600 dark:group-hover/title:text-sky-500 transition-colors line-clamp-2">
               {title}
-            </h3>
+            </h2>
           </Link>
           
           {/* Yelp-style Star Rating */}
@@ -275,10 +283,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <a 
             href={displayPhone ? `tel:${displayPhone}` : '#'}
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ಫೋನ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "Phone number not available")); } }}
+            aria-label={`Call ${title}`}
             className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-sm border bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200 dark:bg-slate-800 dark:text-white dark:border-slate-700 gap-1.5 sm:gap-2 group/btn`}
           >
             <Phone className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:animate-pulse" : ""}`} /> 
-            <span className="hidden sm:inline text-sm font-bold">{t("ಕರೆ", "Call")}</span>
+            <span className="sr-only sm:not-sr-only sm:inline text-sm font-bold">{t("ಕರೆ", "Call")}</span>
           </a>
 
           <a 
@@ -286,18 +295,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
             target={displayPhone ? "_blank" : "_self"}
             rel="noopener noreferrer"
             onClick={(e) => { if (!displayPhone) { e.preventDefault(); alert(t("ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ ಲಭ್ಯವಿಲ್ಲ", "WhatsApp number not available")); } }}
+            aria-label={`Message ${title} on WhatsApp`}
             className={`flex-1 inline-flex flex-row items-center justify-center py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-sm border bg-green-50 text-green-700 hover:bg-green-100 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 gap-1.5 sm:gap-2 group/btn`}
           >
             <MessageCircle className={`w-5 h-5 sm:w-4 sm:h-4 ${displayPhone ? "group-hover/btn:scale-110 transition-transform" : ""}`} /> 
-            <span className="hidden sm:inline text-sm font-bold">WhatsApp</span>
+            <span className="sr-only sm:not-sr-only sm:inline text-sm font-bold">WhatsApp</span>
           </a>
 
           <Link 
             href={`/business/${finalRouteSlug}`}
-            className="flex-1 sm:flex-[1.2] inline-flex flex-row items-center justify-center py-2 sm:py-3 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white rounded-lg transition-colors shadow-sm border border-transparent gap-1.5 sm:gap-2 group/btn"
+            prefetch={false}
+            aria-label={`View details for ${title}`}
+            className="flex-1 sm:flex-[1.2] inline-flex flex-row items-center justify-center py-2 sm:py-3 bg-red-600 hover:bg-red-700 dark:bg-sky-700 dark:hover:bg-sky-600 text-white rounded-lg transition-colors shadow-sm border border-transparent gap-1.5 sm:gap-2 group/btn"
           >
             <Navigation className="w-5 h-5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" /> 
-            <span className="hidden sm:inline text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>
+            <span className="sr-only sm:not-sr-only sm:inline text-sm font-bold">{t("ವಿವರಗಳು", "Details")}</span>
           </Link>
 
         </div>

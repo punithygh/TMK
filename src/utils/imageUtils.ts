@@ -34,8 +34,22 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "";
 
-  // 1. If it's already a full Cloudinary URL, return it directly
+  const getTransformString = (ctx?: ImageContext) => {
+    switch(ctx) {
+      case 'card': return 'c_fill,w_400,h_300,q_auto:eco,f_auto';
+      case 'thumb': return 'c_fill,w_100,h_100,q_auto:low,f_auto';
+      case 'hero': return 'c_fill,w_1200,h_600,q_auto:good,f_auto';
+      default: return 'q_auto,f_auto';
+    }
+  };
+
+  const transform = getTransformString(options?.context);
+
+  // 1. If it's already a full Cloudinary URL, return it with transforms
   if (path.includes('res.cloudinary.com')) {
+    if (path.includes('/upload/') && !path.includes('/upload/c_')) {
+      return path.replace('/upload/', `/upload/${transform}/`);
+    }
     return path;
   }
 
@@ -47,7 +61,7 @@ export const getSupabaseImageUrl = (path?: string | null, options?: ImageOptions
     else if (cleanPath.startsWith('http://localhost:8000')) cleanPath = cleanPath.slice('http://localhost:8000'.length);
 
     cleanPath = cleanPath.replace('/media/', '').replace('image/upload/', '').replace(/^\//, '');
-    return `https://res.cloudinary.com/${cloudName}/image/upload/${cleanPath}`;
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${transform}/${cleanPath}`;
   }
 
   // It's a local media file

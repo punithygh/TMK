@@ -132,14 +132,42 @@ export interface Banner {
 
 // 🚀 NATIVE FETCH WRAPPER FOR SERVER COMPONENTS (HIGH SPEED + NO CACHE STALENESS)
 const serverFetch = async (endpoint: string) => {
-  // Use centralized environment variable for API
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1` : "";
-  const url = `${API_BASE_URL}${endpoint}`;
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  let isProxy = false;
+
+  // 📱 MOBILE FIX: If running in browser and API is localhost, use proxy
+  if (typeof window !== 'undefined' && baseUrl) {
+    try {
+      const urlObj = new URL(baseUrl);
+      if (urlObj.hostname === '127.0.0.1' || urlObj.hostname === 'localhost') {
+        baseUrl = '/django-api';
+        isProxy = true;
+      }
+    } catch (e) {}
+  }
+
+  const API_BASE_URL = isProxy ? baseUrl : `${baseUrl}/api/v1`;
   
-  const res = await fetch(url, {
-    next: { revalidate: 3600 }, // 🚨 ISR Caching: Revalidate every 1 hour
+  // 🚨 Trailing Slash Logic to prevent 308 Redirects on proxy
+  let safeEndpoint = endpoint;
+  if (isProxy && safeEndpoint.endsWith('/')) {
+    safeEndpoint = safeEndpoint.slice(0, -1);
+  } else if (!isProxy && !safeEndpoint.endsWith('/') && !safeEndpoint.includes('?')) {
+    safeEndpoint = `${safeEndpoint}/`;
+  }
+
+  const url = `${API_BASE_URL}${safeEndpoint}`;
+  
+  const options: RequestInit = {
     headers: { 'Content-Type': 'application/json' }
-  });
+  };
+  
+  // `next` caching options are only valid on the server
+  if (typeof window === 'undefined') {
+    (options as any).next = { revalidate: 3600 }; // 🚨 ISR Caching: Revalidate every 1 hour
+  }
+
+  const res = await fetch(url, options);
 
   if (!res.ok) {
     throw new Error(`API fetch failed for ${url}: ${res.status}`);

@@ -4,7 +4,7 @@ import { getSupabaseBusinesses } from "@/services/legacyStubs";
 import Script from "next/script";
 import { notFound, redirect } from "next/navigation";
 
-export const revalidate = 60; // 🚨 ISR: Revalidate every 60 seconds (Top-Level Free Tier Speed Optimization)
+export const revalidate = 3600; // 🚨 ISR: Revalidate every 1 hour (Top-Level Free Tier Speed Optimization)
 
 type Props = {
   params: Promise<{ seoSlug: string }>;

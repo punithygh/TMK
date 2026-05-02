@@ -61,9 +61,9 @@ export default function Footer() {
             
             {/* Categories */}
             <div>
-              <h4 className="text-slate-900 dark:text-white text-[13px] md:text-sm mb-3 md:mb-4 uppercase font-bold tracking-wider text-center md:text-left w-full">
+              <h2 className="text-slate-900 dark:text-white text-[13px] md:text-sm mb-3 md:mb-4 uppercase font-bold tracking-wider text-center md:text-left w-full">
                 {lang === "kn" ? "ತುಮಕೂರಿನ ಕ್ಯಾಟಗರಿಗಳನ್ನು ಅನ್ವೇಷಿಸಿ" : "Explore Tumkur Categories"}
-              </h4>
+              </h2>
               <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-2 md:gap-y-3">
                 {categoryLinks.map((link, idx) => (
                   <Link 
@@ -79,9 +79,9 @@ export default function Footer() {
 
             {/* Areas */}
             <div>
-              <h4 className="text-slate-900 dark:text-white text-[13px] md:text-sm mb-3 md:mb-4 uppercase font-bold tracking-wider text-center md:text-left w-full">
+              <h2 className="text-slate-900 dark:text-white text-[13px] md:text-sm mb-3 md:mb-4 uppercase font-bold tracking-wider text-center md:text-left w-full">
                 {lang === "kn" ? "ತುಮಕೂರಿನ ಪ್ರಸಿದ್ಧ ಪ್ರದೇಶಗಳು" : "Popular Areas in Tumkur"}
-              </h4>
+              </h2>
               <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-2 md:gap-y-3">
                 {areaLinks.map((link, idx) => (
                   <Link 
