@@ -8,11 +8,12 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { getBanners, Banner } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const FALLBACK_BANNER: Banner = {
   id: 0,
   title: "Tumkurconnect – Everything One Click",
-  image_url: null,
+  image_url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=50",
   link_url: null,
   order: 0,
   view_time: 5,
@@ -27,10 +28,9 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
   const [visible, setVisible] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  
   const [placeholder, setPlaceholder] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [loopNum, setLoopNum] = useState(0);
-  const [typingSpeed, setTypingSpeed] = useState(100);
 
   useEffect(() => {
     // Only fetch internally if no banners were passed as props
@@ -40,6 +40,12 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
       });
     }
   }, [initialBanners]);
+
+  useEffect(() => {
+    if (debouncedSearchQuery.trim()) {
+      // Search suggestions API can be triggered here
+    }
+  }, [debouncedSearchQuery]);
 
   const goToNext = useCallback(() => {
     setVisible(false);
@@ -57,26 +63,8 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
   }, [banners, current, goToNext]);
 
   useEffect(() => {
-    const phrases = lang === "kn"
-      ? ["ಹೋಟೆಲ್ ಹುಡುಕಿ...", "ಪಿಜಿ ಹುಡುಕಿ...", "ವೈದ್ಯರನ್ನು ಹುಡುಕಿ...", "ಕಲ್ಯಾಣ ಮಂಟಪ..."]
-      : ["Search for Hotels...", "Search for PGs...", "Search for Doctors...", "Search Plumbers..."];
-
-    const handleType = () => {
-      const i = loopNum % phrases.length;
-      const fullText = phrases[i];
-      setPlaceholder(isDeleting ? fullText.substring(0, placeholder.length - 1) : fullText.substring(0, placeholder.length + 1));
-      setTypingSpeed(isDeleting ? 40 : 80);
-
-      if (!isDeleting && placeholder === fullText) {
-        setTimeout(() => setIsDeleting(true), 1500);
-      } else if (isDeleting && placeholder === "") {
-        setIsDeleting(false);
-        setLoopNum((n) => n + 1);
-      }
-    };
-    const timer = setTimeout(handleType, typingSpeed);
-    return () => clearTimeout(timer);
-  }, [placeholder, isDeleting, loopNum, typingSpeed, lang]);
+    setPlaceholder(lang === "kn" ? "ಹೋಟೆಲ್, ಆಸ್ಪತ್ರೆ, ಪಿಜಿ ಹುಡುಕಿ..." : "Search for Hotels, Doctors, PGs...");
+  }, [lang]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,15 +78,16 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
       {/* BANNER CONTAINER - 4:3 on Mobile (for 4096x3072), 21:9 on Desktop */}
       <section className="relative w-full overflow-hidden aspect-[4/3] md:aspect-[21/9] lg:max-h-[600px] shadow-sm md:shadow-none">
         <div className="absolute inset-0 z-0" style={{ opacity: visible ? 1 : 0, transition: "opacity 700ms cubic-bezier(0.4, 0, 0.2, 1)" }}>
-          {getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) ? (
+          {getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 75 }) ? (
             <Image
               key={activeBanner.id}
-              src={getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 85 }) || ""}
+              src={getSupabaseImageUrl(activeBanner.image_url, { width: 1920, quality: 75 }) || ""}
               alt={activeBanner.title}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover object-center transition-opacity duration-700"
+              width={1920}
+              height={600}
+              priority={true}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1920px"
+              className="w-full h-full object-cover object-center transition-opacity duration-700"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-[#050b14] via-[#0c1a35] to-[#071020]" />
@@ -120,10 +109,14 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
                 placeholder={placeholder}
                 className="flex-grow w-full bg-transparent pl-5 pr-2 py-2.5 text-slate-900 dark:text-white outline-none text-[15px] font-extrabold placeholder:text-slate-500 dark:placeholder:text-slate-300"
                 autoComplete="off"
+                aria-label="Search Tumkur businesses"
+                name="search"
+                id="desktop-search"
               />
               <button
                 type="submit"
                 className="bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-500 text-white rounded-full h-11 w-11 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shrink-0 ml-1"
+                aria-label="Search"
               >
                 <Search size={20} className="drop-shadow-sm" />
               </button>
@@ -158,10 +151,14 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
               placeholder={placeholder}
               className="flex-grow w-full bg-transparent px-2.5 py-2.5 text-gray-900 dark:text-white outline-none text-[14px] font-extrabold placeholder:text-gray-400 dark:placeholder:text-slate-400"
               autoComplete="off"
+              aria-label="Search Tumkur businesses mobile"
+              name="search_mobile"
+              id="mobile-search"
             />
             <button
               type="submit"
               className="bg-gradient-to-br from-red-600 to-red-500 dark:from-sky-500 dark:to-blue-600 text-white rounded-xl h-10 w-10 flex items-center justify-center shadow-md shrink-0 active:scale-95 transition-transform"
+              aria-label="Search"
             >
               <Search size={18} />
             </button>
@@ -184,3 +181,4 @@ const Hero = ({ banners: initialBanners }: { banners?: Banner[] }) => {
 };
 
 export default Hero;
+

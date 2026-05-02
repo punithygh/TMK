@@ -9,6 +9,9 @@ dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']); // Bypass Jio/Airtel DNS bloc
 dns.setDefaultResultOrder('ipv4first');
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     // Responsive breakpoints — matches card (400), gallery (800), hero (1200) contexts

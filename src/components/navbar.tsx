@@ -96,43 +96,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const phrases =
-      lang === "kn"
-        ? ["ತುಮಕೂರಿನಲ್ಲಿ ಹುಡುಕಿ...", "ಹೋಟೆಲ್‌ಗಳನ್ನು ಹುಡುಕಿ...", "ಆಸ್ಪತ್ರೆಗಳನ್ನು ಹುಡುಕಿ..."]
-        : ["Search in Tumkur...", "Search for Hotels...", "Search for Hospitals..."];
-
-    let phraseIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typingTimer: NodeJS.Timeout;
-
-    const type = () => {
-      const currentPhrase = phrases[phraseIndex];
-
-      if (isDeleting) {
-        setPlaceholder(currentPhrase.substring(0, charIndex - 1) + "|");
-        charIndex--;
-      } else {
-        setPlaceholder(currentPhrase.substring(0, charIndex + 1) + "|");
-        charIndex++;
-      }
-
-      let typeSpeed = isDeleting ? 50 : 100;
-
-      if (!isDeleting && charIndex === currentPhrase.length) {
-        typeSpeed = 2000;
-        isDeleting = true;
-      } else if (isDeleting && charIndex === 0) {
-        isDeleting = false;
-        phraseIndex = (phraseIndex + 1) % phrases.length;
-        typeSpeed = 500;
-      }
-
-      typingTimer = setTimeout(type, typeSpeed);
-    };
-
-    type();
-    return () => clearTimeout(typingTimer);
+    setPlaceholder(lang === "kn" ? "ತುಮಕೂರಿನಲ್ಲಿ ಹುಡುಕಿ..." : "Search in Tumkur...");
   }, [lang]);
 
   const handleVoiceSearch = () => {
@@ -273,6 +237,7 @@ export default function Navbar() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-1.5 rounded-lg bg-white hover:bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-300 border border-gray-200 dark:border-slate-700 shadow-sm transition-colors"
+              aria-label="Toggle Navigation Menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -307,9 +272,12 @@ export default function Navbar() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
               placeholder={placeholder}
-              className="w-full h-10 md:h-11 pl-10 pr-12 rounded-full border border-red-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white text-sm outline-none transition-all focus:border-red-600 dark:focus:border-sky-500 shadow-inner placeholder:text-gray-400"
+              className="w-full h-10 md:h-11 pl-10 pr-12 rounded-full border border-red-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white text-sm outline-none transition-all focus:border-red-600 dark:focus:border-sky-500 shadow-inner placeholder:text-gray-500"
               required
               autoComplete="off"
+              aria-label="Search businesses in Tumkur"
+              name="navbar_search"
+              id="navbar-search"
             />
             <button
               type="button"
@@ -325,7 +293,7 @@ export default function Navbar() {
           {showSuggestions && (suggestions.length > 0 || loadingSuggestions) && (
             <div className="absolute top-[46px] left-0 right-0 bg-white dark:bg-[#0c1220] border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl shadow-black/20 overflow-hidden z-[99999] animate-in fade-in slide-in-from-top-2 duration-200">
               {loadingSuggestions && suggestions.length === 0 ? (
-                <div className="px-4 py-3 text-slate-500 text-sm text-center">ಹುಡುಕುತ್ತಿದ್ದೇವೆ...</div>
+                <div className="px-4 py-3 text-slate-600 text-sm text-center">ಹುಡುಕುತ್ತಿದ್ದೇವೆ...</div>
               ) : (
                 suggestions.map((s) => {
                   const sSlug = (lang === 'kn' && s.name_kn ? null : null) || s.slug || s.area_slug || `${s.id}`;
@@ -383,6 +351,7 @@ export default function Navbar() {
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                   className="p-2 rounded-full bg-white border border-gray-200 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                  aria-label="Toggle Theme"
                 >
                   {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </button>
@@ -400,6 +369,7 @@ export default function Navbar() {
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 py-1.5 px-3 rounded-full font-semibold text-sm transition-all bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-400 dark:hover:border-sky-400 text-slate-700 dark:text-white"
+                    aria-label="User Profile Menu"
                   >
                     <div className="w-7 h-7 rounded-full bg-red-600 dark:bg-sky-500 flex items-center justify-center text-white text-xs font-bold uppercase overflow-hidden border border-white/20 dark:border-slate-700 shadow-sm">
                       {user.profile_image ? (
@@ -417,9 +387,9 @@ export default function Navbar() {
                         <p className="text-xs text-slate-500 dark:text-slate-400">Signed in as</p>
                         <p className="text-sm font-bold truncate">{user.mobile}</p>
                         {/* Role Badge */}
-                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${isAdmin ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400' :
-                          isOwner ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400' :
-                            'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                        <span className={`inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${isAdmin ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400' :
+                          isOwner ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400' :
+                            'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                           }`}>
                           {isAdmin ? '⚡ Super Admin' : isOwner ? '🏪 Business Owner' : '👤 User'}
                         </span>
@@ -498,6 +468,7 @@ export default function Navbar() {
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+            aria-label="Close Menu"
           >
             <X className="w-8 h-8" />
           </button>
@@ -551,6 +522,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setIsSearchOverlayOpen(false)}
             className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            aria-label="Close Search"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -571,6 +543,7 @@ export default function Navbar() {
               type="button"
               onClick={handleVoiceSearch}
               className={`absolute right-2 p-2 rounded-full transition-colors flex items-center justify-center ${isListening ? "text-red-500 bg-red-500/10" : "text-red-600 dark:text-sky-500"}`}
+              aria-label="Voice Search"
             >
               <Mic className="w-5 h-5" />
             </button>

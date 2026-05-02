@@ -1,27 +1,90 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { Flame, Film, Newspaper, Clock, Hash, BadgeCheck, Youtube, Instagram, Facebook, ArrowRight, Star, Store, MessageCircle } from "lucide-react";
+import dynamic from "next/dynamic";
 
 import Hero from '@/components/hero';
-import CategoryGrid from "@/components/category-grid";
+
+// 🚀 Dynamic Imports (Lazy Loading)
+const CategoryGrid = dynamic(() => import("@/components/category-grid"), { 
+  ssr: false, 
+  loading: () => <div className="min-h-[200px] flex items-center justify-center text-slate-500 animate-pulse">Loading categories...</div>
+});
 
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
+import { getSupabaseBusinesses } from '@/services/legacyStubs';
+import { getBanners, getArticles, getSocialPosts, getCategories, getRecentReviews } from '@/services/courses';
 
-export default function HomeClient({
-  trendingBusinesses,
-  banners,
-  movieReviews,
-  newsArticles,
-  socialPosts,
-  categories,
-  recentReviews
-}: any) {
+export default function HomeClient() {
   const { lang, t } = useLanguage();
+
+  // All data state — fetched client-side after HTML is delivered (0ms TTFB)
+  const [trendingBusinesses, setTrendingBusinesses] = useState<any[]>([]);
+  const [banners, setBanners] = useState<any[]>([]);
+  const [movieReviews, setMovieReviews] = useState<any[]>([]);
+  const [newsArticles, setNewsArticles] = useState<any[]>([]);
+  const [socialPosts, setSocialPosts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
+
+  // Fetch critical data first (banners only), then secondary data after scroll
+  useEffect(() => {
+    // Batch 1: Critical above-the-fold data
+    getBanners().then(setBanners).catch(() => {});
+  }, []);
+
+
+  
+  // 🚀 Lazy Loading State (Scroll Trigger)
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setHasScrolled(true);
+        window.removeEventListener("scroll", handleScroll);
+        // Fetch secondary data only after user scrolls (0 impact on initial load)
+        // 🚀 PRO PERFORMANCE: Stagger API calls to eliminate Main-Thread freezing (TBT)
+        getCategories()
+          .then(res => setCategories(res))
+          .catch(() => []);
+
+        setTimeout(() => {
+          getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 })
+            .then(res => setTrendingBusinesses(res))
+            .catch(() => []);
+        }, 300);
+
+        setTimeout(() => {
+          getArticles('MOVIE').then(res => setMovieReviews(res)).catch(() => []);
+        }, 600);
+
+        setTimeout(() => {
+          getArticles('NEWS').then(res => setNewsArticles(res)).catch(() => []);
+        }, 900);
+
+        setTimeout(() => {
+          getSocialPosts().then(res => setSocialPosts(res)).catch(() => []);
+        }, 1200);
+
+        setTimeout(() => {
+          getRecentReviews().then(res => setRecentReviews(res)).catch(() => []);
+        }, 1500);
+      }
+    };
+    
+    if (typeof window !== "undefined" && window.scrollY > 50) {
+      setHasScrolled(true);
+    } else {
+      window.addEventListener("scroll", handleScroll, { passive: true });
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const SectionHeader = ({ title, icon: Icon, colorClass, gradient }: { title: string, icon: any, colorClass: string, gradient: string }) => (
     <header className="flex items-center justify-between mb-8 md:mb-10 border-b border-slate-200 dark:border-slate-800/80 pb-5">
@@ -34,15 +97,7 @@ export default function HomeClient({
     </header>
   );
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.15 } }
-  };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
-  };
 
   // ✅ PERFECT SMOOTH SCROLL CONTAINER (Fixes "Stuck" issue on mobile)
   const scrollContainerClass = "flex gap-4 md:gap-6 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 scroll-pl-4 sm:scroll-pl-0 after:content-[''] after:w-1 after:shrink-0";
@@ -59,27 +114,28 @@ export default function HomeClient({
       {/* 1. HERO SECTION */}
       <Hero banners={banners} />
 
-      <motion.main 
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-50px" }}
+      <main 
         className="flex flex-col gap-20 md:gap-32 w-full max-w-[1300px] mx-auto px-4 sm:px-6 mt-6 md:mt-10"
       >
         
         {/* 2. EXPLORE SERVICES */}
-        <motion.section variants={itemVariants} id="categories" className="scroll-mt-24">
-          <CategoryGrid initialCategories={categories} />
-        </motion.section>
+        <section id="categories" className="scroll-mt-24 animate-fade-in-up">
+          {hasScrolled ? (
+            <CategoryGrid initialCategories={categories} />
+          ) : (
+            <div className="h-[300px] w-full rounded-3xl bg-slate-100 dark:bg-slate-900/50 animate-pulse border border-slate-200 dark:border-slate-800" />
+          )}
+        </section>
 
         {/* 3. TRENDING SEARCHES (YELP STYLE STARS + UNIFORM SIZE) */}
-        <motion.section variants={itemVariants}>
-          <SectionHeader 
-            title={t("ಟ್ರೆಂಡಿಂಗ್ ಸರ್ಚ್ಸ್", "Popular Searches")} 
-            icon={Flame} 
-            colorClass="text-orange-100" 
-            gradient="bg-gradient-to-br from-orange-500 to-red-600"
-          />
+        {hasScrolled ? (
+          <section className="animate-fade-in-up">
+            <SectionHeader 
+              title={t("ಟ್ರೆಂಡಿಂಗ್ ಸರ್ಚ್ಸ್", "Popular Searches")} 
+              icon={Flame} 
+              colorClass="text-orange-100" 
+              gradient="bg-gradient-to-br from-orange-500 to-red-600"
+            />
           <div className={scrollContainerClass}>
             {trendingBusinesses?.length > 0 ? trendingBusinesses.slice(0, 8).map((biz: any) => {
               const title = t(biz.name_kn, biz.name);
@@ -91,7 +147,7 @@ export default function HomeClient({
                 <Link href={`/business/${slug}`} key={`trending-${biz.id}`} className={`${unifiedCardClass}`}>
                   <div className={unifiedImageClass}>
                     {imgSrc ? (
-                      <Image src={imgSrc} alt={title} fill priority={true} sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out premium-img" />
+                      <Image src={imgSrc} alt={title} fill sizes="(max-width: 768px) 280px, 320px" className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out premium-img" />
                     ) : (
                       <Store size={40} className="text-slate-300 dark:text-slate-700" />
                     )}
@@ -112,21 +168,23 @@ export default function HomeClient({
                 </Link>
               );
             }) : (
-              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 text-sm bg-white dark:bg-slate-900/30">
+              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 text-sm bg-white dark:bg-slate-900/30">
                 {t("ಬ್ಯುಸಿನೆಸ್ ಲಿಸ್ಟಿಂಗ್ಸ್ ಲಭ್ಯವಿಲ್ಲ!", "No trending searches available")}
               </div>
             )}
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[350px] w-full" />}
 
         {/* 4. MOVIE REVIEWS */}
-        <motion.section variants={itemVariants}>
-          <SectionHeader 
-            title={t("ಚಲನಚಿತ್ರ ವಿಮರ್ಶೆಗಳು", "Movie Reviews")} 
-            icon={Film} 
-            colorClass="text-amber-100" 
-            gradient="bg-gradient-to-br from-amber-400 to-orange-500"
-          />
+        {hasScrolled ? (
+          <section className="animate-fade-in-up">
+            <SectionHeader 
+              title={t("ಚಲನಚಿತ್ರ ವಿಮರ್ಶೆಗಳು", "Movie Reviews")} 
+              icon={Film} 
+              colorClass="text-amber-100" 
+              gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+            />
           <div className={scrollContainerClass}>
             {movieReviews?.length > 0 ? movieReviews.map((article: any) => {
               const imgSrc = getSupabaseImageUrl(article.image_upload || article.image_url);
@@ -140,30 +198,32 @@ export default function HomeClient({
                      <Film size={40} className="text-slate-300 dark:text-slate-700" />
                    )}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] to-transparent opacity-80" />
-                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-amber-500 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-500/20 z-10 uppercase tracking-wider shadow-md">
+                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-amber-700 dark:text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-500/20 z-10 uppercase tracking-wider shadow-md">
                      {article.type_display || "MOVIE"}
                    </span>
                 </div>
                 <div className="p-4 md:p-5 flex flex-col flex-grow relative z-20 -mt-8">
                   <h3 className="font-extrabold text-slate-900 dark:text-white text-[15px] md:text-[16px] line-clamp-2 mb-4 leading-snug drop-shadow-md" title={title}>{title}</h3>
-                  <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
-                    <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400 dark:text-slate-500"/> {t("ಲೇಟೆಸ್ಟ್", "Latest")}</span>
-                    <span className="text-amber-600 dark:text-amber-500 flex items-center gap-1.5 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
+                  <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400 font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
+                    <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-600 dark:text-slate-400"/> {t("ಲೇಟೆಸ್ಟ್", "Latest")}</span>
+                    <span className="text-amber-700 dark:text-amber-500 flex items-center gap-1.5 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                       {t("ಹೆಚ್ಚು ಓದಿ", "Read More")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
                 </div>
               </Link>
             )}) : (
-              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 text-sm bg-white dark:bg-slate-900/30">
+              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 text-sm bg-white dark:bg-slate-900/30">
                 {t("ವಿಮರ್ಶೆಗಳು ಲಭ್ಯವಿಲ್ಲ", "No reviews available")}
               </div>
             )}
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[350px] w-full" />}
 
         {/* 🌟 NEW: FEATURED SPOTLIGHT BANNER (Break Monotony) */}
-        <motion.section variants={itemVariants} className="my-2 md:my-6">
+        {hasScrolled ? (
+          <section className="my-2 md:my-6 animate-fade-in-up">
           <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-r from-red-600 to-red-800 dark:from-sky-700 dark:to-[#0a1120] shadow-xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-red-400/30 dark:border-sky-500/20 group">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 dark:opacity-10 pointer-events-none mix-blend-overlay"></div>
             <div className="absolute -top-32 -right-32 w-80 h-80 bg-white/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-white/30 transition-all duration-700"></div>
@@ -181,16 +241,18 @@ export default function HomeClient({
               {t("ಉಚಿತವಾಗಿ ಸೇರಿಸಿ", "Get Listed for Free")}
             </Link>
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[200px] w-full" />}
 
         {/* 5. TRENDING NEWS */}
-        <motion.section variants={itemVariants}>
-          <SectionHeader 
-            title={t("ಟ್ರೆಂಡಿಂಗ್ ನ್ಯೂಸ್", "Trending News")} 
-            icon={Newspaper} 
-            colorClass="text-sky-100" 
-            gradient="bg-gradient-to-br from-sky-400 to-blue-600"
-          />
+        {hasScrolled ? (
+          <section className="animate-fade-in-up">
+            <SectionHeader 
+              title={t("ಟ್ರೆಂಡಿಂಗ್ ನ್ಯೂಸ್", "Trending News")} 
+              icon={Newspaper} 
+              colorClass="text-sky-100" 
+              gradient="bg-gradient-to-br from-sky-400 to-blue-600"
+            />
           <div className={scrollContainerClass}>
             {newsArticles?.length > 0 ? newsArticles.map((article: any) => {
               const title = t(article.title_kn, article.title);
@@ -204,36 +266,38 @@ export default function HomeClient({
                      <Newspaper size={40} className="text-slate-300 dark:text-slate-700" />
                    )}
                    <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0a1120] to-transparent opacity-80" />
-                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-red-600 dark:text-sky-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-red-200 dark:border-sky-500/20 z-10 uppercase tracking-wider shadow-md">
+                   <span className="absolute top-3 left-3 bg-white/90 dark:bg-black/60 backdrop-blur-md text-red-700 dark:text-sky-400 text-[10px] font-bold px-2.5 py-1 rounded-md border border-red-200 dark:border-sky-500/20 z-10 uppercase tracking-wider shadow-md">
                      {article.type_display || "NEWS"}
                    </span>
                 </div>
                 <div className="p-4 md:p-5 flex flex-col flex-grow relative z-20 -mt-8">
                   <h3 className="font-extrabold text-slate-900 dark:text-white text-[15px] md:text-[16px] line-clamp-2 mb-4 leading-snug drop-shadow-md" title={title}>{title}</h3>
-                  <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400 font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
-                    <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-400 dark:text-slate-500"/> {t("ಇತ್ತೀಚಿನದು", "Recent")}</span>
-                    <span className="text-red-600 dark:text-sky-400 flex items-center gap-1.5 group-hover:text-red-700 dark:group-hover:text-sky-300 transition-colors">
+                  <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400 font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
+                    <span className="flex items-center gap-1.5"><Clock size={12} className="text-slate-600 dark:text-slate-400"/> {t("ಇತ್ತೀಚಿನದು", "Recent")}</span>
+                    <span className="text-red-700 dark:text-sky-400 flex items-center gap-1.5 group-hover:text-red-800 dark:group-hover:text-sky-300 transition-colors">
                       {t("ಹೆಚ್ಚು ಓದಿ", "Read More")} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
                 </div>
               </Link>
             )}) : (
-               <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 text-sm bg-white dark:bg-slate-900/30">
+               <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 text-sm bg-white dark:bg-slate-900/30">
                 {t("ಸುದ್ದಿಗಳು ಲಭ್ಯವಿಲ್ಲ", "No news available")}
               </div>
             )}
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[350px] w-full" />}
 
         {/* 6. TRENDING MEDIA */}
-        <motion.section variants={itemVariants}>
-          <SectionHeader 
-            title={t("ಟ್ರೆಂಡಿಂಗ್ ಮೀಡಿಯಾ", "Trending Media")} 
-            icon={Hash} 
-            colorClass="text-purple-100" 
-            gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
-          />
+        {hasScrolled ? (
+          <section className="animate-fade-in-up">
+            <SectionHeader 
+              title={t("ಟ್ರೆಂಡಿಂಗ್ ಮೀಡಿಯಾ", "Trending Media")} 
+              icon={Hash} 
+              colorClass="text-purple-100" 
+              gradient="bg-gradient-to-br from-purple-500 to-indigo-600"
+            />
           <div className={scrollContainerClass}>
             {socialPosts?.length > 0 ? socialPosts.map((post: any) => {
               const imgSrc = getSupabaseImageUrl(post.thumbnail);
@@ -249,9 +313,9 @@ export default function HomeClient({
                 </div>
                 <div className="p-4 md:p-5 flex flex-col flex-grow relative z-20 -mt-8">
                   <h4 className="font-bold text-slate-900 dark:text-white text-[14px] line-clamp-2 mb-3 leading-snug drop-shadow-sm" title={post.title}>{post.title}</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between font-medium mt-auto border-t border-slate-200 dark:border-slate-800/80 pt-3">
                     <span className="flex items-center gap-1.5">
-                      <BadgeCheck size={14} className={post.platform === 'YOUTUBE' ? 'text-red-500' : 'text-blue-500'} />
+                      <BadgeCheck size={14} className={post.platform === 'YOUTUBE' ? 'text-red-600' : 'text-blue-600'} />
                       {post.channel_name}
                     </span>
                     <span>{post.time_ago}</span>
@@ -259,21 +323,23 @@ export default function HomeClient({
                 </div>
               </Link>
             )}) : (
-              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 text-sm bg-white dark:bg-slate-900/30">
+              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 text-sm bg-white dark:bg-slate-900/30">
                 {t("ಪೋಸ್ಟ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ", "No posts available")}
               </div>
             )}
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[350px] w-full" />}
 
         {/* 7. RECENT ACTIVITY (REAL DATA) */}
-        <motion.section variants={itemVariants}>
-          <SectionHeader 
-            title={t("ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆಗಳು", "Recent Activity")} 
-            icon={MessageCircle} 
-            colorClass="text-emerald-100" 
-            gradient="bg-gradient-to-br from-emerald-400 to-green-600"
-          />
+        {hasScrolled ? (
+          <section className="animate-fade-in-up">
+            <SectionHeader 
+              title={t("ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆಗಳು", "Recent Activity")} 
+              icon={MessageCircle} 
+              colorClass="text-emerald-100" 
+              gradient="bg-gradient-to-br from-emerald-400 to-green-600"
+            />
           <div className={scrollContainerClass}>
             {recentReviews?.length > 0 ? recentReviews.map((review: any) => {
               // ✅ business_image may be /media/... (local) or https://res.cloudinary.com/... 
@@ -323,7 +389,7 @@ export default function HomeClient({
                       </div>
                       <div className="flex flex-col pb-1 overflow-hidden">
                         <span className="text-[14px] font-bold text-slate-900 dark:text-white leading-tight drop-shadow-md truncate">{userName}</span>
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded inline-block mt-0.5 truncate">
+                        <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-1.5 py-0.5 rounded inline-block mt-0.5 truncate">
                           {t("ವಿಮರ್ಶೆ", "Reviewed")} {bizName}
                         </span>
                       </div>
@@ -336,14 +402,15 @@ export default function HomeClient({
                 </Link>
               );
             }) : (
-              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-500 text-sm bg-white dark:bg-slate-900/30">
+              <div className="w-full p-4 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 text-sm bg-white dark:bg-slate-900/30">
                 {t("ವಿಮರ್ಶೆಗಳು ಲಭ್ಯವಿಲ್ಲ", "No reviews available")}
               </div>
             )}
           </div>
-        </motion.section>
+          </section>
+        ) : <div className="min-h-[350px] w-full" />}
 
-      </motion.main>
+      </main>
     </div>
   );
 }
