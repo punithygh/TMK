@@ -1,4 +1,4 @@
-import ProductCard from "./product-card";
+import ProductCard from "./ProductCard";
 
 // 🚨 Updated Interface to match our safe ProductCard
 interface Product {

@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getSupabaseUserDashboard } from "@/services/legacyStubs";
-import ProductCard from "@/components/product-card";
+import ProductCard from "@/components/features/listing/ProductCard";
 import { Loader2, LayoutDashboard, Bookmark, Star, LogOut, MessageCircle, Settings, ChevronRight, Award, Edit, Trash2, Camera, User, X, Check, Upload } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";

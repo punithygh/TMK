@@ -1,17 +1,17 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 // Components
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
-import PWAInstallPrompt from "@/components/pwa-install-prompt";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import PWAInstallPrompt from "@/components/layout/PwaInstallPrompt";
 
 // 🚨 ಅತಿ ಮುಖ್ಯ: LanguageProvider ಇಂಪೋರ್ಟ್ ಮಾಡುವುದು ಕಡ್ಡಾಯ 🚨
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],

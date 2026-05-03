@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import 'leaflet/dist/leaflet.css';
 import { getNearbySupabaseBusinesses } from '@/services/legacyStubs';
 import { useLanguage } from '@/context/LanguageContext';
-import { Search, MapPin, Navigation, Slider, Star, Phone, Info } from 'lucide-react';
+import { Search, MapPin, Navigation, Star, Phone, Info } from 'lucide-react';
 import { getSupabaseImageUrl } from '@/utils/imageUtils';
 import Link from 'next/link';
 
@@ -15,7 +14,6 @@ const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLaye
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
 const Circle = dynamic(() => import('react-leaflet').then(mod => mod.Circle), { ssr: false });
-const useMap = dynamic(() => import('react-leaflet').then(mod => mod.useMap), { ssr: false });
 
 interface Business {
   id: number;
@@ -47,6 +45,8 @@ export default function MapSearch({ initialQ, initialCategory }: MapSearchProps)
   // 📍 Fix for Leaflet marker icons in Next.js
   useEffect(() => {
     const initLeaflet = async () => {
+      // Load leaflet CSS only on client to prevent SSR/webpack chunk errors
+      await import('leaflet/dist/leaflet.css' as any);
       const L = (await import('leaflet')).default;
       // @ts-ignore
       delete L.Icon.Default.prototype._getIconUrl;
@@ -261,14 +261,7 @@ export default function MapSearch({ initialQ, initialCategory }: MapSearchProps)
         </div>
       </div>
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
-        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 0; overflow: hidden; }
-        .leaflet-popup-content { margin: 8px 12px; min-width: 150px !important; }
-      `}</style>
+      <style id="mapsearch-css" dangerouslySetInnerHTML={{ __html: `.custom-scrollbar::-webkit-scrollbar{width:4px}.custom-scrollbar::-webkit-scrollbar-track{background:transparent}.custom-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}.dark .custom-scrollbar::-webkit-scrollbar-thumb{background:#334155}.leaflet-popup-content-wrapper{border-radius:12px;padding:0;overflow:hidden}.leaflet-popup-content{margin:8px 12px;min-width:150px!important}` }} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { Metadata, ResolvingMetadata } from "next";
-import ListingsClient from "@/components/listings-client";
+﻿import { Metadata, ResolvingMetadata } from "next";
+import ListingsClient from "@/components/features/listing/ListingsClient";
 import { getSupabaseBusinesses } from "@/services/legacyStubs";
 import Script from "next/script";
 import { notFound, redirect } from "next/navigation";

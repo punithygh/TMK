@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -7,10 +7,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Flame, Film, Newspaper, Clock, Hash, BadgeCheck, Youtube, Instagram, Facebook, ArrowRight, Star, Store, MessageCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import Hero from '@/components/hero';
+import Hero from '@/components/layout/Hero';
 
 // 🚀 Dynamic Imports (Lazy Loading)
-const CategoryGrid = dynamic(() => import("@/components/category-grid"), { 
+const CategoryGrid = dynamic(() => import("@/components/features/home/CategoryGrid"), { 
   ssr: false, 
   loading: () => <div className="min-h-[200px] flex items-center justify-center text-slate-500 animate-pulse">Loading categories...</div>
 });

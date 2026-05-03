@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import 'leaflet/dist/leaflet.css';
 import { getNearbySupabaseBusinesses } from '@/services/legacyStubs';
 import { BusinessListing } from '@/services/courses';
 import { useLanguage } from '@/context/LanguageContext';
@@ -23,6 +22,8 @@ export default function NearbyPlaces({ lat, lng, businessName }: { lat: number, 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load leaflet CSS only on client to prevent SSR/webpack chunk errors
+    import('leaflet/dist/leaflet.css' as any);
     const fetchNearby = async () => {
       setLoading(true);
       try {
@@ -127,11 +128,7 @@ export default function NearbyPlaces({ lat, lng, businessName }: { lat: number, 
           )}
         </div>
       </div>
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
-      `}</style>
+      <style id="nearby-scrollbar-css" dangerouslySetInnerHTML={{ __html: `.custom-scrollbar::-webkit-scrollbar{width:4px}.custom-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}.dark .custom-scrollbar::-webkit-scrollbar-thumb{background:#334155}` }} />
     </div>
   );
 }

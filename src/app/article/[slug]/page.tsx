@@ -1,7 +1,7 @@
-import { Metadata, ResolvingMetadata } from "next";
+﻿import { Metadata, ResolvingMetadata } from "next";
 import { getOneArticle, getArticles } from "@/services/courses";
 import { notFound } from "next/navigation";
-import ArticleDetailClient from "@/components/article-detail-client";
+import ArticleDetailClient from "@/components/features/article/ArticleDetailClient";
 
 type Props = {
   params: Promise<{ slug: string }>;

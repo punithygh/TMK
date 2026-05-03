@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2, Clock } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import ProductCard from "@/components/product-card";
+import ProductCard from "@/components/features/listing/ProductCard";
 import { getSupabaseBusinesses, getSupabaseBusinessesWithCount } from "@/services/legacyStubs";
 import dynamic from "next/dynamic";
 import { preconnect } from "react-dom";
-const MiniMap = dynamic(() => import("@/components/MiniMap"), { ssr: false, loading: () => <div className="h-[400px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" /> });
+const MiniMap = dynamic(() => import("@/components/features/business/MiniMap"), { ssr: false, loading: () => <div className="h-[400px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" /> });
 import api from "@/services/api";
 
 type ListingsClientProps = {
@@ -628,7 +628,7 @@ export default function ListingsClient({
                 <Search className="w-16 h-16 text-gray-300 dark:text-slate-600 mx-auto mb-6" />
                 <h3 className="text-xl font-extrabold text-gray-900 dark:text-white mb-3">{t("ಯಾವುದೇ ಫಲಿತಾಂಶಗಳಿಲ್ಲ", "No results found")}</h3>
                 <p className="text-gray-500 dark:text-slate-400 text-sm md:text-base mb-8 max-w-md mx-auto">{t("ನಿಮ್ಮ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ ಪ್ರಯತ್ನಿಸಿ. ನಮಗೆ ಈ ವಿಭಾಗದಲ್ಲಿ ಸದ್ಯಕ್ಕೆ ಯಾವುದೇ ಮಾಹಿತಿ ಸಿಕ್ಕಿಲ್ಲ.", "We couldn't find any businesses matching your current filters. Try adjusting them for more results.")}</p>
-                <button onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "" })} className="px-8 py-3 bg-red-50 dark:bg-sky-500/10 border border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400 rounded-xl hover:bg-red-600 dark:hover:bg-sky-500 hover:text-white transition-colors font-bold text-sm shadow-sm">
+                <button onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "", lat: "", lng: "" })} className="px-8 py-3 bg-red-50 dark:bg-sky-500/10 border border-red-200 dark:border-sky-500/50 text-red-600 dark:text-sky-400 rounded-xl hover:bg-red-600 dark:hover:bg-sky-500 hover:text-white transition-colors font-bold text-sm shadow-sm">
                   {t("ಫಿಲ್ಟರ್ ತೆರವುಗೊಳಿಸಿ", "Clear All Filters")}
                 </button>
               </div>
@@ -714,7 +714,7 @@ export default function ListingsClient({
             
             <div className="p-4 pb-12 sm:pb-4 border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] shadow-[0_-10px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_20px_rgba(0,0,0,0.2)] flex gap-4 shrink-0">
               <button 
-                onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "" })}
+                onClick={() => setFilters({ sort_by: "", star_rating: "", budget: "", area: "", dynamic_1: "", dynamic_2: "", is_verified: "", is_top_search: "", is_trusted: "", is_featured: "", is_open_now: "", lat: "", lng: "" })}
                 className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm transition-colors"
               >
                 Clear All

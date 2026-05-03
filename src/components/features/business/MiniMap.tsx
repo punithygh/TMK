@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import 'leaflet/dist/leaflet.css';
 import { Maximize2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +24,8 @@ export default function MiniMap({ businesses, center = [13.3392, 77.1140], hover
   useEffect(() => {
     setIsClient(true);
     const initLeaflet = async () => {
+      // Load leaflet CSS only on client to prevent SSR/webpack chunk errors
+      await import('leaflet/dist/leaflet.css' as any);
       const leaflet = (await import('leaflet')).default;
       setL(leaflet);
     };
@@ -114,44 +115,7 @@ export default function MiniMap({ businesses, center = [13.3392, 77.1140], hover
         <Link href="/radius-search" className="text-[10px] font-bold text-red-600 hover:underline">View Full Map</Link>
       </div>
 
-      <style jsx global>{`
-        .compact-popup .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; }
-        .compact-popup .leaflet-popup-content { margin: 4px 8px; }
-        
-        .yelp-pin {
-          width: 28px;
-          height: 28px;
-          background: #ef4444;
-          border: 3px solid #ffffff;
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-        .yelp-pin span {
-          transform: rotate(45deg);
-          color: white;
-          font-weight: 900;
-          font-size: 10px;
-          width: 100%;
-          text-align: center;
-          margin-bottom: 2px;
-          margin-left: 1px;
-        }
-        .yelp-pin::after {
-          content: "";
-          width: 8px;
-          height: 8px;
-          background: #ffffff;
-          position: absolute;
-          border-radius: 50%;
-          bottom: -10px;
-          left: -10px;
-          display: none;
-        }
-      `}</style>
+      <style id="minimap-css" dangerouslySetInnerHTML={{ __html: `.compact-popup .leaflet-popup-content-wrapper{border-radius:8px;padding:0}.compact-popup .leaflet-popup-content{margin:4px 8px}.yelp-pin{width:28px;height:28px;background:#ef4444;border:3px solid #ffffff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;position:relative}.yelp-pin span{transform:rotate(45deg);color:white;font-weight:900;font-size:10px;width:100%;text-align:center;margin-bottom:2px;margin-left:1px}` }} />
     </div>
   );
 }

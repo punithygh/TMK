@@ -1,7 +1,6 @@
 "use client";
 
-import MapSearch from '@/components/MapSearch';
-import Navbar from '@/components/navbar';
+import MapSearch from '@/components/features/business/MapSearch';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -13,11 +12,9 @@ function RadiusSearchContent() {
   const displayTitle = category || q || 'Tumakuru';
   
   return (
-    <main className="flex flex-col h-[100dvh] w-full bg-white dark:bg-[#0c1220] pt-[65px] md:pt-[75px] overflow-hidden">
-      <Navbar />
-      
+    <div className="flex flex-col h-[calc(100dvh-75px)] md:h-[calc(100dvh-85px)] w-full bg-white dark:bg-[#0c1220] overflow-hidden">
       {/* Yelp Style Full Screen Map Header */}
-      <div className="bg-white dark:bg-[#0c1220] border-b border-slate-200 dark:border-slate-800 px-4 py-3 shrink-0 z-10 shadow-sm relative">
+      <div className="bg-white dark:bg-[#0c1220] border-b border-slate-200 dark:border-slate-800 px-4 py-3 shrink-0 z-10 shadow-sm">
         <h1 className="text-lg md:text-xl font-black text-slate-900 dark:text-white capitalize truncate">
           Explore <span className="text-red-600 dark:text-sky-500">{displayTitle}</span> Near You
         </h1>
@@ -26,7 +23,7 @@ function RadiusSearchContent() {
       <div className="flex-grow min-h-0 w-full relative">
         <MapSearch initialQ={q} initialCategory={category} />
       </div>
-    </main>
+    </div>
   );
 }
 
