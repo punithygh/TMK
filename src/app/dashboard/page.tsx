@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getUserDashboard } from "@/services/businessService";
 import ProductCard from "@/components/features/listing/ProductCard";
-import { Loader2, LayoutDashboard, Bookmark, Star, LogOut, MessageCircle, Settings, ChevronRight, Award, Edit, Trash2, Camera, User, X, Check, Upload } from "lucide-react";
+import { Loader2, LayoutDashboard, Bookmark, Star, LogOut, MessageCircle, Settings, ChevronRight, Award, Edit, Trash2, Camera, User, X, Check, Upload, Store } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
@@ -128,8 +128,8 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center mb-8">
               <div className="relative group mb-4">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 dark:from-sky-500 dark:to-blue-600 flex items-center justify-center text-4xl font-bold text-white shadow-xl shadow-red-600/20 dark:shadow-sky-500/20 ring-4 ring-[#050b14] overflow-hidden">
-                  {data?.profile?.profile_image ? (
-                    <img src={getSupabaseImageUrl(data.profile.profile_image) || ''} className="w-full h-full object-cover" alt="Profile" />
+                  {data?.profile?.profile_image && getSupabaseImageUrl(data.profile.profile_image) ? (
+                    <img src={getSupabaseImageUrl(data.profile.profile_image) as string} className="w-full h-full object-cover" alt="Profile" />
                   ) : (
                     user?.first_name?.charAt(0) || "U"
                   )}
@@ -259,11 +259,20 @@ export default function DashboardPage() {
                     <div key={review.id} className="bg-[#0c1220] border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all group">
                       <div className="flex flex-col md:flex-row gap-4">
                         <div className="w-16 h-16 rounded-xl bg-slate-800 overflow-hidden shrink-0 border border-slate-700 relative">
-                          <img 
-                            src={getSupabaseImageUrl(review.business?.main_image_upload || review.business?.image_url) || ''} 
-                            alt={review.business?.name} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                          />
+                          {(() => {
+                            const imgSrc = getSupabaseImageUrl(review.business?.main_image_upload || review.business?.image_url);
+                            return imgSrc ? (
+                              <img 
+                                src={imgSrc} 
+                                alt={review.business?.name} 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                                <Store size={24} />
+                              </div>
+                            );
+                          })()}
                         </div>
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

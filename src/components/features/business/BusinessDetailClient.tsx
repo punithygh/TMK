@@ -28,6 +28,7 @@ import {
   submitSuggestion
 } from "@/services/businessService";
 import { ThumbsUp, Laugh } from "lucide-react";
+import StarRating from "@/components/ui/StarRating";
 
 const iconMap: Record<string, React.ReactNode> = {
   "parking": <Car size={24} className="text-red-600 dark:text-sky-400" />,
@@ -82,6 +83,10 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [reviewSort, setReviewSort] = useState("newest");
+  const [reviewLang, setReviewLang] = useState("");
+  const [reviewRating, setReviewRating] = useState("");
+  const [reviewSearch, setReviewSearch] = useState("");
 
   useEffect(() => { setIsMounted(true); }, []);
 
@@ -97,7 +102,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
   const fetchReviews = async () => {
     try {
-      const data = await getReviewsForBusiness(business.slug || String(business.id), String(user?.id));
+      const data = await getReviewsForBusiness(
+        business.slug || String(business.id),
+        String(user?.id),
+        reviewSearch,
+        reviewSort,
+        reviewLang,
+        reviewRating
+      );
       setReviews(data);
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
@@ -106,7 +118,13 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     }
   };
 
-  useEffect(() => { fetchReviews(); }, [business.slug, business.id, user?.id]);
+  useEffect(() => {
+    setReviewsLoading(true);
+    const timer = setTimeout(() => {
+      fetchReviews();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [business.slug, business.id, user?.id, reviewSearch, reviewSort, reviewLang, reviewRating]);
 
   const handleToggleReaction = async (reviewId: number, reactionType: 'HELPFUL' | 'FUNNY' | 'COOL') => {
     if (!isAuthenticated) return router.push("/login");
@@ -128,26 +146,15 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     catch (err) { console.error("Reaction toggle failed:", err); setReviews(originalReviews); }
   };
 
-  const calculatedRating = useMemo(() => {
-    if (reviews.length > 0) {
-      const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-      return sum / reviews.length;
-    }
-    return (business.review_count && business.review_count > 0) ? (Number(business.rating) || 0) : 0;
-  }, [reviews, business.rating, business.review_count]);
-
-  const calculatedReviewCount = useMemo(() => {
-    return reviews.length > 0 ? reviews.length : (business.review_count || 0);
-  }, [reviews, business.review_count]);
-
-  const ratingDistribution = useMemo(() => {
-    const counts = [0, 0, 0, 0, 0];
-    reviews.forEach(r => {
-      const rate = Math.round(r.rating);
-      if (rate >= 1 && rate <= 5) counts[rate - 1]++;
-    });
-    return counts.reverse().map((count, i) => ({ stars: 5 - i, count, percent: reviews.length > 0 ? (count / reviews.length) * 100 : 0 }));
-  }, [reviews]);
+  const calculatedRating = Number(business.rating) || 0;
+  const calculatedReviewCount = business.total_reviews || business.review_count || 0;
+  const ratingDistribution = business.rating_distribution || [
+    { stars: 5, count: 0, percent: 0 },
+    { stars: 4, count: 0, percent: 0 },
+    { stars: 3, count: 0, percent: 0 },
+    { stars: 2, count: 0, percent: 0 },
+    { stars: 1, count: 0, percent: 0 },
+  ];
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -161,7 +168,11 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setShowStickyBar(scrollY > 350);
-      const sections = ["overview", "services", "quick-info", "location-hours", "reviews"];
+      
+      const sections = ["overview"];
+      if ((business.services_offered || "").length > 0 || (business.amenities || "").length > 0) sections.push("services");
+      sections.push("quick-info", "location-hours", "reviews");
+      
       let foundSection = "overview";
       const headerOffset = 160;
       for (const section of sections) {
@@ -322,7 +333,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   });
 
   const dynamicTabs = useMemo(() => [
-    { id: "Highlights", labelKn: "ಹೈಲೈಟ್ಸ್", labelEn: "Overview", show: true },
+    { id: "overview", labelKn: "ಹೈಲೈಟ್ಸ್", labelEn: "Overview", show: true },
     { id: "services", labelKn: "ಸೇವೆಗಳು", labelEn: "Services", show: realServices.length > 0 || realAmenities.length > 0 || realProducts.length > 0 },
     { id: "quick-info", labelKn: "ಮಾಹಿತಿ", labelEn: "Quick Info", show: true },
     { id: "location-hours", labelKn: "ವಿಳಾಸ & ಸಮಯ", labelEn: "Location & Hours", show: true },
@@ -381,9 +392,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="flex-1">
             {/* Star Rating */}
             <div className="flex items-center gap-2 mt-2 mb-3 cursor-pointer w-fit" onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}>
-              <div className="flex gap-0.5">
-                {[1,2,3,4,5].map(star => <Star key={star} size={24} className={star <= Math.round(calculatedRating) ? "fill-amber-500 text-amber-500 drop-shadow-sm" : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"} />)}
-              </div>
+              <StarRating rating={calculatedRating} size={24} />
               {calculatedRating > 0 && <span className="text-lg font-extrabold text-slate-800 dark:text-slate-200">{calculatedRating.toFixed(1)}</span>}
               <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">({calculatedReviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})</span>
             </div>
@@ -438,11 +447,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             className="flex items-center gap-2 mb-3 cursor-pointer"
             onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            <div className="flex gap-0.5">
-              {[1,2,3,4,5].map(s => (
-                <Star key={s} size={20} className={s <= Math.round(calculatedRating) ? "fill-amber-500 text-amber-500" : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"} />
-              ))}
-            </div>
+            <StarRating rating={calculatedRating} size={20} />
             {calculatedRating > 0 ? (
               <span className="text-base font-extrabold text-slate-800 dark:text-slate-200">{calculatedRating.toFixed(1)}</span>
             ) : null}
@@ -529,13 +534,13 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               {(() => {
                 const topItems = [...realServices, ...realAmenities, ...realProducts].slice(0, 4);
                 return topItems.length > 0 ? (
-                  <div className="grid grid-cols-4 gap-2 md:gap-6">
+                  <div className="flex justify-between md:justify-start gap-2 md:gap-8 w-full overflow-x-auto scrollbar-hide pb-2">
                     {topItems.map((item, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1.5 text-center">
-                        <div className="w-11 h-11 md:w-14 md:h-14 rounded-2xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm shrink-0">
+                      <div key={i} className="flex flex-col items-center gap-2 text-center min-w-[75px] md:min-w-[90px] flex-1 md:flex-none">
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-rose-50 dark:bg-sky-500/10 border border-rose-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm shrink-0 transition-transform hover:scale-105">
                           {iconMap[Object.keys(iconMap).find(k => item.toLowerCase().includes(k)) || "default"]}
                         </div>
-                        <span className="text-[9px] md:text-[11px] text-slate-600 dark:text-slate-400 font-semibold leading-tight line-clamp-2 w-full">{item}</span>
+                        <span className="text-[10px] md:text-[12px] text-slate-700 dark:text-slate-300 font-bold leading-tight line-clamp-2 w-full px-1">{item}</span>
                       </div>
                     ))}
                   </div>
@@ -622,11 +627,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                 <div className="flex flex-col gap-3 w-full md:w-1/3">
                   <h3 className="font-bold text-slate-900 dark:text-white text-base">Overall rating</h3>
                   <div className="flex gap-1.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <div key={s} className={`w-10 h-10 rounded-md flex items-center justify-center shadow-sm ${s <= Math.round(calculatedRating) ? 'bg-[#f15c4f]' : 'bg-slate-200 dark:bg-slate-800'}`}>
-                        <Star size={22} fill={s <= Math.round(calculatedRating) ? "white" : "none"} className={s <= Math.round(calculatedRating) ? "text-white" : "text-slate-400 dark:text-slate-600"} />
-                      </div>
-                    ))}
+                    <StarRating rating={calculatedRating} size={28} />
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{calculatedReviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")}</p>
                 </div>
@@ -645,14 +646,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-t border-b border-slate-200 dark:border-slate-800 py-4 mb-8">
                 <div className="flex flex-wrap gap-3 w-full lg:w-auto">
                   <label htmlFor="review-sort" className="sr-only">Sort reviews</label>
-                  <select id="review-sort" aria-label="Sort reviews" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಹೊಸದು ಮೊದಲು", "Newest First")}</option><option>{t("ಹೆಚ್ಚಿನ ರೇಟಿಂಗ್", "Highest Rating")}</option><option>{t("ಕಡಿಮೆ ರೇಟಿಂಗ್", "Lowest Rating")}</option></select>
+                  <select id="review-sort" aria-label="Sort reviews" value={reviewSort} onChange={(e) => setReviewSort(e.target.value)} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option value="newest">{t("ಹೊಸದು ಮೊದಲು", "Newest First")}</option><option value="highest">{t("ಹೆಚ್ಚಿನ ರೇಟಿಂಗ್", "Highest Rating")}</option><option value="lowest">{t("ಕಡಿಮೆ ರೇಟಿಂಗ್", "Lowest Rating")}</option></select>
                   <label htmlFor="review-lang" className="sr-only">Filter by language</label>
-                  <select id="review-lang" aria-label="Filter by language" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಎಲ್ಲಾ ಭಾಷೆಗಳು", "All Languages")}</option><option>English</option><option>Kannada</option></select>
+                  <select id="review-lang" aria-label="Filter by language" value={reviewLang} onChange={(e) => setReviewLang(e.target.value)} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option value="">{t("ಎಲ್ಲಾ ಭಾಷೆಗಳು", "All Languages")}</option><option value="en">English</option><option value="kn">Kannada</option></select>
                   <label htmlFor="review-rating" className="sr-only">Filter by rating</label>
-                  <select id="review-rating" aria-label="Filter by rating" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಎಲ್ಲಾ ರೇಟಿಂಗ್ಸ್", "All Ratings")}</option><option>5 Stars</option><option>4 Stars</option><option>3 Stars</option></select>
+                  <select id="review-rating" aria-label="Filter by rating" value={reviewRating} onChange={(e) => setReviewRating(e.target.value)} className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option value="">{t("ಎಲ್ಲಾ ರೇಟಿಂಗ್ಸ್", "All Ratings")}</option><option value="5">5 Stars</option><option value="4">4 Stars</option><option value="3">3 Stars</option><option value="2">2 Stars</option><option value="1">1 Star</option></select>
                 </div>
                 <div className="w-full lg:w-[320px] flex items-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden shadow-sm focus-within:border-red-600 dark:focus-within:border-sky-500 transition-all">
-                  <input type="text" id="review-search" name="review_search" autoComplete="off" placeholder="Search reviews" aria-label="Search reviews" className="w-full px-4 py-2 outline-none bg-transparent text-sm text-slate-800 dark:text-white" />
+                  <input type="text" id="review-search" name="review_search" value={reviewSearch} onChange={(e) => setReviewSearch(e.target.value)} autoComplete="off" placeholder="Search reviews" aria-label="Search reviews" className="w-full px-4 py-2 outline-none bg-transparent text-sm text-slate-800 dark:text-white" />
                   <button aria-label="Search reviews" className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border-l border-slate-300 dark:border-slate-700 hover:bg-slate-100 transition-colors"><Search size={18} className="text-slate-500" /></button>
                 </div>
               </div>
@@ -678,9 +679,9 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                 ) : reviews.length > 0 ? reviews.map((review) => (
                   <div key={review.id} id={`review-${review.id}`} className="flex flex-col md:flex-row gap-4 md:gap-6 py-8 border-b border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-500 scroll-mt-[180px]">
                     <div className="flex gap-4 md:w-[220px] shrink-0">
-                      <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-sky-900/50 flex items-center justify-center text-red-600 dark:text-sky-400 font-extrabold text-xl shadow-sm shrink-0 border border-red-200 dark:border-sky-500/20 overflow-hidden">
+                      <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-sky-900/50 flex items-center justify-center text-red-600 dark:text-sky-400 font-extrabold text-xl shadow-sm shrink-0 border border-red-200 dark:border-sky-500/20 overflow-hidden relative">
                         {review.user?.profile_image ? (
-                          <img src={getSupabaseImageUrl(review.user.profile_image) || ''} className="w-full h-full object-cover" alt="Profile" />
+                          <Image src={getSupabaseImageUrl(review.user.profile_image) || ''} fill sizes="56px" className="object-cover" alt="Profile" />
                         ) : (
                           (review.user?.first_name?.[0] || review.user?.username?.[0] || 'U').toUpperCase()
                         )}
@@ -698,13 +699,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <div key={s} className={`w-6 h-6 rounded border border-transparent ${s <= review.rating ? 'bg-[#f15c4f]' : 'bg-slate-200 dark:bg-slate-800'} flex items-center justify-center`}>
-                              <Star size={14} fill={s <= review.rating ? "white" : "none"} className={s <= review.rating ? "text-white" : "text-slate-400 dark:text-slate-600"} />
-                            </div>
-                          ))}
-                        </div>
+                        <StarRating rating={review.rating} size={14} />
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
                           {isMounted ? new Date(review.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '...'}
                         </span>
@@ -766,7 +761,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               return (
                 <Link key={sb.id} href={`/business/${sbSlug}`} className="min-w-[220px] md:min-w-[260px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-red-600/50 dark:hover:border-sky-500/50 hover:shadow-xl transition-all duration-300 shrink-0 group">
                   <div className="h-36 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                    {sbImg ? <img src={getSupabaseImageUrl(sbImg as string) || ""} alt={sbTitle as string} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400" /></div>}
+                    {sbImg ? <Image src={getSupabaseImageUrl(sbImg as string) || ""} alt={sbTitle as string} fill sizes="(max-width: 768px) 260px, 260px" className="object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><Store className="w-10 h-10 text-slate-400" /></div>}
                     {sb.is_verified && <span className="absolute top-2 left-2 bg-sky-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase">Verified</span>}
                   </div>
                   <div className="p-3">
@@ -786,20 +781,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           <div className="max-w-[1200px] mx-auto px-3 md:px-4 h-[56px] flex items-center gap-3">
             <div className="flex-1 min-w-0"><p className="text-[13px] md:text-sm font-extrabold text-slate-900 dark:text-white truncate leading-tight">{title as string}</p></div>
             <div className="flex items-center gap-1.5 shrink-0">
-              {business.phone && <a href={`tel:${business.phone}`} className="h-9 px-3 md:px-4 bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-emerald-600 transition-colors"><Phone size={14} /><span className="hidden sm:inline">{t("ಕರೆ", "Call")}</span></a>}
-              {business.phone && <a href={`https://wa.me/91${business.phone.replace(/\D/g, '')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ. ನಿಮ್ಮ ಸೇವೆಗಳ ಬಗ್ಗೆ ತಿಳಿಯಲು ಬಯಸುತ್ತೇನೆ.` : `Hello ${title}, I found your profile on Tumkurconnect. I am interested in your services. Can we talk?`)}`} target="_blank" rel="noopener noreferrer" className="h-9 px-3 md:px-4 bg-[#25D366] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-[#1DA851] transition-colors"><MessageCircle size={14} /><span className="hidden sm:inline">WA</span></a>}
+              {business.phone && <a href={`tel:${business.phone}`} aria-label={`Call ${business.name}`} className="h-9 px-3 md:px-4 bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-emerald-600 transition-colors"><Phone size={14} /><span className="hidden sm:inline">{t("ಕರೆ", "Call")}</span></a>}
+              {business.phone && <a href={`https://wa.me/91${business.phone.replace(/\D/g, '')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ. ನಿಮ್ಮ ಸೇವೆಗಳ ಬಗ್ಗೆ ತಿಳಿಯಲು ಬಯಸುತ್ತೇನೆ.` : `Hello ${title}, I found your profile on Tumkurconnect. I am interested in your services. Can we talk?`)}`} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${business.name}`} className="h-9 px-3 md:px-4 bg-[#25D366] text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-[#1DA851] transition-colors"><MessageCircle size={14} /><span className="hidden sm:inline">WA</span></a>}
               <button onClick={() => setIsEnquiryOpen(true)} aria-label={t("ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Deal")} className="h-9 px-3 md:px-4 bg-sky-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-sky-600 transition-colors"><Store size={14} /><span className="hidden sm:inline">{t("ಡೀಲ್", "Deal")}</span></button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MOBILE BOTTOM FIXED BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-[#050b14]/98 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-3 py-2.5 z-50 flex gap-2 shadow-[0_-8px_24px_rgba(0,0,0,0.15)]">
-        {business.phone ? <a href={`tel:${business.phone}`} aria-label={t("ಕರೆ ಮಾಡಿ", "Call now")} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 rounded-xl font-bold text-sm h-12 shadow-md transition-all"><Phone size={18} /> {t("ಕರೆ", "Call")}</a> : <button disabled aria-label="Call unavailable" className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center gap-2 rounded-xl font-bold text-sm h-12 cursor-not-allowed"><Phone size={18} /></button>}
-        {business.phone ? <a href={`https://wa.me/91${business.phone.replace(/\D/g, '')}?text=Hi, I found your business on Tumakuru Connect.`} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" className="flex-1 bg-[#25D366] hover:bg-[#1DA851] text-white flex items-center justify-center gap-2 rounded-xl font-bold text-sm h-12 shadow-md transition-all"><MessageCircle size={18} /></a> : <button disabled aria-label="WhatsApp unavailable" className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center gap-2 rounded-xl font-bold text-sm h-12 cursor-not-allowed"><MessageCircle size={18} /></button>}
-        <button onClick={() => setIsEnquiryOpen(true)} aria-label={t("ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Deal")} className="flex-[1.8] bg-sky-600 hover:bg-sky-700 text-white flex items-center justify-center gap-2 rounded-xl font-bold text-sm h-12 shadow-lg shadow-sky-500/25 transition-all"><Store size={18} /> {t("ಡೀಲ್ ಪಡೆಯಿರಿ", "Get Deal")}</button>
-      </div>
 
       {/* Modals */}
       {isViewAllOpen && (

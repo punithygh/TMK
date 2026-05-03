@@ -1,4 +1,4 @@
-﻿import { Metadata, ResolvingMetadata } from "next";
+import { Metadata, ResolvingMetadata } from "next";
 import ListingsClient from "@/components/features/listing/ListingsClient";
 import { getBusinesses } from "@/services/businessService";
 import Script from "next/script";

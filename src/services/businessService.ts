@@ -61,10 +61,23 @@ export const getNearbyBusinesses = async (lat: number, lng: number, radius: numb
 };
 
 // Reviews
-export const getReviewsForBusiness = async (slugOrId: string, userId?: string) => {
+export const getReviewsForBusiness = async (
+  slugOrId: string,
+  userId?: string,
+  search?: string,
+  sort?: string,
+  lang?: string,
+  rating?: string
+) => {
   try {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    if (sort) params.sort = sort;
+    if (lang) params.lang = lang;
+    if (rating) params.rating = rating;
+
     // Django returns nested reviews inside the business detail payload
-    const res = await api.get(`/businesses/${slugOrId}/`);
+    const res = await api.get(`/businesses/${slugOrId}/`, { params });
     return res.data?.reviews || [];
   } catch (error) {
     console.error('Error fetching reviews:', error);

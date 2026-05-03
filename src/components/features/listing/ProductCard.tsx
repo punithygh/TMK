@@ -3,9 +3,10 @@
 import { useState, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { StarHalf, MapPin, Phone, MessageCircle, Navigation, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
+import StarRating from "@/components/ui/StarRating";
 
 export interface BusinessListDTO {
   id: number;
@@ -220,32 +221,7 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
           <div className="flex items-center gap-2 mb-3">
             {displayRating !== null ? (
               <>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => {
-                    const isFull = star <= displayRating;
-                    const isHalf = !isFull && star - 0.5 <= displayRating;
-                    
-                    if (isHalf) {
-                      return (
-                        <div key={star} className="relative w-4 h-4 text-amber-500">
-                          <Star size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800 absolute top-0 left-0" />
-                          <StarHalf size={16} className="fill-amber-500 absolute top-0 left-0" />
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <Star 
-                        key={star} 
-                        size={16} 
-                        className={isFull 
-                          ? "fill-amber-500 text-amber-500" 
-                          : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"
-                        } 
-                      />
-                    );
-                  })}
-                </div>
+                <StarRating rating={displayRating} size={16} />
                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
                   {displayRating.toFixed(1)}
                 </span>
@@ -258,11 +234,7 @@ const ProductCard = ({ product, priority = false }: ProductCardProps) => {
             ) : (
               // ✅ No fake rating — show honest "No Rating Yet"
               <>
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={16} className="fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800" />
-                  ))}
-                </div>
+                <StarRating rating={0} size={16} />
                 <span className="text-xs text-slate-400 dark:text-slate-500 italic">
                   {t("ಇನ್ನೂ ರೇಟಿಂಗ್ ಇಲ್ಲ", "No rating yet")}
                 </span>

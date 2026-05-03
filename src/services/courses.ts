@@ -20,6 +20,8 @@ export interface BusinessListing {
   gallery_images?: string[] | null; // Real backend: ["http...", "http..."]
   rating: number;
   review_count?: number | null;
+  total_reviews?: number;
+  rating_distribution?: { stars: number; count: number; percent: number }[];
   is_verified: boolean;
   is_claimed?: boolean;
   is_open?: boolean | null;
