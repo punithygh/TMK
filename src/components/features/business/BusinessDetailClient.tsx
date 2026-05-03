@@ -20,13 +20,13 @@ import ReviewForm from "./ReviewForm";
 import BusinessGallery from "./BusinessGallery";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 import {
-  getSupabaseReviewsForBusiness,
-  toggleSupabaseReviewReaction,
-  toggleSupabaseBookmark,
-  getSupabaseUserDashboard,
-  submitSupabaseEnquiry,
-  submitSupabaseSuggestion
-} from "@/services/legacyStubs";
+  getReviewsForBusiness,
+  toggleReviewReaction,
+  toggleBookmark,
+  getUserDashboard,
+  submitEnquiry,
+  submitSuggestion
+} from "@/services/businessService";
 import { ThumbsUp, Laugh } from "lucide-react";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -97,7 +97,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
   const fetchReviews = async () => {
     try {
-      const data = await getSupabaseReviewsForBusiness(business.slug || String(business.id), user?.id);
+      const data = await getReviewsForBusiness(business.slug || String(business.id), String(user?.id));
       setReviews(data);
     } catch (err) {
       console.error("Failed to fetch reviews:", err);
@@ -124,7 +124,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
       return r;
     }));
 
-    try { await toggleSupabaseReviewReaction(reviewId, user!.id, reactionType); } 
+    try { await toggleReviewReaction(reviewId, String(user!.id), reactionType); } 
     catch (err) { console.error("Reaction toggle failed:", err); setReviews(originalReviews); }
   };
 
@@ -151,7 +151,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
-    getSupabaseUserDashboard().then(data => {
+    getUserDashboard().then(data => {
       const bookmarked = data.my_bookmarks.some((b: any) => b.business.id === business.id);
       setIsBookmarked(bookmarked);
     }).catch(err => console.error("Failed to fetch bookmarks:", err));
@@ -161,7 +161,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setShowStickyBar(scrollY > 350);
-      const sections = ["overview", "services", "quick-info", "location-hours", "photos", "reviews"];
+      const sections = ["overview", "services", "quick-info", "location-hours", "reviews"];
       let foundSection = "overview";
       const headerOffset = 160;
       for (const section of sections) {
@@ -188,23 +188,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     }
   }, [activeTab]);
 
-  const highlights = useMemo(() => {
-    if (!business) return [];
-    const h = [];
-    if (business.emergency_24x7) h.push(t("24/7 ತುರ್ತು", "24/7 Emergency"));
-    if (business.pure_veg) h.push(t("ಶುದ್ಧ ಸಾಕಾಹಾರ", "Pure Vegetarian"));
-    if (business.is_verified) h.push(t("ಪರಿಶೋಧಿತ", "Verified"));
-    if (business.home_delivery) h.push(t("ಹೋಮ್ ಡೆಲಿವರಿ", "Home Delivery"));
-    if (business.ambulance_available) h.push(t("ಆಂಬ್ಯುಲೆನ್ಸ್", "Ambulance"));
-    if (business.pets_allowed) h.push(t("ಸಾಕು ಪ್ರಾಣಿ ಅನುಮತಿ", "Pets Allowed"));
-    if (h.length === 0 && business.amenities) {
-      business.amenities.split(',').slice(0, 4).forEach((item: string) => {
-        const trimmed = item.trim();
-        if (trimmed) h.push(trimmed);
-      });
-    }
-    return h;
-  }, [business, t]);
+
 
   const realServices = useMemo(() => {
     if (!business || !business.services_offered) return [];
@@ -216,10 +200,8 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     return business.amenities.split(',').map((a: string) => a.trim()).filter(Boolean);
   }, [business]);
 
-  const realProducts = useMemo(() => {
-    if (!business || !business.products_available) return [];
-    return business.products_available.split(',').map((p: string) => p.trim()).filter(Boolean);
-  }, [business]);
+  const realProducts: string[] = [];
+
 
   const dynamicCategories = useMemo(() => {
     const allItems = [...realAmenities, ...realServices, ...realProducts];
@@ -272,7 +254,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   const handleBookmarkToggle = async () => {
     if (!isAuthenticated || !user?.id) return router.push("/login");
     setIsBookmarked(!isBookmarked);
-    try { await toggleSupabaseBookmark(business.id); }
+    try { await toggleBookmark(business.id); }
     catch (error) { setIsBookmarked(isBookmarked); alert(t("ಸಂಪರ್ಕ ದೋಷ, ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ", "Network error, please try again.")); }
   };
 
@@ -283,7 +265,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     if (digits.length !== 10) { setPhoneError(t("10 ಅಂಕೆಗಳ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ", "Enter a valid 10-digit number")); return; }
     setPhoneError(""); setFormStatus("loading");
     try {
-      const res = await submitSupabaseEnquiry(business.id, { customer_name: enquiryData.name, phone_number: enquiryData.phone });
+      const res = await submitEnquiry(business.id, { customer_name: enquiryData.name, phone_number: enquiryData.phone });
       setFormStatus("success");
       setTimeout(() => {
         setFormStatus("idle"); setIsEnquiryOpen(false);
@@ -309,7 +291,7 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
     setSuggestStatus("loading");
     try {
       const suggestionPayload = `[Field: ${suggestData.field}] ${suggestData.details} | Phone: ${suggestData.phone}`;
-      await submitSupabaseSuggestion(business.id, user.id, suggestionPayload);
+      await submitSuggestion(business.id, String(user.id), suggestionPayload);
       setSuggestStatus("success");
       setTimeout(() => { setSuggestStatus("idle"); setIsSuggestOpen(false); }, 2000);
     } catch (error) {
@@ -340,11 +322,10 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
   });
 
   const dynamicTabs = useMemo(() => [
-    { id: "overview", labelKn: "ಸ್ಥೂಲನೋಟ", labelEn: "Overview", show: true },
+    { id: "Highlights", labelKn: "ಹೈಲೈಟ್ಸ್", labelEn: "Overview", show: true },
     { id: "services", labelKn: "ಸೇವೆಗಳು", labelEn: "Services", show: realServices.length > 0 || realAmenities.length > 0 || realProducts.length > 0 },
     { id: "quick-info", labelKn: "ಮಾಹಿತಿ", labelEn: "Quick Info", show: true },
     { id: "location-hours", labelKn: "ವಿಳಾಸ & ಸಮಯ", labelEn: "Location & Hours", show: true },
-    { id: "photos", labelKn: "ಫೋಟೋಗಳು", labelEn: "Photos", show: galleryImages.length > 0 },
     { id: "reviews", labelKn: "ವಿಮರ್ಶೆಗಳು", labelEn: "Reviews", show: true }
   ].filter(t => t.show), [realProducts, realServices, realAmenities, galleryImages]);
 
@@ -374,13 +355,14 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
                   <Share2 size={16} className="text-red-600 dark:text-sky-500 group-hover:scale-110 transition-transform" />
                   <span className="hidden md:inline text-[13px] font-bold">{t("ಹಂಚಿ", "Share")}</span>
                 </button>
-                <button onClick={() => setIsSuggestOpen(true)} aria-label={t("ತಿದ್ದುಪಡಿ", "Suggest Edit")} className="flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm group">
+                {/* ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಮಾತ್ರ Suggest Edit ಇಲ್ಲಿದೆ, ಮೊಬೈಲ್‌ನಲ್ಲಿ hide ಆಗಿದೆ */}
+                <button onClick={() => setIsSuggestOpen(true)} aria-label={t("ತಿದ್ದುಪಡಿ", "Suggest Edit")} className="hidden md:flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm group">
                   <Edit3 size={16} className="text-slate-500 group-hover:text-red-600 dark:group-hover:text-sky-500 transition-colors" />
                   <span className="hidden md:inline text-[13px] font-bold">{t("ತಿದ್ದುಪಡಿ", "Suggest Edit")}</span>
                 </button>
               </div>
             </div>
-            {business.established_year && <span className="inline-block mt-1 text-[11px] md:text-sm text-amber-700 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 md:py-1 rounded-md shadow-sm"><Shield size={12} className="inline md:hidden mr-1 -mt-0.5" /><Shield size={18} className="hidden md:inline mr-1.5 -mt-0.5" />{new Date().getFullYear() - business.established_year}+ Years of Trust</span>}
+            {/* No established_year in type, removed to avoid TS error */}
           </div>
         </div>
 
@@ -394,33 +376,41 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           t={t} 
         />
 
-        {/* Desktop Header */}
-        <div className="hidden md:flex md:flex-row md:justify-between md:items-end gap-5 mb-8">
+        {/* Desktop Header — Yelp Style */}
+        <div className="hidden md:flex md:flex-row md:justify-between md:items-start gap-5 mb-6">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mt-3">
-              {calculatedRating > 0 ? (
-                <><div className="flex gap-0.5">{[1, 2, 3, 4, 5].map((star) => (<Star key={star} size={22} className={star <= Math.round(calculatedRating) ? "fill-amber-500 text-amber-500 drop-shadow-sm" : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"} />))}</div>
-                  <span className="text-lg font-extrabold text-slate-800 dark:text-slate-200">{calculatedRating.toFixed(1)}</span>
-                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">({calculatedReviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})</span></>
-              ) : <span className="text-sm text-slate-500 dark:text-slate-400 italic">{t("ಇನ್ನೂ ವಿಮರ್ಶೆಗಳಿಲ್ಲ", "No ratings yet")}</span>}
+            {/* Star Rating */}
+            <div className="flex items-center gap-2 mt-2 mb-3 cursor-pointer w-fit" onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}>
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(star => <Star key={star} size={24} className={star <= Math.round(calculatedRating) ? "fill-amber-500 text-amber-500 drop-shadow-sm" : "fill-slate-200 text-slate-200 dark:fill-slate-800 dark:text-slate-800"} />)}
+              </div>
+              {calculatedRating > 0 && <span className="text-lg font-extrabold text-slate-800 dark:text-slate-200">{calculatedRating.toFixed(1)}</span>}
+              <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">({calculatedReviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-4 text-sm">
-              {business.is_open !== null && business.is_open !== undefined && <span className={`font-bold px-2.5 py-1 rounded-md border ${business.is_open ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20'}`}>{business.is_open ? t("ಈಗ ತೆರೆದಿದೆ", "Open Now") : t("ಮುಚ್ಚಲಾಗಿದೆ", "Closed")}</span>}
-              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-              <span className="text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] md:text-xs">{category}</span>
-              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-              <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium"><MapPin size={16} className="text-red-600 dark:text-sky-500" /> {business.address || `${location}, Tumkur`}</span>
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {(business.is_verified || business.is_claimed) && <span className="bg-sky-500 text-white px-2.5 py-1 rounded-md text-xs font-extrabold flex items-center gap-1"><BadgeCheck size={12} /> {t("ಪರಿಶೀಲಿಸಲಾಗಿದೆ", "Claimed")}</span>}
+              {business.is_trusted && <span className="bg-emerald-500 text-white px-2.5 py-1 rounded-md text-xs font-extrabold flex items-center gap-1"><ShieldCheck size={12} /> {t("ವಿಶ್ವಾಸಾರ್ಹ", "Trusted")}</span>}
+              {business.is_featured && <span className="bg-amber-500 text-white px-2.5 py-1 rounded-md text-xs font-extrabold flex items-center gap-1"><Sparkles size={12} /> {t("ವೈಶಿಷ್ಟ್ಯಪೂರ್ಣ", "Featured")}</span>}
+              {business.is_top_search && <span className="bg-rose-500 text-white px-2.5 py-1 rounded-md text-xs font-extrabold flex items-center gap-1"><TrendingUp size={12} /> {t("ಟಾಪ್ ಸರ್ಚ್", "Top Search")}</span>}
+              {business.is_open !== null && business.is_open !== undefined && (
+                <span className={`px-2.5 py-1 rounded-md text-xs font-extrabold flex items-center gap-1 border ${business.is_open ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20'}`}>
+                  <Clock size={12} /> {business.is_open ? t("ಈಗ ತೆರೆದಿದೆ", "Open Now") : t("ಮುಚ್ಚಲಾಗಿದೆ", "Closed")}
+                </span>
+              )}
+              <span className="text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">{category}</span>
             </div>
+            {/* Address */}
+            <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium text-sm">
+              <MapPin size={15} className="text-red-600 dark:text-sky-500 shrink-0" />
+              {business.address || `${location}, Tumkur`}
+            </span>
           </div>
-          <div className="flex flex-wrap gap-3 mt-4 md:mt-0">
-            <Link
-              href={`/radius-search?lat=${business.lat}&lng=${business.lng}&name=${encodeURIComponent(title as string)}`}
-              aria-label={`View ${title} on nearby map`}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white border border-transparent rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 group"
-            >
-              <MapPin size={18} className="animate-pulse" /> <span className="hidden md:inline">{t("ಹತ್ತಿರದ ನೋಡಿ", "Nearby Map")}</span>
+          <div className="flex flex-wrap gap-3 mt-2">
+            <Link href={`/radius-search?lat=${business.lat}&lng=${business.lng}&name=${encodeURIComponent(title as string)}`} aria-label={`View ${title} on nearby map`} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white border border-transparent rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95">
+              <MapPin size={18} className="animate-pulse" /> <span>{t("ಹತ್ತಿರದ ನೋಡಿ", "Nearby Map")}</span>
             </Link>
-            <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-colors border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-rose-500'}`}><Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> <span className="hidden md:inline">{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span></button>
+            <button onClick={handleBookmarkToggle} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-colors border shadow-sm ${isBookmarked ? 'bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-500/10 dark:border-rose-500/30 hover:bg-rose-100 dark:hover:bg-rose-500/20' : 'bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-rose-500'}`}><Heart size={18} fill={isBookmarked ? "currentColor" : "none"} className={isBookmarked ? "text-rose-500" : ""} /> <span>{isBookmarked ? t("ಉಳಿಸಲಾಗಿದೆ", "Saved") : t("ಉಳಿಸಿ", "Save")}</span></button>
           </div>
         </div>
 
@@ -440,15 +430,74 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
           </button>
         </div>
 
-        {/* Mobile Info details */}
-        <div className="md:hidden mb-6 pb-6 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[11px] bg-slate-100 dark:bg-slate-800/50 px-2.5 py-1 rounded-md">{category}</span>
+        {/* Mobile Info — Yelp Style: Star Rating → Badges → Address → Action Buttons */}
+        <div className="md:hidden mb-4 pb-6 border-b border-gray-200 dark:border-slate-800">
+
+          {/* Star Rating */}
+          <div
+            className="flex items-center gap-2 mb-3 cursor-pointer"
+            onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(s => (
+                <Star key={s} size={20} className={s <= Math.round(calculatedRating) ? "fill-amber-500 text-amber-500" : "fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700"} />
+              ))}
+            </div>
+            {calculatedRating > 0 ? (
+              <span className="text-base font-extrabold text-slate-800 dark:text-slate-200">{calculatedRating.toFixed(1)}</span>
+            ) : null}
+            <span className="text-sm text-slate-500 dark:text-slate-400">({calculatedReviewCount} {t("ವಿಮರ್ಶೆಗಳು", "reviews")})</span>
           </div>
-          <p className="text-[13px] text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed mb-4 font-medium"><MapPin size={16} className="text-red-600 dark:text-sky-500 shrink-0 mt-0.5" /> {business.address || `${location}, Tumkur`}</p>
+
+          {/* Badges Row */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-3 w-full">
+            {(business.is_verified || business.is_claimed) && <span className="bg-sky-500 text-white px-2 py-0.5 rounded text-[10px] font-extrabold flex items-center gap-1"><BadgeCheck size={10} /> {t("ಪರಿಶೀಲಿಸಲಾಗಿದೆ", "Claimed")}</span>}
+            {business.is_trusted && <span className="bg-emerald-500 text-white px-2 py-0.5 rounded text-[10px] font-extrabold flex items-center gap-1"><ShieldCheck size={10} /> {t("ವಿಶ್ವಾಸಾರ್ಹ", "Trusted")}</span>}
+            {business.is_featured && <span className="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-extrabold flex items-center gap-1"><Sparkles size={10} /> {t("ವೈಶಿಷ್ಟ್ಯಪೂರ್ಣ", "Featured")}</span>}
+            {business.is_top_search && <span className="bg-rose-500 text-white px-2 py-0.5 rounded text-[10px] font-extrabold flex items-center gap-1"><TrendingUp size={10} /> {t("ಟಾಪ್ ಸರ್ಚ್", "Top Search")}</span>}
+            {business.is_open !== null && business.is_open !== undefined && (
+              <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold flex items-center gap-1 ${business.is_open ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                <Clock size={10} /> {business.is_open ? t("ಈಗ ತೆರೆದಿದೆ", "Open Now") : t("ಮುಚ್ಚಲಾಗಿದೆ", "Closed")}
+              </span>
+            )}
+            
+            {/* ಮೊಬೈಲ್‌ನಲ್ಲಿ ಹೊಸ Suggest Edit ಬಟನ್ (ಬಲಬದಿಗೆ) */}
+            <button onClick={() => setIsSuggestOpen(true)} className="ml-auto flex items-center gap-1 px-2 py-0.5 text-slate-500 hover:text-red-600 dark:hover:text-sky-500 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+              <Edit3 size={10} />
+              <span className="text-[10px] font-bold">{t("ತಿದ್ದುಪಡಿ", "Suggest Edit")}</span>
+            </button>
+          </div>
+
+          {/* Business Address */}
+          <p className="text-[13px] text-slate-700 dark:text-slate-300 flex items-start gap-2 leading-relaxed mb-4 font-medium">
+            <MapPin size={15} className="text-red-600 dark:text-sky-500 shrink-0 mt-0.5" />
+            {business.address || `${location}, Tumkur`}
+          </p>
+
+            {/* Call / WhatsApp / Location Share — one line */}
           <div className="flex gap-2">
-            {business.phone ? <a href={`tel:${business.phone}`} aria-label={`${t("ಕರೆ ಮಾಡಿ", "Call")} ${business.phone}`} className="flex-[1.5] flex items-center justify-center gap-1.5 bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm shadow-sm"><Phone size={16} /> {t("ಕರೆ", "Call")}</a> : <button disabled aria-label="No phone available" className="flex-[1.5] flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 py-3 rounded-xl font-bold text-sm"><Phone size={16} /></button>}
-            <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(business.address || `${location}, Tumkur`)}`} target="_blank" rel="noopener noreferrer" aria-label={`Get directions to ${title}`} className="flex-1 flex items-center justify-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white py-3 rounded-xl font-bold text-sm shadow-sm"><MapPin size={16} className="text-red-600 dark:text-sky-500" /> {t("ದಾರಿ", "Directions")}</a>
+            {business.phone
+              ? <a href={`tel:${business.phone}`} aria-label={`Call ${business.phone}`} className="flex-1 flex flex-col items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-bold text-[11px] shadow-sm active:scale-95 transition-all">
+                  <Phone size={18} />
+                  <span>{t("ಕರೆ", "Call")}</span>
+                </a>
+              : <button disabled aria-label="No phone" className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-[11px]">
+                  <Phone size={18} />
+                </button>
+            }
+            {business.phone
+              ? <a href={`https://wa.me/91${business.phone.replace(/\D/g,'')}?text=${encodeURIComponent(lang === 'kn' ? `ನಮಸ್ಕಾರ ${title}, ನಾನು ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು Tumkurconnect ನಲ್ಲಿ ನೋಡಿದೆ.` : `Hello ${title}, I found you on Tumkurconnect.`)}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="flex-1 flex flex-col items-center justify-center gap-1 bg-[#25D366] hover:bg-[#1DA851] text-white py-2.5 rounded-xl font-bold text-[11px] shadow-sm active:scale-95 transition-all">
+                  <MessageCircle size={18} />
+                  <span>WhatsApp</span>
+                </a>
+              : <button disabled aria-label="WhatsApp unavailable" className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-200 dark:bg-slate-800 text-slate-400 py-2.5 rounded-xl font-bold text-[11px]">
+                  <MessageCircle size={18} />
+                </button>
+            }
+            <button onClick={handleShare} aria-label="Share Location" className="flex-1 flex flex-col items-center justify-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white py-2.5 rounded-xl font-bold text-[11px] shadow-sm active:scale-95 transition-all">
+              <Share2 size={18} className="text-red-600 dark:text-sky-500" />
+              <span>{t("ಹಂಚಿಕೊಳ್ಳಿ", "Share")}</span>
+            </button>
           </div>
         </div>
 
@@ -477,16 +526,21 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
             {/* 1. OVERVIEW */}
             <section id="overview" className="mb-10 pb-8 border-b border-gray-200 dark:border-slate-800 scroll-mt-[150px]">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-5">{t("ಹೈಲೈಟ್ಸ್", "Highlights from the Business")}</h2>
-              {highlights.length > 0 ? (
-                <div className="grid grid-cols-4 gap-3 md:flex md:flex-wrap md:gap-8">
-                  {highlights.slice(0, 4).map((item, i) => (
-                    <div key={i} className="flex flex-col items-center gap-2 text-center">
-                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm">{iconMap[Object.keys(iconMap).find(k => item.toLowerCase().includes(k)) || "default"]}</div>
-                      <span className="text-[10px] md:text-[11px] text-slate-600 dark:text-slate-400 font-semibold leading-tight line-clamp-2">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : <p className="text-sm text-slate-500 dark:text-slate-400 italic">{t("ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ", "No highlights available")}</p>}
+              {(() => {
+                const topItems = [...realServices, ...realAmenities, ...realProducts].slice(0, 4);
+                return topItems.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2 md:gap-6">
+                    {topItems.map((item, i) => (
+                      <div key={i} className="flex flex-col items-center gap-1.5 text-center">
+                        <div className="w-11 h-11 md:w-14 md:h-14 rounded-2xl bg-red-50 dark:bg-sky-500/10 border border-red-100 dark:border-sky-500/20 flex items-center justify-center shadow-sm shrink-0">
+                          {iconMap[Object.keys(iconMap).find(k => item.toLowerCase().includes(k)) || "default"]}
+                        </div>
+                        <span className="text-[9px] md:text-[11px] text-slate-600 dark:text-slate-400 font-semibold leading-tight line-clamp-2 w-full">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-sm text-slate-500 dark:text-slate-400 italic">{t("ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ", "No highlights available")}</p>;
+              })()}
             </section>
 
             {/* 2. SERVICES & AMENITIES */}
@@ -591,11 +645,11 @@ export default function BusinessDetailClient({ business, similarBusinesses = [] 
               <div className="flex flex-col lg:flex-row justify-between items-center gap-4 border-t border-b border-slate-200 dark:border-slate-800 py-4 mb-8">
                 <div className="flex flex-wrap gap-3 w-full lg:w-auto">
                   <label htmlFor="review-sort" className="sr-only">Sort reviews</label>
-                  <select id="review-sort" aria-label="Sort reviews" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>Yelp Sort</option><option>Newest First</option></select>
+                  <select id="review-sort" aria-label="Sort reviews" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಹೊಸದು ಮೊದಲು", "Newest First")}</option><option>{t("ಹೆಚ್ಚಿನ ರೇಟಿಂಗ್", "Highest Rating")}</option><option>{t("ಕಡಿಮೆ ರೇಟಿಂಗ್", "Lowest Rating")}</option></select>
                   <label htmlFor="review-lang" className="sr-only">Filter by language</label>
-                  <select id="review-lang" aria-label="Filter by language" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>English (172)</option><option>Kannada (8)</option></select>
+                  <select id="review-lang" aria-label="Filter by language" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಎಲ್ಲಾ ಭಾಷೆಗಳು", "All Languages")}</option><option>English</option><option>Kannada</option></select>
                   <label htmlFor="review-rating" className="sr-only">Filter by rating</label>
-                  <select id="review-rating" aria-label="Filter by rating" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>Filter by rating</option><option>5 Stars</option></select>
+                  <select id="review-rating" aria-label="Filter by rating" className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-full text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-red-600 dark:focus:border-sky-500 cursor-pointer shadow-sm"><option>{t("ಎಲ್ಲಾ ರೇಟಿಂಗ್ಸ್", "All Ratings")}</option><option>5 Stars</option><option>4 Stars</option><option>3 Stars</option></select>
                 </div>
                 <div className="w-full lg:w-[320px] flex items-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden shadow-sm focus-within:border-red-600 dark:focus-within:border-sky-500 transition-all">
                   <input type="text" id="review-search" name="review_search" autoComplete="off" placeholder="Search reviews" aria-label="Search reviews" className="w-full px-4 py-2 outline-none bg-transparent text-sm text-slate-800 dark:text-white" />

@@ -7,7 +7,7 @@ import { BusinessListing } from "@/services/courses";
 import { ShieldCheck, Store, CheckCircle2, Send, Info } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { submitSupabaseClaim } from "@/services/legacyStubs";
+import { submitClaim } from "@/services/businessService";
 import { Loader2 } from "lucide-react";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
@@ -36,7 +36,7 @@ export default function ClaimBusinessClient({ business }: ClaimBusinessClientPro
     if (!user?.id) return;
     setLoading(true);
     try {
-      await submitSupabaseClaim(business.id, user.id, { contact_info: contactInfo, details });
+      await submitClaim(business.id, { user_id: user.id, contact_info: contactInfo, details });
       setIsSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {

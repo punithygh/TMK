@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { getNearbySupabaseBusinesses } from '@/services/legacyStubs';
+import { getNearbyBusinesses } from '@/services/businessService';
 import { useLanguage } from '@/context/LanguageContext';
 import { Search, MapPin, Navigation, Star, Phone, Info } from 'lucide-react';
 import { getSupabaseImageUrl } from '@/utils/imageUtils';
@@ -18,8 +18,8 @@ const Circle = dynamic(() => import('react-leaflet').then(mod => mod.Circle), { 
 interface Business {
   id: number;
   name: string;
-  name_kn: string;
-  address: string;
+  name_kn?: string | null;
+  address?: string;
   slug: string;
   rating: number;
   main_image_upload?: string;
@@ -62,7 +62,7 @@ export default function MapSearch({ initialQ, initialCategory }: MapSearchProps)
   const fetchNearby = async (lat: number, lng: number, rad: number, q?: string, cat?: string) => {
     setLoading(true);
     try {
-      const data = await getNearbySupabaseBusinesses(lat, lng, rad, q, cat);
+      const data = await getNearbyBusinesses(lat, lng, rad, q, cat);
       setBusinesses(data || []);
     } catch (err) {
       console.error('🚨 fetchNearby Error:', err);

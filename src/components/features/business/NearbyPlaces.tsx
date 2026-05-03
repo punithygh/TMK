@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { getNearbySupabaseBusinesses } from '@/services/legacyStubs';
+import { getNearbyBusinesses } from '@/services/businessService';
 import { BusinessListing } from '@/services/courses';
 import { useLanguage } from '@/context/LanguageContext';
 import { MapPin, Navigation, Store, Info } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function NearbyPlaces({ lat, lng, businessName }: { lat: number, 
     const fetchNearby = async () => {
       setLoading(true);
       try {
-        const data = await getNearbySupabaseBusinesses(lat, lng, 5000); // 5km radius
+        const data = await getNearbyBusinesses(lat, lng, 5000); // 5km radius
         setNearby(data.filter((b: any) => b.name !== businessName).slice(0, 4));
       } catch (err) {
         console.error('Nearby fetch error:', err);

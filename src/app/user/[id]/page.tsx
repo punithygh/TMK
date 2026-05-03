@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getUserPublicProfile } from "@/services/legacyStubs";
+import { getUserPublicProfile } from "@/services/businessService";
 import { useLanguage } from "@/context/LanguageContext";
 import { 
   Star, 
@@ -32,7 +32,7 @@ export default function UserProfilePage() {
     
     const fetchProfile = async () => {
       try {
-        const data = await getUserPublicProfile(Number(id));
+        const data = await getUserPublicProfile(String(id));
         if (!data) {
           router.push("/404");
           return;

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Star, CheckCircle, Loader2, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { submitSupabaseReview } from "@/services/legacyStubs";
+import { submitReview } from "@/services/businessService";
 
 interface ReviewFormProps {
   businessId: number;
@@ -26,7 +26,7 @@ export default function ReviewForm({ businessId, onSuccess, t }: ReviewFormProps
 
     setStatus("loading");
     try {
-      await submitSupabaseReview(businessId, { rating: rating || 5, comment: comment.trim() });
+      await submitReview(businessId, { rating: rating || 5, comment: comment.trim() });
       setStatus("success");
       onSuccess();
     } catch (err) {

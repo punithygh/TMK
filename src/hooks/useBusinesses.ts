@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { getSupabaseBusinesses } from "@/services/legacyStubs";
+import { getBusinesses } from "@/services/businessService";
 
 /**
  * 🚀 YELP-GRADE SWR Caching Hook
@@ -36,7 +36,7 @@ export function useBusinesses(filters: BusinessFilters = {}) {
 
   const { data, error, isLoading, isValidating, mutate } = useSWR(
     key,
-    () => getSupabaseBusinesses(filters),
+    () => getBusinesses(filters),
     {
       revalidateOnFocus: true,          // Refresh data when user returns to tab
       revalidateOnReconnect: true,      // Refresh when internet comes back

@@ -1,7 +1,7 @@
 ﻿import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 import BusinessDetailClient from "@/components/features/business/BusinessDetailClient";
-import { getSupabaseBusinesses, getSupabaseReviewsForBusiness } from "@/services/legacyStubs";
+import { getBusinesses, getReviewsForBusiness } from "@/services/businessService";
 import { BusinessListing, getOneCourse, getAllCourses } from "@/services/courses";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 
@@ -94,7 +94,7 @@ export default async function BusinessDetailPageServer({ params }: Props) {
   // 🚀 Fetch Top Reviews for Schema
   let schemaReviews: any[] = [];
   try {
-    const rawReviews = await getSupabaseReviewsForBusiness(slug);
+    const rawReviews = await getReviewsForBusiness(slug);
     schemaReviews = rawReviews.filter((r: any) => r.rating >= 4).slice(0, 3);
   } catch (error) {
     console.error("Failed to fetch reviews for schema:", error);

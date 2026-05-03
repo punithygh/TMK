@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ChevronRight, SlidersHorizontal, Loader2, User, Smartphone, CheckCircle, Search, Map, X, ChevronDown, Star, Share2, Clock } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import ProductCard from "@/components/features/listing/ProductCard";
-import { getSupabaseBusinesses, getSupabaseBusinessesWithCount } from "@/services/legacyStubs";
+import { getBusinesses, getBusinessesWithCount } from "@/services/businessService";
 import dynamic from "next/dynamic";
 import { preconnect } from "react-dom";
 const MiniMap = dynamic(() => import("@/components/features/business/MiniMap"), { ssr: false, loading: () => <div className="h-[400px] w-full bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" /> });
@@ -137,7 +137,7 @@ export default function ListingsClient({
       const limit = 10;
       const offset = (pageNum - 1) * limit;
 
-      const { results, count } = await getSupabaseBusinessesWithCount({
+      const { results, count } = await getBusinessesWithCount({
         search: initialQ,
         category: initialCategory,
         star_rating: currentFilters.star_rating,

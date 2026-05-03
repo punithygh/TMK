@@ -1,21 +1,21 @@
-﻿"use client";
+"use client";
 export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { getSupabaseUserDashboard } from "@/services/legacyStubs";
+import { getUserDashboard } from "@/services/businessService";
 import ProductCard from "@/components/features/listing/ProductCard";
 import { Loader2, LayoutDashboard, Bookmark, Star, LogOut, MessageCircle, Settings, ChevronRight, Award, Edit, Trash2, Camera, User, X, Check, Upload } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
 import { 
-  updateSupabaseReview, 
-  deleteSupabaseReview, 
-  updateSupabaseUserProfile, 
-  uploadSupabaseFile 
-} from "@/services/legacyStubs";
+  updateReview, 
+  deleteReview, 
+  updateUserProfile, 
+  uploadFile 
+} from "@/services/businessService";
 
 export default function DashboardPage() {
   const { user, isAuthenticated, logout, updateUser } = useAuth();
@@ -41,7 +41,7 @@ export default function DashboardPage() {
     if (!user?.id) return;
     if (isManual) setRefreshing(true);
     try {
-      const dashboardData = await getSupabaseUserDashboard(user.id);
+      const dashboardData = await getUserDashboard();
       setData(dashboardData as any);
     } catch (error) {
       console.error("Failed to load dashboard data", error);
@@ -70,7 +70,7 @@ export default function DashboardPage() {
     if (!editingReview) return;
     setIsSubmitting(true);
     try {
-      await updateSupabaseReview(editingReview.id, editRating, editComment);
+      await updateReview(editingReview.id, { rating: editRating, comment: editComment });
       setEditingReview(null);
       fetchData(true);
     } catch (err) {
@@ -80,10 +80,10 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteReview = async (id: number) => {
+  const handleDeleteReview = async (id: number | string) => {
     if (!confirm(t("ನೀವು ಖಚಿತವಾಗಿ ಈ ವಿಮರ್ಶೆಯನ್ನು ಅಳಿಸಲು ಬಯಸುವಿರಾ?", "Are you sure you want to delete this review?"))) return;
     try {
-      await deleteSupabaseReview(id);
+      await deleteReview(String(id));
       fetchData(true);
     } catch (err) {
       console.error("Delete failed", err);
@@ -96,8 +96,8 @@ export default function DashboardPage() {
     
     setIsUploadingPhoto(true);
     try {
-      const filePath = await uploadSupabaseFile(file);
-      await updateSupabaseUserProfile(user.id, { profile_image: filePath });
+      const filePath = await uploadFile(file);
+      await updateUserProfile(user.id, { profile_image: filePath });
       updateUser({ profile_image: filePath }); // 🚀 Global state update
       fetchData(true);
     } catch (err) {
@@ -233,7 +233,7 @@ export default function DashboardPage() {
               
               {data?.my_bookmarks && data.my_bookmarks.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
-                  {data.my_bookmarks.map((bookmark) => (
+                  {data.my_bookmarks.map((bookmark: any) => (
                     <ProductCard key={bookmark.bookmark_id} product={bookmark.business} />
                   ))}
                 </div>

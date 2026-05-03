@@ -16,7 +16,7 @@ const CategoryGrid = dynamic(() => import("@/components/features/home/CategoryGr
 });
 
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
-import { getSupabaseBusinesses } from '@/services/legacyStubs';
+import { getBusinesses } from '@/services/businessService';
 import { getBanners, getArticles, getSocialPosts, getCategories, getRecentReviews } from '@/services/courses';
 
 export default function HomeClient() {
@@ -56,7 +56,7 @@ export default function HomeClient() {
         .catch(() => setCategories([]));
 
       setTimeout(() => {
-        getSupabaseBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 })
+        getBusinesses({ is_top_search: 'true', sort_by: 'popular', limit: 12 })
           .then(res => setTrendingBusinesses(res))
           .catch(() => setTrendingBusinesses([]));
       }, 300);

@@ -1,6 +1,6 @@
 ﻿import { Metadata, ResolvingMetadata } from "next";
 import ListingsClient from "@/components/features/listing/ListingsClient";
-import { getSupabaseBusinesses } from "@/services/legacyStubs";
+import { getBusinesses } from "@/services/businessService";
 import Script from "next/script";
 import { notFound, redirect } from "next/navigation";
 
@@ -138,7 +138,7 @@ export default async function ListingsPageServer({ params, searchParams }: Props
   }
 
   // Fetch initial data for SEO Schema
-  const initialData = await getSupabaseBusinesses({
+  const initialData = await getBusinesses({
     search: initialQ,
     category: initialCategory,
     area: initialArea,

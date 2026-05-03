@@ -4,7 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Building2, MapPin, Phone, Image as ImageIcon, CheckCircle2, ChevronRight, ChevronLeft, Loader2, ShieldCheck, Upload, X } from "lucide-react";
 import api from "@/services/api";
 import { geocodeAddress } from "@/services/geocoding";
-import { uploadSupabaseFile, submitSupabaseNewBusiness } from "@/services/legacyStubs";
+import { uploadFile, submitNewBusiness } from "@/services/businessService";
 
 const STEPS = ["Business Info", "Location", "Contact & Hours", "Photos & Details"];
 
@@ -62,7 +62,7 @@ export default function AddBusinessPage() {
       const uploadedPaths: string[] = [];
       for (const file of files) {
         if (file) {
-          const path = await uploadSupabaseFile(file);
+          const path = await uploadFile(file);
           uploadedPaths.push(path);
         }
       }
@@ -74,7 +74,7 @@ export default function AddBusinessPage() {
         lng: geo?.lng
       };
 
-      await submitSupabaseNewBusiness(businessData, uploadedPaths);
+      await submitNewBusiness(businessData, uploadedPaths);
       
       setSuccess(true);
     } catch (e: any) {

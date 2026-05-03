@@ -8,7 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
 import { getSupabaseImageUrl } from "@/utils/imageUtils";
-import { getSupabaseBusinesses } from "@/services/legacyStubs";
+import { getBusinesses } from "@/services/businessService";
 
 export default function Navbar() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function Navbar() {
   const [isListening, setIsListening] = useState(false);
 
   // 🚀 YELP-STYLE AUTOCOMPLETE
-  const [suggestions, setSuggestions] = useState<{ id: number, name: string, name_kn?: string, slug?: string, area_slug?: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -148,7 +148,7 @@ export default function Navbar() {
     }
     setLoadingSuggestions(true);
     try {
-      const data = await getSupabaseBusinesses({
+      const data = await getBusinesses({
         search: query,
         limit: 6
       });
@@ -296,7 +296,7 @@ export default function Navbar() {
                 <div className="px-4 py-3 text-slate-600 text-sm text-center">ಹುಡುಕುತ್ತಿದ್ದೇವೆ...</div>
               ) : (
                 suggestions.map((s) => {
-                  const sSlug = (lang === 'kn' && s.name_kn ? null : null) || s.slug || s.area_slug || `${s.id}`;
+                  const sSlug = s.slug || s.area_slug || `${s.id}`;
                   const sName = lang === 'kn' && s.name_kn ? s.name_kn : s.name;
                   return (
                     <button

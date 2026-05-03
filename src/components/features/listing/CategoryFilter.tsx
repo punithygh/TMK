@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchFromDjango } from '@/services/api';
+import api from '@/services/api';
 
 // Adjust interfaces based on your Django Serializers
 interface Category { id: number; name: string; slug: string; }
@@ -22,11 +22,8 @@ export default function CategoryFilter({ initialCategories }: { initialCategorie
           ? `businesses/?category__slug=${activeCategory}` 
           : 'businesses/';
 
-        // fetchFromDjango handles the absolute URL and trailing slashes.
-        // cache: 'no-store' forces Next.js 15 to bypass caching so clicking tabs always gets fresh data.
-        const data = await fetchFromDjango<{ results: Business[] }>(endpoint, {
-          cache: 'no-store'
-        });
+        const response = await api.get<{ results: Business[] }>(endpoint);
+        const data = response.data;
         
         setBusinesses(data.results);
       } catch (error) {
